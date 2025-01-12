@@ -18,7 +18,12 @@ class MainPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('The Habits'),
+        title: Text(
+          'The Habits',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: SafeArea(
         child: Padding(
@@ -44,6 +49,10 @@ class MainPage extends HookConsumerWidget {
               ),
               Text(
                 'Habits',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(
                 height: 16,

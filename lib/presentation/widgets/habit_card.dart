@@ -114,14 +114,7 @@ class HabitCard extends HookConsumerWidget {
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
-                  gradient: isCompleted
-                      ? LinearGradient(colors: [
-                          colorScheme.primary,
-                          colorScheme.onPrimary,
-                        ])
-                      : null,
-                  color:
-                      isCompleted ? colorScheme.surfaceContainerHighest : null,
+                  color: isCompleted ? colorScheme.primary : null,
                 ),
                 child: Material(
                   color: Colors.transparent,

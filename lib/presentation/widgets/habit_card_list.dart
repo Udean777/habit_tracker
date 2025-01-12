@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:habit_tracker/core/providers/habits_for_date_provider.dart';
+import 'package:habit_tracker/core/providers/database_provider.dart';
 import 'package:habit_tracker/presentation/widgets/habit_card.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -10,35 +11,85 @@ class HabitCardList extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final database = ref.read(databaseProvider);
     final habitsAsyncValue = ref.watch(habitsForDateProvider(selectedDate));
 
     return habitsAsyncValue.when(
-      data: (data) => Expanded(
-        child: ListView.separated(
-          itemCount: data.length,
-          separatorBuilder: (context, index) => const SizedBox(
-            height: 16,
+      data: (data) {
+        return Expanded(
+          child: ListView.separated(
+            itemCount: data.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            itemBuilder: (context, index) {
+              final habitData = data[index];
+
+              return Dismissible(
+                key: ValueKey(habitData.habit.id),
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  color: Colors.red,
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: const Icon(
+                    Icons.delete,
+                    color: Colors.white,
+                    size: 30,
+                  ),
+                ),
+                confirmDismiss: (direction) async {
+                  return await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Delete Habit'),
+                      content: const Text(
+                        'Are you sure you want to delete this habit?',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          child: const Text('Delete'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                onDismissed: (direction) async {
+                  // Hapus habit dari database
+                  await database.deleteHabit(habitData.habit.id);
+
+                  // Refresh data setelah penghapusan
+                  ref.invalidate(habitsForDateProvider(selectedDate));
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${habitData.habit.title} deleted'),
+                    ),
+                  );
+                },
+                child: HabitCard(
+                  title: habitData.habit.title,
+                  streak: habitData.habit.streak,
+                  progress: habitData.isCompleted ? 1 : 0,
+                  habitId: habitData.habit.id,
+                  isCompleted: habitData.isCompleted,
+                  date: selectedDate,
+                  description: habitData.habit.description!,
+                ),
+              );
+            },
           ),
-          itemBuilder: (context, index) {
-            final habits = data[index];
-            return HabitCard(
-              title: habits.habit.title,
-              streak: habits.habit.streak,
-              progress: habits.isCompleted ? 1 : 0,
-              habitId: habits.habit.id,
-              isCompleted: habits.isCompleted,
-              date: selectedDate,
-              description: habits.habit.description!,
-            );
-          },
-        ),
-      ),
+        );
+      },
       error: (error, st) => Center(
         child: Text(
           error.toString(),
         ),
       ),
-      loading: () => Center(
+      loading: () => const Center(
         child: CircularProgressIndicator(),
       ),
     );
