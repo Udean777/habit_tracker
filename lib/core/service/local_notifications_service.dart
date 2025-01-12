@@ -32,14 +32,6 @@ class LocalNotificationService {
     await _notifications.initialize(initSettings);
   }
 
-  /// Meminta izin untuk alarm presisi (Android 12+)
-  Future<void> requestExactAlarmPermission() async {
-    if (await Permission.scheduleExactAlarm.isDenied) {
-      // Buka pengaturan aplikasi jika izin tidak diberikan
-      await openAppSettings();
-    }
-  }
-
   /// Menjadwalkan notifikasi untuk habit
   Future<void> scheduleHabitReminder({
     required int habitId,
@@ -49,7 +41,7 @@ class LocalNotificationService {
   }) async {
     // Pastikan izin diberikan untuk Android 12+
     if (await Permission.scheduleExactAlarm.isDenied) {
-      await requestExactAlarmPermission();
+      await Permission.scheduleExactAlarm.request();
     }
 
     // Parse waktu reminder

@@ -20,13 +20,13 @@ class AppDatabase extends _$AppDatabase {
   @override
   int get schemaVersion => 1;
 
-  // Mendapatkan daftar semua kebiasaan
+  // Mendapatkan daftar semua habit
   Future<List<Habit>> getHabits() => select(habits).get();
 
-  // Mengamati perubahan pada daftar kebiasaan
+  // Mengamati perubahan pada daftar habit
   Stream<List<Habit>> watchHabits() => select(habits).watch();
 
-  // Membuat kebiasaan baru
+  // Membuat habit baru
   Future<int> createHabit(HabitsCompanion habit) async {
     try {
       final habitId = await into(habits).insert(habit);
@@ -71,16 +71,19 @@ class AppDatabase extends _$AppDatabase {
         .write(HabitsCompanion(reminderTime: Value(newReminderTime)));
   }
 
-  // Method untuk menghapus habit
   Future<void> deleteHabit(int habitId) async {
     // Batalkan reminder terlebih dahulu
     await LocalNotificationService().cancelHabitReminder(habitId);
 
-    // Hapus data dari database
+    // Hapus penyelesaian habit yang terkait
+    await (delete(habitCompletions)..where((t) => t.habitId.equals(habitId)))
+        .go();
+
+    // Hapus habit dari database
     await (delete(habits)..where((t) => t.id.equals(habitId))).go();
   }
 
-  // Menyelesaikan kebiasaan pada tanggal tertentu
+  // Menyelesaikan habit pada tanggal tertentu
   Future<void> completeHabit(int habitId, DateTime selectedDate) async {
     await transaction(() async {
       // Mendefinisikan awal dan akhir hari
@@ -96,7 +99,7 @@ class AppDatabase extends _$AppDatabase {
         999,
       );
 
-      // Memeriksa apakah kebiasaan sudah diselesaikan pada hari tersebut
+      // Memeriksa apakah habit sudah diselesaikan pada hari tersebut
       final existingCompletion = await (select(habitCompletions)
             ..where((t) =>
                 t.habitId.equals(habitId) &
@@ -111,7 +114,7 @@ class AppDatabase extends _$AppDatabase {
           completedAt: Value(selectedDate),
         ));
 
-        // Perbarui streak dan total penyelesaian kebiasaan
+        // Perbarui streak dan total penyelesaian habit
         final habit = await (select(habits)..where((t) => t.id.equals(habitId)))
             .getSingle();
         await update(habits).replace(habit
@@ -137,13 +140,13 @@ class AppDatabase extends _$AppDatabase {
       999,
     );
 
-    // Mengamati penyelesaian kebiasaan pada hari tersebut
+    // Mengamati penyelesaian habit pada hari tersebut
     final completionsStream = (select(habitCompletions)
           ..where((t) => t.completedAt
               .isBetween(Variable(startOfDay), Variable(endOfDay))))
         .watch();
 
-    // Mengamati kebiasaan dengan tanggal tertentu
+    // Mengamati habit dengan tanggal tertentu
     final habitsStream = watchHabitsWithDate(date);
 
     // Menggabungkan dua stream untuk mendapatkan ringkasan harian
@@ -151,7 +154,7 @@ class AppDatabase extends _$AppDatabase {
         (completions, habits) => (completions.length, habits.length));
   }
 
-  // Mengamati kebiasaan dengan tanggal tertentu
+  // Mengamati habit dengan tanggal tertentu
   Stream<List<HabitWithCompletion>> watchHabitsWithDate(DateTime date) {
     final startOfDay = DateTime(date.year, date.month, date.day);
     final endOfDay = DateTime(
@@ -164,7 +167,7 @@ class AppDatabase extends _$AppDatabase {
       999,
     );
 
-    // Membuat query untuk menggabungkan kebiasaan dan penyelesaian kebiasaan
+    // Membuat query untuk menggabungkan habit dan penyelesaian habit
     final query = select(habits).join([
       leftOuterJoin(
         habitCompletions,
@@ -186,7 +189,7 @@ class AppDatabase extends _$AppDatabase {
   }
 }
 
-// Kelas untuk menggabungkan kebiasaan dengan status penyelesaian
+// Kelas untuk menggabungkan habit dengan status penyelesaian
 class HabitWithCompletion {
   final Habit habit;
   final bool isCompleted;

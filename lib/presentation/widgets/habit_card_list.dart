@@ -13,9 +13,34 @@ class HabitCardList extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final database = ref.read(databaseProvider);
     final habitsAsyncValue = ref.watch(habitsForDateProvider(selectedDate));
+    final colorScheme = Theme.of(context).colorScheme;
 
     return habitsAsyncValue.when(
       data: (data) {
+        if (data.isEmpty) {
+          return Center(
+            child: Column(
+              spacing: 16,
+              children: [
+                Image.asset(
+                  'assets/icons8-bullet-list-100.png',
+                  width: 100,
+                  color: colorScheme.primary,
+                ),
+                Text(
+                  "You don't have a habit yet, make one now!",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
         return Expanded(
           child: ListView.separated(
             itemCount: data.length,
@@ -27,6 +52,9 @@ class HabitCardList extends HookConsumerWidget {
                 key: ValueKey(habitData.habit.id),
                 direction: DismissDirection.endToStart,
                 background: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   color: Colors.red,
                   alignment: Alignment.centerRight,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
