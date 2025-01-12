@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:habit_tracker/core/database/tables.dart';
+import 'package:habit_tracker/core/service/local_notifications_service.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
@@ -26,7 +27,58 @@ class AppDatabase extends _$AppDatabase {
   Stream<List<Habit>> watchHabits() => select(habits).watch();
 
   // Membuat kebiasaan baru
-  Future<int> createHabit(HabitsCompanion habit) => into(habits).insert(habit);
+  Future<int> createHabit(HabitsCompanion habit) async {
+    try {
+      final habitId = await into(habits).insert(habit);
+
+      if (habit.reminderTime.present && habit.reminderTime.value != null) {
+        await LocalNotificationService().scheduleHabitReminder(
+          habitId: habitId,
+          title: habit.title.value,
+          description:
+              habit.description.value ?? 'Time to complete your habit!',
+          reminderTime: habit.reminderTime.value!,
+        );
+      }
+
+      return habitId;
+    } catch (e) {
+      // Log error atau tampilkan pesan ke pengguna
+      rethrow;
+    }
+  }
+
+  // Method untuk mengupdate reminder
+  Future<void> updateHabitReminder(int habitId, String? newReminderTime) async {
+    // Batalkan reminder yang ada
+    await LocalNotificationService().cancelHabitReminder(habitId);
+
+    if (newReminderTime != null) {
+      final habit = await (select(habits)..where((t) => t.id.equals(habitId)))
+          .getSingle();
+
+      // Jadwalkan reminder baru
+      await LocalNotificationService().scheduleHabitReminder(
+        habitId: habitId,
+        title: habit.title,
+        description: habit.description ?? 'Time to complete your habit!',
+        reminderTime: newReminderTime,
+      );
+    }
+
+    // Update data di database
+    await (update(habits)..where((t) => t.id.equals(habitId)))
+        .write(HabitsCompanion(reminderTime: Value(newReminderTime)));
+  }
+
+  // Method untuk menghapus habit
+  Future<void> deleteHabit(int habitId) async {
+    // Batalkan reminder terlebih dahulu
+    await LocalNotificationService().cancelHabitReminder(habitId);
+
+    // Hapus data dari database
+    await (delete(habits)..where((t) => t.id.equals(habitId))).go();
+  }
 
   // Menyelesaikan kebiasaan pada tanggal tertentu
   Future<void> completeHabit(int habitId, DateTime selectedDate) async {

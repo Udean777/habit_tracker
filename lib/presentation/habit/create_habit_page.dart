@@ -19,6 +19,13 @@ class CreateHabitPage extends HookConsumerWidget {
       const TimeOfDay(hour: 10, minute: 0),
     );
 
+    String? convertTimeOfDayTo24Hour(TimeOfDay? time) {
+      if (time == null) return null;
+      final hour = time.hour.toString().padLeft(2, '0');
+      final minute = time.minute.toString().padLeft(2, '0');
+      return '$hour:$minute';
+    }
+
     Future<void> onPressed() async {
       if (titleController.text.isEmpty) {
         return;
@@ -28,7 +35,7 @@ class CreateHabitPage extends HookConsumerWidget {
         title: titleController.text,
         description: drift.Value(descriptionController.text),
         isDaily: drift.Value(isDaily.value),
-        reminderTime: drift.Value(reminderTime.value?.format(context)),
+        reminderTime: drift.Value(convertTimeOfDayTo24Hour(reminderTime.value)),
         createdAt: drift.Value(DateTime.now()),
       );
 
