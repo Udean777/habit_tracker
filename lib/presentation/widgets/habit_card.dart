@@ -1,0 +1,152 @@
+import 'package:flutter/material.dart';
+import 'package:habit_tracker/core/providers/database_provider.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+class HabitCard extends HookConsumerWidget {
+  final String title;
+  final int streak;
+  final double progress;
+  final int habitId;
+  final bool isCompleted;
+  final DateTime date;
+  final String description;
+
+  const HabitCard({
+    super.key,
+    required this.title,
+    required this.streak,
+    required this.progress,
+    required this.habitId,
+    required this.isCompleted,
+    required this.date,
+    required this.description,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    Future<void> onComplete() async {
+      await ref.read(databaseProvider).completeHabit(habitId, date);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Congratulations, you successfully completed your habit!',
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: colorScheme.outlineVariant,
+        ),
+        color: isCompleted
+            ? colorScheme.primaryContainer.withValues(alpha: 0.8)
+            : colorScheme.surface.withValues(alpha: 0.1),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow,
+            blurRadius: 16,
+          ),
+        ],
+      ),
+      child: Card(
+        elevation: 0,
+        color: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 8,
+                    ),
+                    Text(
+                      description,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 8,
+                    ),
+                    if (streak > 0) ...[
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.local_fire_department,
+                            color: colorScheme.primary,
+                          ),
+                          const SizedBox(
+                            width: 4,
+                          ),
+                          Text('$streak days!')
+                        ],
+                      )
+                    ]
+                  ],
+                ),
+              ),
+              const SizedBox(
+                height: 16,
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: isCompleted
+                      ? LinearGradient(colors: [
+                          colorScheme.primary,
+                          colorScheme.onPrimary,
+                        ])
+                      : null,
+                  color:
+                      isCompleted ? colorScheme.surfaceContainerHighest : null,
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: onComplete,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Icon(
+                        isCompleted
+                            ? Icons.check_circle
+                            : Icons.circle_outlined,
+                        color: isCompleted
+                            ? colorScheme.onPrimary
+                            : colorScheme.onSurfaceVariant,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
