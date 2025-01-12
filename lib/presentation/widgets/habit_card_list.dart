@@ -20,15 +20,15 @@ class HabitCardList extends HookConsumerWidget {
             height: 16,
           ),
           itemBuilder: (context, index) {
-            final habitWithCompletion = data[index];
+            final habits = data[index];
             return HabitCard(
-              title: habitWithCompletion.habit.title,
-              streak: habitWithCompletion.habit.streak,
-              progress: habitWithCompletion.isCompleted ? 1 : 0,
-              habitId: habitWithCompletion.habit.id,
-              isCompleted: habitWithCompletion.isCompleted,
+              title: habits.habit.title,
+              streak: habits.habit.streak,
+              progress: habits.isCompleted ? 1 : 0,
+              habitId: habits.habit.id,
+              isCompleted: habits.isCompleted,
               date: selectedDate,
-              description: habitWithCompletion.habit.description!,
+              description: habits.habit.description!,
             );
           },
         ),

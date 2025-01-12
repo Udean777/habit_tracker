@@ -2,6 +2,19 @@ import 'package:habit_tracker/core/database/database.dart';
 import 'package:habit_tracker/core/providers/database_provider.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+/// Penyedia stream untuk daftar kebiasaan berdasarkan tanggal tertentu.
+///
+/// [habitsForDateProvider] adalah StreamProvider yang menggunakan family modifier
+/// untuk menerima parameter tanggal [DateTime].
+///
+/// [ref] adalah referensi ke provider yang digunakan untuk mengakses penyedia lain.
+///
+/// [date] adalah parameter tanggal yang digunakan untuk memfilter kebiasaan.
+///
+/// [databse] adalah instance dari database yang diambil dari [databaseProvider].
+///
+/// Mengembalikan stream dari daftar [HabitWithCompletion] yang difilter berdasarkan [date].
+
 final habitsForDateProvider =
     StreamProvider.family<List<HabitWithCompletion>, DateTime>((ref, date) {
   final databse = ref.watch(databaseProvider);
