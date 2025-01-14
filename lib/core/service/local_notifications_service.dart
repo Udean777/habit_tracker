@@ -72,6 +72,8 @@ class LocalNotificationService {
       importance: Importance.high,
       priority: Priority.high,
       styleInformation: BigTextStyleInformation(description),
+      playSound: true,
+      enableVibration: true,
     );
 
     // Detail notifikasi untuk iOS

@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:habit_tracker/core/providers/daily_summary_provider.dart';
+import 'package:habit_tracker/presentation/chatbot/chat_page.dart';
 import 'package:habit_tracker/presentation/habit/create_habit_page.dart';
-import 'package:habit_tracker/presentation/widgets/daily_summary_card.dart';
-import 'package:habit_tracker/presentation/widgets/habit_card_list.dart';
-import 'package:habit_tracker/presentation/widgets/timeline_view.dart';
+import 'package:habit_tracker/presentation/home/home_page.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:intl/intl.dart';
 
 class MainPage extends HookConsumerWidget {
   const MainPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedDate = useState(DateTime.now());
-    final colorScheme = Theme.of(context).colorScheme;
+    int selectedIndex = 0;
+
+    final List<Widget> pages = [
+      HomePage(),
+      CreateHabitPage(),
+      ChatPage(),
+    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -25,73 +26,46 @@ class MainPage extends HookConsumerWidget {
           ),
         ),
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TimelineView(
-                selectedDate: selectedDate.value,
-                onSelectedDateChange: (date) => selectedDate.value = date,
-              ),
-              ref.watch(dailySummaryProvider(selectedDate.value)).when(
-                    data: (data) => DailySummaryCard(
-                      completedTasks: data.$1,
-                      totalTasks: data.$2,
-                      date: DateFormat('EEE d').format(selectedDate.value),
-                    ),
-                    error: (error, st) => Text(error.toString()),
-                    loading: () => const SizedBox.shrink(),
-                  ),
-              const SizedBox(
-                height: 16,
-              ),
-              Text(
-                'Habits',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(
-                height: 16,
-              ),
-              HabitCardList(selectedDate: selectedDate.value),
-            ],
+      body: pages[selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: selectedIndex,
+        onTap: (index) {
+          selectedIndex = index;
+        },
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+        items: [
+          BottomNavigationBarItem(
+            icon: Image.asset(
+              'assets/icons8-home-96.png',
+              width: 30,
+              height: 30,
+              color: Colors.white,
+            ),
+            label: "Home",
           ),
-        ),
-      ),
-      floatingActionButton: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: colorScheme.primary,
-          boxShadow: [
-            BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: 0.2),
-              blurRadius: 16,
-              spreadRadius: 4,
+          BottomNavigationBarItem(
+            icon: Image.asset(
+              'assets/icons8-add-100.png',
+              width: 30,
+              height: 30,
+              color: Colors.white,
             ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => CreateHabitPage(),
-              ),
-            ),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              child: Icon(
-                Icons.add,
-                size: 30,
-                color: colorScheme.onPrimary,
-              ),
-            ),
+            label: "Create",
           ),
-        ),
+          BottomNavigationBarItem(
+            icon: Image.asset(
+              'assets/icons8-chat-96.png',
+              width: 30,
+              height: 30,
+              color: Colors.white,
+            ),
+            label: "Chat Bot",
+          ),
+        ],
+        backgroundColor: const Color(0xFF000000),
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.grey,
       ),
     );
   }
