@@ -27,17 +27,33 @@ class HabitCard extends HookConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     Future<void> onComplete() async {
-      await ref.read(databaseProvider).completeHabit(habitId, date);
+      // Checking if it's today, if it's today, then you may pass
+      if (date.isAtSameMomentAs(DateTime.now())) {
+        await ref.read(databaseProvider).completeHabit(habitId, date);
 
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Congratulations, you successfully completed your habit!',
+        // Adding if statement, so there's different snackbar when
+        // onComplete() called
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Congratulations, you successfully completed your habit!',
+              ),
+              behavior: SnackBarBehavior.floating,
             ),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+          );
+        }
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'You can only complete today\'s habit!',
+              ),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
       }
     }
 

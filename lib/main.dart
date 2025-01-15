@@ -12,8 +12,14 @@ void main() async {
   final database = AppDatabase();
   await LocalNotificationService().initialize();
 
+  // Placed here so users can allow it the first time they open the app
   if (await Permission.notification.isDenied) {
     await Permission.notification.request();
+  }
+
+  // Same as above permission
+  if (await Permission.scheduleExactAlarm.isDenied) {
+    await Permission.scheduleExactAlarm.request();
   }
 
   runApp(

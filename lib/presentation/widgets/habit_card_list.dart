@@ -20,14 +20,15 @@ class HabitCardList extends HookConsumerWidget {
         if (data.isEmpty) {
           return Center(
             child: Column(
-              spacing: 16,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Image.asset(
                   'assets/icons8-bullet-list-100.png',
                   width: 100,
                   color: colorScheme.primary,
                 ),
-                Text(
+                const SizedBox(height: 16),
+                const Text(
                   "You don't have a habit yet, make one now!",
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -54,8 +55,8 @@ class HabitCardList extends HookConsumerWidget {
                 background: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
+                    color: Colors.red,
                   ),
-                  color: Colors.red,
                   alignment: Alignment.centerRight,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: const Icon(
@@ -65,7 +66,7 @@ class HabitCardList extends HookConsumerWidget {
                   ),
                 ),
                 confirmDismiss: (direction) async {
-                  return await showDialog<bool>(
+                  final result = await showDialog<bool>(
                     context: context,
                     builder: (context) => AlertDialog(
                       title: const Text('Delete Habit'),
@@ -84,19 +85,24 @@ class HabitCardList extends HookConsumerWidget {
                       ],
                     ),
                   );
-                },
-                onDismissed: (direction) async {
-                  // Hapus habit dari database
-                  await database.deleteHabit(habitData.habit.id);
 
-                  // Refresh data setelah penghapusan
-                  ref.invalidate(habitsForDateProvider(selectedDate));
+                  if (result == true) {
+                    // Delete the habit from database first
+                    await database.deleteHabit(habitData.habit.id);
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('${habitData.habit.title} deleted'),
-                    ),
-                  );
+                    // Then invalidate the provider to refresh the UI
+                    ref.invalidate(habitsForDateProvider(selectedDate));
+
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('${habitData.habit.title} deleted'),
+                        ),
+                      );
+                    }
+                  }
+
+                  return result;
                 },
                 child: HabitCard(
                   title: habitData.habit.title,

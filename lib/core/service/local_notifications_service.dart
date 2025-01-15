@@ -1,5 +1,4 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -39,11 +38,6 @@ class LocalNotificationService {
     required String description,
     required String reminderTime,
   }) async {
-    // Pastikan izin diberikan untuk Android 12+
-    if (await Permission.scheduleExactAlarm.isDenied) {
-      await Permission.scheduleExactAlarm.request();
-    }
-
     // Parse waktu reminder
     final timeParts = reminderTime.split(':');
     final hour = int.parse(timeParts[0]);

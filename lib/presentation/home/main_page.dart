@@ -4,12 +4,16 @@ import 'package:habit_tracker/presentation/habit/create_habit_page.dart';
 import 'package:habit_tracker/presentation/home/home_page.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+// Define a provider for managing the selected index
+final selectedIndexProvider = StateProvider<int>((ref) => 0);
+
 class MainPage extends HookConsumerWidget {
   const MainPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    int selectedIndex = 0;
+    // Watch the selected index state
+    final selectedIndex = ref.watch(selectedIndexProvider);
 
     final List<Widget> pages = [
       HomePage(),
@@ -18,19 +22,12 @@ class MainPage extends HookConsumerWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'The Habits',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
       body: pages[selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: selectedIndex,
         onTap: (index) {
-          selectedIndex = index;
+          // Update the selected index state
+          ref.read(selectedIndexProvider.notifier).state = index;
         },
         showSelectedLabels: false,
         showUnselectedLabels: false,

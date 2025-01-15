@@ -41,8 +41,31 @@ class CreateHabitPage extends HookConsumerWidget {
 
       await ref.read(databaseProvider).createHabit(habit);
 
+      // Clear the form
+      titleController.clear();
+      descriptionController.clear();
+      isDaily.value = true;
+      hasReminder.value = false;
+      reminderTime.value = const TimeOfDay(hour: 10, minute: 0);
+
       if (context.mounted) {
-        Navigator.of(context).pop();
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Success'),
+              content: const Text('Habit successfully created!'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
       }
     }
 
