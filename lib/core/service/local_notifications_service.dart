@@ -84,7 +84,7 @@ class LocalNotificationService {
 
     await _notifications.zonedSchedule(
       habitId,
-      'Habit Reminder: $title',
+      title,
       description,
       tz.TZDateTime.from(scheduledDate, tz.local),
       details,
