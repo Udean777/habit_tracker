@@ -26,8 +26,26 @@ class MainPage extends HookConsumerWidget {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: selectedIndex,
         onTap: (index) {
-          // Update the selected index state
-          ref.read(selectedIndexProvider.notifier).state = index;
+          if (index == 1) {
+            // Navigate to CreateHabitPage
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const CreateHabitPage(),
+              ),
+            );
+          } else if (index == 2) {
+            // Navigate to ChatPage
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ChatPage(),
+              ),
+            );
+          } else {
+            // Update the selected index state
+            ref.read(selectedIndexProvider.notifier).state = index;
+          }
         },
         showSelectedLabels: false,
         showUnselectedLabels: false,

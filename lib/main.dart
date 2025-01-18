@@ -6,11 +6,13 @@ import 'package:habit_tracker/core/service/local_notifications_service.dart';
 import 'package:habit_tracker/presentation/main_page.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final database = AppDatabase();
   await LocalNotificationService().initialize();
+  await dotenv.load(fileName: ".env");
 
   // Placed here so users can allow it the first time they open the app
   if (await Permission.notification.isDenied) {
