@@ -30,12 +30,13 @@ class HabitCardList extends HookConsumerWidget {
                 const SizedBox(height: 16),
                 const Text(
                   "You don't have a habit yet, make one now!",
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
+                  textAlign: TextAlign.center,
                 ),
               ],
             ),

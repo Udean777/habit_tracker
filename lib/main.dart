@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:habit_tracker/core/database/database.dart';
 import 'package:habit_tracker/core/providers/database_provider.dart';
 import 'package:habit_tracker/core/service/local_notifications_service.dart';
-import 'package:habit_tracker/presentation/home/main_page.dart';
+import 'package:habit_tracker/presentation/main_page.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 

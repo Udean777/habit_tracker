@@ -26,9 +26,17 @@ class HabitCard extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
 
+    // Checking is today is really today
+    bool isToday(DateTime date) {
+      final now = DateTime.now();
+      return date.year == now.year &&
+          date.month == now.month &&
+          date.day == now.day;
+    }
+
     Future<void> onComplete() async {
       // Checking if it's today, if it's today, then you may pass
-      if (date.isAtSameMomentAs(DateTime.now())) {
+      if (isToday(date)) {
         await ref.read(databaseProvider).completeHabit(habitId, date);
 
         // Adding if statement, so there's different snackbar when
