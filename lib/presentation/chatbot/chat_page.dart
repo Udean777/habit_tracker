@@ -360,7 +360,7 @@ class _ChatPageState extends State<ChatPage> {
                 text: TextSpan(
                   children: [
                     TextSpan(
-                      text: 'Hello Sajudin,\n',
+                      text: 'Hello, i\'m Gemini\n',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
