@@ -1,5 +1,5 @@
 import 'package:google_generative_ai/google_generative_ai.dart';
-import 'package:habit_tracker/presentation/chatbot/models/chat_message.dart';
+import 'package:the_habits/presentation/chatbot/models/chat_message.dart';
 
 class ChatHistory {
   final String id;

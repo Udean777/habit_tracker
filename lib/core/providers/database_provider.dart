@@ -1,4 +1,4 @@
-import 'package:habit_tracker/core/database/database.dart';
+import 'package:the_habits/core/database/database.dart';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 

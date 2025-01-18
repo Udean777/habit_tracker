@@ -1,4 +1,4 @@
-import 'package:habit_tracker/presentation/chatbot/models/chat_models.dart';
+import 'package:the_habits/presentation/chatbot/models/chat_models.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 /// The `ChatRepository` class provides methods to interact with the Hive database

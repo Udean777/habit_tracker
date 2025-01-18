@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:habit_tracker/presentation/chatbot/chat_page.dart';
-import 'package:habit_tracker/presentation/habit/create_habit_page.dart';
-import 'package:habit_tracker/presentation/home/home_page.dart';
+import 'package:the_habits/presentation/chatbot/chat_page.dart';
+import 'package:the_habits/presentation/habit/create_habit_page.dart';
+import 'package:the_habits/presentation/home/home_page.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 // Define a provider for managing the selected index

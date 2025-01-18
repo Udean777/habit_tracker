@@ -1,11 +1,10 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
-import 'package:habit_tracker/presentation/chatbot/models/chat_history.dart';
-import 'package:habit_tracker/presentation/chatbot/models/chat_message.dart';
-import 'package:habit_tracker/presentation/chatbot/models/chat_models.dart';
-import 'package:habit_tracker/presentation/chatbot/repositories/chat_repository.dart';
+import 'package:the_habits/presentation/chatbot/models/chat_history.dart';
+import 'package:the_habits/presentation/chatbot/models/chat_message.dart';
+import 'package:the_habits/presentation/chatbot/models/chat_models.dart';
+import 'package:the_habits/presentation/chatbot/repositories/chat_repository.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 

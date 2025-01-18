@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:habit_tracker/core/providers/database_provider.dart';
+import 'package:the_habits/core/providers/database_provider.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class HabitCard extends HookConsumerWidget {

@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
-import 'package:habit_tracker/core/database/database.dart';
-import 'package:habit_tracker/core/providers/database_provider.dart';
+import 'package:the_habits/core/database/database.dart';
+import 'package:the_habits/core/providers/database_provider.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
@@ -60,7 +60,13 @@ class CreateHabitPage extends HookConsumerWidget {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: const Text('OK'),
+                  child: const Text('Close'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                  },
+                  child: const Text('Home'),
                 ),
               ],
             );
