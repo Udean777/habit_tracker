@@ -149,7 +149,17 @@ class AppDatabase extends _$AppDatabase {
     // Mengamati habit dengan tanggal tertentu
     final habitsStream = watchHabitsWithDate(date);
 
-    // Menggabungkan dua stream untuk mendapatkan ringkasan harian
+    /// Menggabungkan nilai terbaru dari `completionsStream` dan `habitsStream`
+    /// menggunakan metode `Rx.combineLatest2` dari paket rxdart.
+    ///
+    /// Ini digunakan untuk mendengarkan perubahan pada kedua stream secara bersamaan dan
+    /// melakukan tindakan setiap kali salah satu stream mengeluarkan nilai baru. Hasil gabungan
+    /// adalah tuple yang berisi panjang dari daftar `completions` dan `habits`,
+    /// yang dapat digunakan untuk memperbarui UI atau melakukan logika lain berdasarkan
+    /// keadaan saat ini dari stream-stream ini.
+    ///
+    /// Menggunakan rxdart di sini memungkinkan pemrograman yang efisien dan reaktif, membuatnya
+    /// lebih mudah untuk mengelola dan merespons aliran data asinkron dalam aplikasi Flutter.
     return Rx.combineLatest2(completionsStream, habitsStream,
         (completions, habits) => (completions.length, habits.length));
   }

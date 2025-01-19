@@ -5,7 +5,9 @@ import 'package:the_habits/presentation/chatbot/models/chat_history.dart';
 import 'package:the_habits/presentation/chatbot/models/chat_message.dart';
 import 'package:the_habits/presentation/chatbot/models/chat_models.dart';
 import 'package:the_habits/presentation/chatbot/repositories/chat_repository.dart';
-import 'package:intl/intl.dart';
+import 'package:the_habits/presentation/chatbot/widgets/bottom_bar.dart';
+import 'package:the_habits/presentation/chatbot/widgets/main_content.dart';
+import 'package:the_habits/presentation/chatbot/widgets/sidebar.dart';
 import 'package:uuid/uuid.dart';
 
 class ChatPage extends StatefulWidget {
@@ -16,24 +18,25 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  /// A controller for the text input field.
+  /// Kontroler untuk field input teks.
   final TextEditingController _textController = TextEditingController();
 
-  /// A list to store the chat histories.
+  /// Daftar untuk menyimpan riwayat chat.
   final List<ChatHistory> _chatHistories = [];
 
-  /// The currently selected chat history.
+  /// Riwayat chat yang saat ini dipilih.
   ChatHistory? _selectedChat;
 
-  /// A flag to indicate if a loading process is ongoing.
+  /// Flag untuk menunjukkan apakah proses loading sedang berlangsung.
   bool _isLoading = false;
 
-  /// A flag to indicate if the sidebar is open.
+  /// Flag untuk menunjukkan apakah sidebar terbuka.
   bool _isSidebarOpen = false;
 
-  /// The repository for managing chat data.
+  /// Repository untuk mengelola data chat.
   late final ChatRepository _chatRepository;
 
+  /// Daftar model yang tersedia.
   final List<Map<String, String>> _models = [
     {
       'id': 'gemini-2.0-flash-exp',
@@ -45,83 +48,126 @@ class _ChatPageState extends State<ChatPage> {
     },
   ];
 
+  /// Model yang dipilih saat ini.
   String _selectedModel = 'gemini-2.0-flash-exp';
 
+  /// Metode yang dipanggil saat widget dihapus dari tree widget.
   @override
   void dispose() {
-    /// Disposes the text controller when the widget is removed from the widget tree.
+    /// Menghapus kontroler teks saat widget dihapus dari tree widget.
     _textController.dispose();
     super.dispose();
   }
 
-  /// The generative model used for chat responses.
+  /// Model generatif yang digunakan untuk respon chat.
   final model = GenerativeModel(
     model: 'gemini-2.0-flash-exp',
     apiKey: dotenv.env['GEMINI_API_KEY']!,
   );
 
-  /// The chat session for the current chat.
+  /// Sesi chat untuk chat saat ini.
   late final ChatSession chat;
 
+  /// Metode yang dipanggil saat widget pertama kali dibuat.
   @override
   void initState() {
     super.initState();
 
-    /// Initializes the chat repository and loads chats when the widget is first created.
+    /// Inisialisasi repository chat dan memuat chat saat widget pertama kali dibuat.
     _initializeRepository();
     _initializeModel();
   }
 
+  /// Metode untuk inisialisasi model.
   void _initializeModel() {}
 
+  /// Metode yang dipanggil saat model berubah.
+  /// [newModel] adalah model baru yang dipilih.
+  /// Jika [newModel] tidak null, maka akan memanggil setState untuk memperbarui _selectedModel
+  /// dan menginisialisasi ulang model dengan pilihan baru.
   void _onModelChanged(String? newModel) {
     if (newModel != null) {
       setState(() {
         _selectedModel = newModel;
-        _initializeModel(); // Reinitialize model with the new selection
+        _initializeModel(); // Inisialisasi ulang model dengan pilihan baru
       });
     }
   }
 
-  /// Initializes the chat repository and loads chat histories.
+  /// Inisialisasi repository chat dan memuat riwayat chat.
+  ///
+  /// Fungsi ini menginisialisasi objek `ChatRepository` dan memanggil metode `init`
+  /// untuk mempersiapkan repository. Setelah itu, fungsi ini memuat riwayat chat
+  /// dengan memanggil `_loadChats()`. Jika riwayat chat kosong, maka fungsi ini
+  /// akan membuat chat baru dengan memanggil `_createNewChat()`. Jika tidak kosong,
+  /// fungsi ini akan mengatur state dengan memilih chat pertama dari riwayat chat.
   Future<void> _initializeRepository() async {
+    // Membuat instance baru dari ChatRepository
     _chatRepository = ChatRepository();
+
+    // Memanggil metode init() untuk mempersiapkan repository
     await _chatRepository.init();
+
+    // Memuat riwayat chat dengan memanggil _loadChats()
     await _loadChats();
+
+    // Mengecek apakah riwayat chat kosong
     if (_chatHistories.isEmpty) {
+      // Jika kosong, membuat chat baru dengan memanggil _createNewChat()
       _createNewChat();
     } else {
+      // Jika tidak kosong, mengatur state dengan memilih chat pertama dari riwayat chat
       setState(() {
         _selectedChat = _chatHistories.first;
       });
     }
   }
 
-  /// Loads chat histories from the repository.
+  /// Memuat riwayat chat dari repository.
+  ///
+  /// Fungsi ini mengambil semua chat yang tersimpan dari repository
+  /// dan memperbarui state dengan riwayat chat yang baru.
+  ///
+  /// - Mengambil semua chat yang tersimpan dari `_chatRepository`.
+  /// - Menghapus semua riwayat chat yang ada di `_chatHistories`.
+  /// - Menambahkan setiap chat yang diambil ke dalam `_chatHistories`
+  ///   dengan mapping pesan-pesan yang ada di dalamnya.
+  ///
+  /// Fungsi ini bersifat asynchronous dan menggunakan `setState` untuk
+  /// memperbarui UI setelah data diambil.
   Future<void> _loadChats() async {
+    // Mengambil semua chat yang tersimpan dari repository secara asynchronous.
     final savedChats = await _chatRepository.getAllChats();
+
+    // Memperbarui state dengan menggunakan setState.
     setState(() {
+      // Menghapus semua riwayat chat yang ada di _chatHistories.
       _chatHistories.clear();
+
+      // Melakukan iterasi pada setiap chat yang diambil dari repository.
       for (var savedChat in savedChats) {
+        // Menambahkan setiap chat ke dalam _chatHistories dengan mapping pesan-pesan yang ada di dalamnya.
         _chatHistories.add(ChatHistory(
-          id: savedChat.id,
-          title: savedChat.title,
-          createdAt: savedChat.createdAt,
+          id: savedChat.id, // Menetapkan id chat.
+          title: savedChat.title, // Menetapkan judul chat.
+          createdAt: savedChat.createdAt, // Menetapkan waktu pembuatan chat.
           messages: savedChat.messages
               .map((m) => ChatMessage(
-                    content: m.content,
-                    isUserMessage: m.isUserMessage,
-                    timestamp: m.timestamp,
+                    content: m.content, // Menetapkan isi pesan.
+                    isUserMessage: m
+                        .isUserMessage, // Menetapkan apakah pesan dari pengguna.
+                    timestamp: m.timestamp, // Menetapkan waktu pesan.
                   ))
-              .toList(),
-          model: model,
+              .toList(), // Mengubah hasil map menjadi daftar.
+          model: model, // Menetapkan model chat.
         ));
       }
     });
   }
 
-  /// Creates a new chat history and saves it to the repository.
+  /// Membuat riwayat chat baru dan menyimpannya ke repository.
   Future<void> _createNewChat() async {
+    /// Membuat instance baru dari ChatHistory dengan ID unik, judul 'New Chat', waktu pembuatan saat ini, pesan kosong, dan model yang diberikan.
     final newChat = ChatHistory(
       id: const Uuid().v4(),
       title: 'New Chat',
@@ -130,6 +176,7 @@ class _ChatPageState extends State<ChatPage> {
       model: model,
     );
 
+    /// Membuat instance baru dari ChatHistoryHive dengan ID, judul, waktu pembuatan, dan pesan kosong dari newChat.
     final newChatHive = ChatHistoryHive(
       id: newChat.id,
       title: newChat.title,
@@ -137,35 +184,44 @@ class _ChatPageState extends State<ChatPage> {
       messages: [],
     );
 
+    /// Menyimpan newChatHive ke dalam repository chat.
     await _chatRepository.saveChat(newChatHive);
 
+    /// Memperbarui state dengan menambahkan newChat ke dalam daftar _chatHistories dan mengatur _selectedChat menjadi newChat.
     setState(() {
       _chatHistories.add(newChat);
       _selectedChat = newChat;
     });
   }
 
-  /// Sends a message and handles the response from the chat model.
+  /// Mengirim pesan dan menangani respon dari model chat.
   Future<void> _sendMessage() async {
+    // Jika teks pesan kosong atau tidak ada chat yang dipilih, keluar dari fungsi
     if (_textController.text.trim().isEmpty || _selectedChat == null) return;
 
+    // Mengambil teks pesan dari text controller
     final userMessage = _textController.text;
+
+    // Membuat objek pesan baru dari pengguna
     final newMessage = ChatMessage(
       content: userMessage,
       isUserMessage: true,
     );
 
+    // Membuat objek pesan baru untuk disimpan di Hive
     final newMessageHive = ChatMessageHive(
       content: userMessage,
       isUserMessage: true,
       timestamp: DateTime.now(),
     );
 
+    // Memperbarui state untuk menambahkan pesan baru dan mengatur loading
     setState(() {
       _selectedChat!.messages.add(newMessage);
       _isLoading = true;
       _textController.clear();
 
+      // Jika ini adalah pesan pertama dalam chat, perbarui judul chat
       if (_selectedChat!.messages.length == 1) {
         _selectedChat!.title = userMessage.length > 30
             ? '${userMessage.substring(0, 30)}...'
@@ -175,62 +231,74 @@ class _ChatPageState extends State<ChatPage> {
       }
     });
 
+    // Menambahkan pesan baru ke chat di repository
     await _chatRepository.addMessageToChat(_selectedChat!.id, newMessageHive);
 
     try {
+      // Mengirim pesan ke model chat dan menunggu respon
       final response =
           await _selectedChat!.chat.sendMessage(Content.text(userMessage));
       final responseText = response.text;
 
       if (mounted) {
+        // Membuat objek pesan dari AI berdasarkan respon
         final aiMessage = ChatMessage(
           content: responseText ?? 'No response',
           isUserMessage: false,
         );
 
+        // Membuat objek pesan dari AI untuk disimpan di Hive
         final aiMessageHive = ChatMessageHive(
           content: responseText ?? 'No response',
           isUserMessage: false,
           timestamp: DateTime.now(),
         );
 
+        // Memperbarui state untuk menambahkan pesan dari AI dan mengatur loading
         setState(() {
           _selectedChat!.messages.add(aiMessage);
           _isLoading = false;
         });
 
+        // Menambahkan pesan dari AI ke chat di repository
         await _chatRepository.addMessageToChat(
             _selectedChat!.id, aiMessageHive);
       }
     } catch (e) {
       if (mounted) {
+        // Membuat objek pesan error jika terjadi kesalahan
         final errorMessage = ChatMessage(
           content: 'Error: $e',
           isUserMessage: false,
         );
 
+        // Membuat objek pesan error untuk disimpan di Hive
         final errorMessageHive = ChatMessageHive(
           content: 'Error: $e',
           isUserMessage: false,
           timestamp: DateTime.now(),
         );
 
+        // Memperbarui state untuk menambahkan pesan error dan mengatur loading
         setState(() {
           _selectedChat!.messages.add(errorMessage);
           _isLoading = false;
         });
 
+        // Menambahkan pesan error ke chat di repository
         await _chatRepository.addMessageToChat(
             _selectedChat!.id, errorMessageHive);
       }
     }
   }
 
-  /// Selects a chat history and closes the sidebar.
+  /// Memilih riwayat chat dan menutup sidebar.
   void _selectChat(ChatHistory chatHistory) {
     setState(() {
+      // Mengatur _selectedChat dengan mencari chatHistory yang memiliki id yang sama
       _selectedChat =
           _chatHistories.firstWhere((chat) => chat.id == chatHistory.id);
+      // Menutup sidebar dengan mengatur _isSidebarOpen menjadi false
       _isSidebarOpen = false;
     });
   }
@@ -322,14 +390,17 @@ class _ChatPageState extends State<ChatPage> {
         ),
         body: Stack(
           children: [
-            // Main content
+            // Ini Main content
             AnimatedPadding(
               padding: EdgeInsets.only(left: _isSidebarOpen ? 200 : 0),
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
-              child: _buildMainContent(),
+              child: MainContent(
+                isLoading: _isLoading,
+                selectedChat: _selectedChat,
+              ),
             ),
-            // Sidebar
+            // Ini Sidebar
             AnimatedPositioned(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
@@ -339,213 +410,21 @@ class _ChatPageState extends State<ChatPage> {
               child: Container(
                 width: 200,
                 color: Colors.grey[900],
-                child: _buildSidebar(),
+                child: Sidebar(
+                  chatHistories: _chatHistories,
+                  onCreateNewChat: _createNewChat,
+                  onSelectChat: _selectChat,
+                  selectedChat: _selectedChat,
+                ),
               ),
             ),
           ],
         ),
-        bottomNavigationBar: _buildBottomBar(),
-      ),
-    );
-  }
-
-  Widget _buildMainContent() {
-    return Column(
-      children: [
-        if (_selectedChat == null || _selectedChat!.messages.isEmpty)
-          Expanded(
-            child: Center(
-              child: RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: 'Hello, i\'m Gemini\n',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        foreground: Paint()
-                          ..shader = LinearGradient(
-                            colors: [Colors.blue, Colors.purple],
-                          ).createShader(
-                            Rect.fromLTWH(0, 0, 200, 70),
-                          ),
-                      ),
-                    ),
-                    TextSpan(
-                      text: 'What you wanna ask?',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        foreground: Paint()
-                          ..shader = LinearGradient(
-                            colors: [Colors.blue, Colors.purple],
-                          ).createShader(
-                            Rect.fromLTWH(0, 0, 200, 70),
-                          ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          )
-        else
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _selectedChat!.messages.length,
-              itemBuilder: (context, index) {
-                final message = _selectedChat!.messages[index];
-                return Align(
-                  alignment: message.isUserMessage
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
-                  child: Container(
-                    constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width * 0.7,
-                    ),
-                    margin: const EdgeInsets.only(bottom: 8),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: message.isUserMessage
-                          ? Colors.blue
-                          : Colors.grey[900],
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: message.isUserMessage
-                          ? CrossAxisAlignment.end
-                          : CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          message.content,
-                          style: const TextStyle(
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          message.timestamp.toString().substring(11, 16),
-                          style: TextStyle(
-                            color: Colors.grey[400],
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        if (_isLoading)
-          const Padding(
-            padding: EdgeInsets.all(8.0),
-            child: CircularProgressIndicator(),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildSidebar() {
-    return Container(
-      width: 300,
-      color: Colors.grey[900],
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              onPressed: () {
-                _createNewChat();
-                setState(() {
-                  _isSidebarOpen = false;
-                });
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
-                minimumSize: const Size.fromHeight(45),
-              ),
-              child: const Text('New Chat'),
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _chatHistories.length,
-              itemBuilder: (context, index) {
-                final chat = _chatHistories[index];
-                return ListTile(
-                  title: Text(
-                    chat.title,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: chat.id == _selectedChat?.id
-                          ? FontWeight.bold
-                          : FontWeight.normal,
-                    ),
-                  ),
-                  subtitle: Text(
-                    DateFormat('EEE, M/d/y').format(chat.createdAt),
-                    style: TextStyle(color: Colors.grey[400]),
-                  ),
-                  selected: chat.id == _selectedChat?.id,
-                  selectedTileColor: Colors.white,
-                  onTap: () => _selectChat(chat),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomBar() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _textController,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.grey[900],
-                hintText: 'Ask Gemini',
-                hintStyle: TextStyle(
-                  color: Colors.grey[500],
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-              style: const TextStyle(
-                color: Colors.white,
-              ),
-              onSubmitted: (_) => _sendMessage(),
-            ),
-          ),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: _isLoading ? null : _sendMessage,
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-              ),
-              child: Icon(
-                Icons.send,
-                color: _isLoading ? Colors.grey : Colors.black,
-              ),
-            ),
-          ),
-        ],
+        bottomNavigationBar: BottomBar(
+          isLoading: _isLoading,
+          onSendMessage: _sendMessage,
+          textController: _textController,
+        ),
       ),
     );
   }

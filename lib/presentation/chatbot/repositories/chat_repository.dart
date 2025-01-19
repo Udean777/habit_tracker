@@ -1,12 +1,12 @@
 import 'package:the_habits/presentation/chatbot/models/chat_models.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-/// The `ChatRepository` class provides methods to interact with the Hive database
-/// for storing and retrieving chat history and messages.
+/// Kelas `ChatRepository` menyediakan metode untuk berinteraksi dengan database Hive
+/// untuk menyimpan dan mengambil riwayat chat dan pesan.
 ///
-/// This class uses the Hive package to manage a local database of chat histories.
-/// It includes methods to initialize the database, retrieve all chats, save a chat,
-/// delete a chat, update a chat's title, and add messages to a chat.
+/// Kelas ini menggunakan paket Hive untuk mengelola database lokal riwayat chat.
+/// Ini termasuk metode untuk menginisialisasi database, mengambil semua chat, menyimpan chat,
+/// menghapus chat, memperbarui judul chat, dan menambahkan pesan ke chat.
 
 class ChatRepository {
   static const String chatBoxName =

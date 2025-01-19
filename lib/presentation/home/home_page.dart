@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:the_habits/core/providers/daily_summary_provider.dart';
-import 'package:the_habits/presentation/widgets/daily_summary_card.dart';
-import 'package:the_habits/presentation/widgets/habit_card_list.dart';
-import 'package:the_habits/presentation/widgets/timeline_view.dart';
+import 'package:the_habits/presentation/home/widgets/daily_summary_card.dart';
+import 'package:the_habits/presentation/home/widgets/habit_card_list.dart';
+import 'package:the_habits/presentation/home/widgets/timeline_view.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 

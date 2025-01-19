@@ -3,12 +3,12 @@ class ChatMessage {
   final bool isUserMessage;
   final DateTime timestamp;
 
-  /// Constructor for creating a ChatMessage instance.
+  /// Konstruktor untuk membuat instance ChatMessage.
   ChatMessage({
     required this.content,
     required this.isUserMessage,
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
 
-  /// The [timestamp] parameter is optional and defaults to the current date and time if not provided.
+  /// Parameter [timestamp] bersifat opsional dan secara default diatur ke tanggal dan waktu saat ini jika tidak disediakan.
 }
