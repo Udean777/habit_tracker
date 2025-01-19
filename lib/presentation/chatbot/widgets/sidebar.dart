@@ -20,6 +20,8 @@ class Sidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     void showDeleteConfirmationDialog(BuildContext context, ChatHistory chat) {
       showDialog(
         context: context,
@@ -58,7 +60,7 @@ class Sidebar extends StatelessWidget {
                 onCreateNewChat();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
+                backgroundColor: colorScheme.primary,
                 foregroundColor: Colors.black,
                 minimumSize: const Size.fromHeight(45),
               ),
@@ -76,7 +78,7 @@ class Sidebar extends StatelessWidget {
                   title: Text(
                     chat.title,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: colorScheme.primary,
                       fontWeight: chat.id == selectedChat?.id
                           ? FontWeight.bold
                           : FontWeight.normal,
@@ -87,7 +89,7 @@ class Sidebar extends StatelessWidget {
                     style: TextStyle(color: Colors.grey[400]),
                   ),
                   selected: chat.id == selectedChat?.id,
-                  selectedTileColor: Colors.white,
+                  selectedTileColor: colorScheme.primary,
                   onTap: () => onSelectChat(chat),
                   trailing: PopupMenuButton(
                     onSelected: (value) {
@@ -106,7 +108,7 @@ class Sidebar extends StatelessWidget {
                     ],
                     icon: Icon(
                       Icons.more_horiz,
-                      color: Colors.white,
+                      color: colorScheme.primary,
                     ),
                   ),
                 );

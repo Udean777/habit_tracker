@@ -60,9 +60,9 @@ class HabitCardList extends HookConsumerWidget {
                   ),
                   alignment: Alignment.centerRight,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: const Icon(
+                  child: Icon(
                     Icons.delete,
-                    color: Colors.white,
+                    color: colorScheme.primary,
                     size: 30,
                   ),
                 ),

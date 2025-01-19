@@ -48,7 +48,7 @@ class CreateHabitPage extends HookConsumerWidget {
     }
 
     // Fungsi yang dijalankan ketika tombol ditekan
-    Future<void> onPressed() async {
+    Future<void> onPressed(ColorScheme colorScheme) async {
       // Jika judul kosong, fungsi akan berhenti
       if (titleController.text.isEmpty) {
         return;
@@ -79,22 +79,42 @@ class CreateHabitPage extends HookConsumerWidget {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Text('Success'),
-              content: const Text('Habit successfully created!'),
+              title: Text(
+                'Success',
+                style: TextStyle(
+                  color: colorScheme.primary,
+                ),
+              ),
+              content: Text(
+                'Habit successfully created!',
+                style: TextStyle(
+                  color: colorScheme.primary,
+                ),
+              ),
               actions: [
                 // Tombol untuk menutup dialog
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: const Text('Close'),
+                  child: Text(
+                    'Close',
+                    style: TextStyle(
+                      color: colorScheme.primary,
+                    ),
+                  ),
                 ),
                 // Tombol untuk kembali ke halaman utama
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).popUntil((route) => route.isFirst);
                   },
-                  child: const Text('Home'),
+                  child: Text(
+                    'Home',
+                    style: TextStyle(
+                      color: colorScheme.primary,
+                    ),
+                  ),
                 ),
               ],
             );
@@ -124,25 +144,34 @@ class CreateHabitPage extends HookConsumerWidget {
               decoration: InputDecoration(
                 hintText: 'Title',
               ),
+              style: TextStyle(
+                color: colorScheme.primary,
+              ),
             ),
             TextFormField(
               controller: descriptionController,
               decoration: InputDecoration(
                 hintText: 'Description',
               ),
+              style: TextStyle(
+                color: colorScheme.primary,
+              ),
             ),
-            Text('Goal'),
             Row(
               spacing: 4,
               children: [
-                Text('Daily'),
+                Text(
+                  'Daily',
+                  style: TextStyle(
+                    color: colorScheme.primary,
+                  ),
+                ),
                 Switch(
                   value: isDaily.value,
                   onChanged: (value) => isDaily.value = value,
                 ),
               ],
             ),
-            Text('Reminder'),
             SwitchListTile(
               value: hasReminder.value,
               onChanged: (value) {
@@ -160,12 +189,19 @@ class CreateHabitPage extends HookConsumerWidget {
                   });
                 }
               },
-              title: Text('Has Reminder'),
+              title: Text(
+                'Has Reminder',
+                style: TextStyle(
+                  color: colorScheme.primary,
+                ),
+              ),
               subtitle: hasReminder.value
                   ? Text(
                       convertTimeOfDayTo24Hour(reminderTime.value) ??
                           'No time selected yet',
-                    )
+                      style: TextStyle(
+                        color: colorScheme.primary,
+                      ))
                   : null,
             ),
             SizedBox(
@@ -175,7 +211,7 @@ class CreateHabitPage extends HookConsumerWidget {
                   backgroundColor: colorScheme.primary,
                   foregroundColor: colorScheme.onPrimary,
                 ),
-                onPressed: onPressed,
+                onPressed: () => onPressed(colorScheme),
                 child: Text('Create Habit'),
               ),
             ),

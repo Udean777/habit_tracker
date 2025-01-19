@@ -100,6 +100,7 @@ class HabitCard extends HookConsumerWidget {
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
+                        color: colorScheme.primary,
                       ),
                     ),
                     const SizedBox(
@@ -110,6 +111,7 @@ class HabitCard extends HookConsumerWidget {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
+                        color: colorScheme.primary,
                       ),
                     ),
                     const SizedBox(
@@ -125,7 +127,12 @@ class HabitCard extends HookConsumerWidget {
                           const SizedBox(
                             width: 4,
                           ),
-                          Text('$streak days!')
+                          Text(
+                            '$streak days!',
+                            style: TextStyle(
+                              color: colorScheme.primary,
+                            ),
+                          )
                         ],
                       )
                     ]

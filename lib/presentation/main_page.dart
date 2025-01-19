@@ -12,6 +12,7 @@ class MainPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
     // Watch the selected index state
     final selectedIndex = ref.watch(selectedIndexProvider);
 
@@ -55,7 +56,7 @@ class MainPage extends HookConsumerWidget {
               'assets/icons8-home-96.png',
               width: 30,
               height: 30,
-              color: Colors.white,
+              color: colorScheme.primary,
             ),
             label: "Home",
           ),
@@ -64,7 +65,7 @@ class MainPage extends HookConsumerWidget {
               'assets/icons8-add-100.png',
               width: 30,
               height: 30,
-              color: Colors.white,
+              color: colorScheme.primary,
             ),
             label: "Create",
           ),
@@ -73,13 +74,13 @@ class MainPage extends HookConsumerWidget {
               'assets/icons8-chat-96.png',
               width: 30,
               height: 30,
-              color: Colors.white,
+              color: colorScheme.primary,
             ),
             label: "Chat Bot",
           ),
         ],
         backgroundColor: const Color(0xFF000000),
-        selectedItemColor: Colors.white,
+        selectedItemColor: colorScheme.primary,
         unselectedItemColor: Colors.grey,
       ),
     );

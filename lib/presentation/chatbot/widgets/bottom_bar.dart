@@ -14,6 +14,8 @@ class BottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Row(
@@ -33,8 +35,8 @@ class BottomBar extends StatelessWidget {
                   borderSide: BorderSide.none,
                 ),
               ),
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: colorScheme.primary,
               ),
               onSubmitted: (_) => onSendMessage(),
             ),
@@ -44,9 +46,9 @@ class BottomBar extends StatelessWidget {
             onTap: isLoading ? null : onSendMessage as GestureTapCallback,
             child: Container(
               padding: const EdgeInsets.all(12),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white,
+                color: colorScheme.primary,
               ),
               child: Icon(
                 Icons.send,

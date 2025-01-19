@@ -25,6 +25,8 @@ class _SplashPageState extends State<SplashPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -44,14 +46,14 @@ class _SplashPageState extends State<SplashPage> {
               'The Habits',
               style: TextStyle(
                 fontSize: 24,
-                color: Colors.white,
+                color: colorScheme.primary,
                 fontWeight: FontWeight.bold,
               ),
             ),
             SizedBox(
               width: 100,
               child: LinearProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
               ),
             ),
           ],

@@ -1,5 +1,6 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:the_habits/core/database/database.dart';
 import 'package:the_habits/core/providers/chat_repository_provider.dart';
 import 'package:the_habits/core/providers/database_provider.dart';
@@ -35,8 +36,7 @@ void main() async {
     ProviderScope(
       overrides: [
         databaseProvider.overrideWithValue(database),
-        chatRepositoryProvider
-            .overrideWithValue(chatRepository), // Override provider
+        chatRepositoryProvider.overrideWithValue(chatRepository),
       ],
       child: const MyApp(),
     ),
@@ -53,6 +53,9 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       darkTheme: FlexThemeData.dark(
         scheme: FlexScheme.blackWhite,
+        textTheme: GoogleFonts.plusJakartaSansTextTheme(
+          Theme.of(context).textTheme,
+        ),
       ),
       themeMode: ThemeMode.dark,
       home: const SplashPage(),
