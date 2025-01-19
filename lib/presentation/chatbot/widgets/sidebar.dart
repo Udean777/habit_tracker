@@ -7,6 +7,7 @@ class Sidebar extends StatelessWidget {
   final ChatHistory? selectedChat;
   final Function(ChatHistory) onSelectChat;
   final Function onCreateNewChat;
+  final Function(String) onDeleteChat;
 
   const Sidebar({
     super.key,
@@ -14,10 +15,37 @@ class Sidebar extends StatelessWidget {
     required this.selectedChat,
     required this.onSelectChat,
     required this.onCreateNewChat,
+    required this.onDeleteChat,
   });
 
   @override
   Widget build(BuildContext context) {
+    void showDeleteConfirmationDialog(BuildContext context, ChatHistory chat) {
+      showDialog(
+        context: context,
+        builder: (cnotext) => AlertDialog(
+          title: Text('Delete Chat'),
+          content: Text('Are you sure you want to delete this chat?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                onDeleteChat(chat.id);
+                Navigator.of(context).pop();
+              },
+              child: Text(
+                'Delete',
+                style: TextStyle(color: Colors.red),
+              ),
+            )
+          ],
+        ),
+      );
+    }
+
     return Container(
       width: 300,
       color: Colors.grey[900],
@@ -61,6 +89,26 @@ class Sidebar extends StatelessWidget {
                   selected: chat.id == selectedChat?.id,
                   selectedTileColor: Colors.white,
                   onTap: () => onSelectChat(chat),
+                  trailing: PopupMenuButton(
+                    onSelected: (value) {
+                      if (value == 'delete') {
+                        showDeleteConfirmationDialog(context, chat);
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: ListTile(
+                          leading: Icon(Icons.delete, color: Colors.red),
+                          title: Text('Delete Chat'),
+                        ),
+                      ),
+                    ],
+                    icon: Icon(
+                      Icons.more_horiz,
+                      color: Colors.white,
+                    ),
+                  ),
                 );
               },
             ),
