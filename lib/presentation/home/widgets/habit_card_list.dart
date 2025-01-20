@@ -50,6 +50,17 @@ class HabitCardList extends HookConsumerWidget {
             itemBuilder: (context, index) {
               final habitData = data[index];
 
+              TimeOfDay parseTimeOfDay(String time) {
+                final parts = time.split(':');
+
+                return TimeOfDay(
+                  hour: int.parse(parts[0]),
+                  minute: int.parse(
+                    parts[1],
+                  ),
+                );
+              }
+
               return Dismissible(
                 key: ValueKey(habitData.habit.id),
                 direction: DismissDirection.endToStart,
@@ -113,6 +124,7 @@ class HabitCardList extends HookConsumerWidget {
                   isCompleted: habitData.isCompleted,
                   date: selectedDate,
                   description: habitData.habit.description!,
+                  reminderTime: parseTimeOfDay(habitData.habit.reminderTime!),
                 ),
               );
             },

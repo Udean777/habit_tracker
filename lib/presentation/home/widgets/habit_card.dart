@@ -10,6 +10,7 @@ class HabitCard extends HookConsumerWidget {
   final bool isCompleted;
   final DateTime date;
   final String description;
+  final TimeOfDay reminderTime;
 
   const HabitCard({
     super.key,
@@ -20,6 +21,7 @@ class HabitCard extends HookConsumerWidget {
     required this.isCompleted,
     required this.date,
     required this.description,
+    required this.reminderTime,
   });
 
   @override
@@ -63,6 +65,13 @@ class HabitCard extends HookConsumerWidget {
           );
         }
       }
+    }
+
+    String formatReminderTime(TimeOfDay time) {
+      final hour = time.hour.toString().padLeft(2, '0');
+      final minute = time.minute.toString().padLeft(2, '0');
+
+      return '$hour:$minute';
     }
 
     return Container(
@@ -117,20 +126,41 @@ class HabitCard extends HookConsumerWidget {
                     const SizedBox(
                       height: 8,
                     ),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.access_time,
+                          color: colorScheme.primary,
+                        ),
+                        const SizedBox(
+                          width: 4,
+                        ),
+                        Text(
+                          'Reminder: ${formatReminderTime(reminderTime)}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 8,
+                    ),
                     if (streak > 0) ...[
                       Row(
                         children: [
                           Icon(
                             Icons.local_fire_department,
-                            color: colorScheme.primary,
+                            color: Color(0xFFFF4A00),
                           ),
                           const SizedBox(
                             width: 4,
                           ),
                           Text(
-                            '$streak days!',
+                            '$streak days streak!',
                             style: TextStyle(
-                              color: colorScheme.primary,
+                              color: Color(0xFFFF4A00),
                             ),
                           )
                         ],
