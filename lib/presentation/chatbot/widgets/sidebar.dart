@@ -25,13 +25,22 @@ class Sidebar extends StatelessWidget {
     void showDeleteConfirmationDialog(BuildContext context, ChatHistory chat) {
       showDialog(
         context: context,
-        builder: (cnotext) => AlertDialog(
-          title: Text('Delete Chat'),
-          content: Text('Are you sure you want to delete this chat?'),
+        builder: (context) => AlertDialog(
+          title: Text(
+            'Delete Chat',
+            style: TextStyle(color: colorScheme.primary),
+          ),
+          content: Text(
+            'Are you sure you want to delete this chat?',
+            style: TextStyle(color: colorScheme.primary),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancel'),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: colorScheme.primary),
+              ),
             ),
             TextButton(
               onPressed: () {

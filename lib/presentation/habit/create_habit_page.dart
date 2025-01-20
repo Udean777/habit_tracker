@@ -20,7 +20,7 @@ class CreateHabitPage extends HookConsumerWidget {
     final descriptionController = useTextEditingController();
 
     // Menginisialisasi state untuk menentukan apakah kebiasaan bersifat harian
-    final isDaily = useState(true);
+    // final isDaily = useState(true);
 
     // Menginisialisasi state untuk menentukan apakah ada pengingat
     final hasReminder = useState(false);
@@ -58,7 +58,7 @@ class CreateHabitPage extends HookConsumerWidget {
       final habit = HabitsCompanion.insert(
         title: titleController.text,
         description: drift.Value(descriptionController.text),
-        isDaily: drift.Value(isDaily.value),
+        // isDaily: drift.Value(isDaily.value),
         reminderTime: drift.Value(convertTimeOfDayTo24Hour(reminderTime.value)),
         createdAt: drift.Value(DateTime.now()),
       );
@@ -69,7 +69,7 @@ class CreateHabitPage extends HookConsumerWidget {
       // Mengosongkan form setelah berhasil menyimpan
       titleController.clear();
       descriptionController.clear();
-      isDaily.value = true;
+      // isDaily.value = true;
       hasReminder.value = false;
       reminderTime.value = const TimeOfDay(hour: 10, minute: 0);
 
@@ -157,21 +157,21 @@ class CreateHabitPage extends HookConsumerWidget {
                 color: colorScheme.primary,
               ),
             ),
-            Row(
-              spacing: 4,
-              children: [
-                Text(
-                  'Daily',
-                  style: TextStyle(
-                    color: colorScheme.primary,
-                  ),
-                ),
-                Switch(
-                  value: isDaily.value,
-                  onChanged: (value) => isDaily.value = value,
-                ),
-              ],
-            ),
+            // Row(
+            //   spacing: 4,
+            //   children: [
+            //     Text(
+            //       'Daily',
+            //       style: TextStyle(
+            //         color: colorScheme.primary,
+            //       ),
+            //     ),
+            //     Switch(
+            //       value: isDaily.value,
+            //       onChanged: (value) => isDaily.value = value,
+            //     ),
+            //   ],
+            // ),
             SwitchListTile(
               value: hasReminder.value,
               onChanged: (value) {
@@ -201,18 +201,51 @@ class CreateHabitPage extends HookConsumerWidget {
                           'No time selected yet',
                       style: TextStyle(
                         color: colorScheme.primary,
-                      ))
+                      ),
+                    )
                   : null,
             ),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colorScheme.primary,
-                  foregroundColor: colorScheme.onPrimary,
+
+            GestureDetector(
+              onTap: () => onPressed(colorScheme),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                onPressed: () => onPressed(colorScheme),
-                child: Text('Create Habit'),
+                child: Center(
+                  child: Text(
+                    'Create Habit',
+                    style: TextStyle(
+                      color: colorScheme.onPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            GestureDetector(
+              onTap: () => {},
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.blue, Colors.purple],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Text(
+                    'Create Habit with AI✨',
+                    style: TextStyle(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
               ),
             ),
           ],

@@ -81,18 +81,28 @@ class HabitCardList extends HookConsumerWidget {
                   final result = await showDialog<bool>(
                     context: context,
                     builder: (context) => AlertDialog(
-                      title: const Text('Delete Habit'),
-                      content: const Text(
+                      title: Text(
+                        'Delete Habit',
+                        style: TextStyle(color: colorScheme.primary),
+                      ),
+                      content: Text(
                         'Are you sure you want to delete this habit?',
+                        style: TextStyle(color: colorScheme.primary),
                       ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(false),
-                          child: const Text('Cancel'),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(color: colorScheme.primary),
+                          ),
                         ),
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(true),
-                          child: const Text('Delete'),
+                          child: Text(
+                            'Delete',
+                            style: TextStyle(color: colorScheme.primary),
+                          ),
                         ),
                       ],
                     ),

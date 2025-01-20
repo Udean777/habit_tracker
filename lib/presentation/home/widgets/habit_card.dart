@@ -74,6 +74,21 @@ class HabitCard extends HookConsumerWidget {
       return '$hour:$minute';
     }
 
+    String getTimeZoneName() {
+      final now = DateTime.now();
+      final timeZoneOffset = now.timeZoneOffset.inHours;
+
+      if (timeZoneOffset == 7) {
+        return 'WIB';
+      } else if (timeZoneOffset == 8) {
+        return 'WITA';
+      } else if (timeZoneOffset == 9) {
+        return 'WIT';
+      } else {
+        return 'Unknown Time Zone';
+      }
+    }
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
@@ -136,7 +151,7 @@ class HabitCard extends HookConsumerWidget {
                           width: 4,
                         ),
                         Text(
-                          'Reminder: ${formatReminderTime(reminderTime)}',
+                          'Reminder: ${formatReminderTime(reminderTime)} ${getTimeZoneName()}',
                           style: TextStyle(
                             fontSize: 14,
                             color: colorScheme.primary,
@@ -158,11 +173,12 @@ class HabitCard extends HookConsumerWidget {
                             width: 4,
                           ),
                           Text(
-                            '$streak days streak!',
+                            '$streak DAYS STREAK!',
                             style: TextStyle(
                               color: Color(0xFFFF4A00),
+                              fontWeight: FontWeight.bold,
                             ),
-                          )
+                          ),
                         ],
                       )
                     ]
@@ -196,7 +212,7 @@ class HabitCard extends HookConsumerWidget {
                     ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),

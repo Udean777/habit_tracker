@@ -310,15 +310,18 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        backgroundColor: Colors.black,
         appBar: AppBar(
-          backgroundColor: Colors.black,
           elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () => setState(() => _isSidebarOpen = !_isSidebarOpen),
-          ),
-          actions: const [Icon(Icons.more_horiz)],
+          // leading: IconButton(
+          //   icon: const Icon(Icons.menu),
+          //   onPressed: () => setState(() => _isSidebarOpen = !_isSidebarOpen),
+          // ),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.menu),
+              onPressed: () => setState(() => _isSidebarOpen = !_isSidebarOpen),
+            ),
+          ],
           title: _buildAppBarTitle(colorScheme),
         ),
         body: Stack(

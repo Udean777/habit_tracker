@@ -26,7 +26,7 @@ class BottomBar extends StatelessWidget {
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Colors.grey[900],
-                hintText: 'Ask Gemini',
+                hintText: 'Ask Gemini✨',
                 hintStyle: TextStyle(
                   color: Colors.grey[500],
                 ),
@@ -48,11 +48,16 @@ class BottomBar extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: colorScheme.primary,
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.blue,
+                    Colors.purple,
+                  ],
+                ),
               ),
               child: Icon(
                 Icons.send,
-                color: isLoading ? Colors.grey : Colors.black,
+                color: isLoading ? Colors.grey : Colors.white,
               ),
             ),
           ),
