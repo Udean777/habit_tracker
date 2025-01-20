@@ -1,13 +1,13 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
+import 'package:the_habits/core/database/chat_database.dart';
 import 'package:the_habits/core/database/database.dart';
-import 'package:the_habits/core/providers/chat_repository_provider.dart';
+import 'package:the_habits/core/providers/chat_provider.dart';
 import 'package:the_habits/core/providers/database_provider.dart';
 import 'package:the_habits/core/service/local_notifications_service.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:the_habits/presentation/chatbot/repositories/chat_repository.dart';
 import 'package:the_habits/presentation/splash/splash_page.dart';
 
 void main() async {
@@ -15,12 +15,9 @@ void main() async {
 
   // Inisialisasi database dan layanan lainnya
   final database = AppDatabase();
+  final chatDatabase = ChatDatabase();
   await LocalNotificationService().initialize();
   await dotenv.load(fileName: ".env");
-
-  // Inisialisasi ChatRepository
-  final chatRepository = ChatRepository();
-  await chatRepository.init();
 
   // Meminta izin notifikasi
   if (await Permission.notification.isDenied) {
@@ -35,7 +32,7 @@ void main() async {
     ProviderScope(
       overrides: [
         databaseProvider.overrideWithValue(database),
-        chatRepositoryProvider.overrideWithValue(chatRepository),
+        chatDatabaseProvider.overrideWithValue(chatDatabase),
       ],
       child: const MyApp(),
     ),

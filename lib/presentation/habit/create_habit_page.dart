@@ -123,6 +123,30 @@ class CreateHabitPage extends HookConsumerWidget {
       }
     }
 
+    String getTimeZoneName() {
+      // Mendapatkan waktu saat ini
+      final now = DateTime.now();
+      // Mendapatkan offset zona waktu dalam jam dari waktu saat ini
+      final timeZoneOffset = now.timeZoneOffset.inHours;
+
+      // Memeriksa apakah offset zona waktu adalah 7 jam
+      if (timeZoneOffset == 7) {
+        // Jika ya, kembalikan 'WIB'
+        return 'WIB';
+        // Memeriksa apakah offset zona waktu adalah 8 jam
+      } else if (timeZoneOffset == 8) {
+        // Jika ya, kembalikan 'WITA'
+        return 'WITA';
+        // Memeriksa apakah offset zona waktu adalah 9 jam
+      } else if (timeZoneOffset == 9) {
+        // Jika ya, kembalikan 'WIT'
+        return 'WIT';
+      } else {
+        // Jika tidak ada yang cocok, kembalikan 'Unknown Time Zone'
+        return 'Unknown Time Zone';
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -197,8 +221,7 @@ class CreateHabitPage extends HookConsumerWidget {
               ),
               subtitle: hasReminder.value
                   ? Text(
-                      convertTimeOfDayTo24Hour(reminderTime.value) ??
-                          'No time selected yet',
+                      '${convertTimeOfDayTo24Hour(reminderTime.value)} ${getTimeZoneName()}',
                       style: TextStyle(
                         color: colorScheme.primary,
                       ),

@@ -36,6 +36,7 @@ dependencies:
   flex_color_scheme: ^8.1.0
   flutter:
     sdk: flutter
+  flutter_colorpicker: ^1.1.0
   flutter_dotenv: ^5.2.1
   flutter_hooks: ^0.20.5
   flutter_local_notifications: ^18.0.1

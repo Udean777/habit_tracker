@@ -258,10 +258,10 @@ packages:
     dependency: transitive
     description:
       name: dbus
-      sha256: "365c771ac3b0e58845f39ec6deebc76e3276aa9922b0cc60840712094d9047ac"
+      sha256: "79e0c23480ff85dc68de79e2cd6334add97e48f7f4865d17686dd6ea81a47e8c"
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.10"
+    version: "0.7.11"
   drift:
     dependency: "direct main"
     description:
@@ -355,6 +355,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_colorpicker:
+    dependency: "direct main"
+    description:
+      name: flutter_colorpicker
+      sha256: "969de5f6f9e2a570ac660fb7b501551451ea2a1ab9e2097e89475f60e07816ea"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.0"
   flutter_dotenv:
     dependency: "direct main"
     description:
@@ -939,18 +947,18 @@ packages:
     dependency: transitive
     description:
       name: sqlite3
-      sha256: c284434c408d207863800341298cadfde23abe074a0f01b19c9d8cce4edb8eaa
+      sha256: a72c68360757d25a528652f9679dac6e5f23bc52af76b74d4687a148d74e06db
       url: "https://pub.dev"
     source: hosted
-    version: "2.6.0"
+    version: "2.6.1"
   sqlite3_flutter_libs:
     dependency: transitive
     description:
       name: sqlite3_flutter_libs
-      sha256: "73016db8419f019e807b7a5e5fbf2a7bd45c165fed403b8e7681230f3a102785"
+      sha256: "50a7e3f294c741d3142eed0ff228e38498334e11e0ccb9d73e0496e005949e44"
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.28"
+    version: "0.5.29"
   sqlparser:
     dependency: transitive
     description:
