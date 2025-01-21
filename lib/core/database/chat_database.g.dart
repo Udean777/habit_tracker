@@ -320,10 +320,7 @@ class $ChatMessagesTable extends ChatMessages
   @override
   late final GeneratedColumn<int> sessionId = GeneratedColumn<int>(
       'session_id', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: true,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('REFERENCES chat_sessions (id)'));
+      type: DriftSqlType.int, requiredDuringInsert: true);
   static const VerificationMeta _messageMeta =
       const VerificationMeta('message');
   @override
@@ -632,26 +629,6 @@ typedef $$ChatSessionsTableUpdateCompanionBuilder = ChatSessionsCompanion
   Value<DateTime> timestamp,
 });
 
-final class $$ChatSessionsTableReferences
-    extends BaseReferences<_$ChatDatabase, $ChatSessionsTable, ChatSession> {
-  $$ChatSessionsTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static MultiTypedResultKey<$ChatMessagesTable, List<ChatMessage>>
-      _chatMessagesRefsTable(_$ChatDatabase db) =>
-          MultiTypedResultKey.fromTable(db.chatMessages,
-              aliasName: $_aliasNameGenerator(
-                  db.chatSessions.id, db.chatMessages.sessionId));
-
-  $$ChatMessagesTableProcessedTableManager get chatMessagesRefs {
-    final manager = $$ChatMessagesTableTableManager($_db, $_db.chatMessages)
-        .filter((f) => f.sessionId.id($_item.id));
-
-    final cache = $_typedResult.readTableOrNull(_chatMessagesRefsTable($_db));
-    return ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: cache));
-  }
-}
-
 class $$ChatSessionsTableFilterComposer
     extends Composer<_$ChatDatabase, $ChatSessionsTable> {
   $$ChatSessionsTableFilterComposer({
@@ -675,27 +652,6 @@ class $$ChatSessionsTableFilterComposer
 
   ColumnFilters<DateTime> get timestamp => $composableBuilder(
       column: $table.timestamp, builder: (column) => ColumnFilters(column));
-
-  Expression<bool> chatMessagesRefs(
-      Expression<bool> Function($$ChatMessagesTableFilterComposer f) f) {
-    final $$ChatMessagesTableFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable: $db.chatMessages,
-        getReferencedColumn: (t) => t.sessionId,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$ChatMessagesTableFilterComposer(
-              $db: $db,
-              $table: $db.chatMessages,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return f(composer);
-  }
 }
 
 class $$ChatSessionsTableOrderingComposer
@@ -746,27 +702,6 @@ class $$ChatSessionsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get timestamp =>
       $composableBuilder(column: $table.timestamp, builder: (column) => column);
-
-  Expression<T> chatMessagesRefs<T extends Object>(
-      Expression<T> Function($$ChatMessagesTableAnnotationComposer a) f) {
-    final $$ChatMessagesTableAnnotationComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable: $db.chatMessages,
-        getReferencedColumn: (t) => t.sessionId,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$ChatMessagesTableAnnotationComposer(
-              $db: $db,
-              $table: $db.chatMessages,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return f(composer);
-  }
 }
 
 class $$ChatSessionsTableTableManager extends RootTableManager<
@@ -778,9 +713,12 @@ class $$ChatSessionsTableTableManager extends RootTableManager<
     $$ChatSessionsTableAnnotationComposer,
     $$ChatSessionsTableCreateCompanionBuilder,
     $$ChatSessionsTableUpdateCompanionBuilder,
-    (ChatSession, $$ChatSessionsTableReferences),
+    (
+      ChatSession,
+      BaseReferences<_$ChatDatabase, $ChatSessionsTable, ChatSession>
+    ),
     ChatSession,
-    PrefetchHooks Function({bool chatMessagesRefs})> {
+    PrefetchHooks Function()> {
   $$ChatSessionsTableTableManager(_$ChatDatabase db, $ChatSessionsTable table)
       : super(TableManagerState(
           db: db,
@@ -820,34 +758,9 @@ class $$ChatSessionsTableTableManager extends RootTableManager<
             timestamp: timestamp,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (
-                    e.readTable(table),
-                    $$ChatSessionsTableReferences(db, table, e)
-                  ))
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({chatMessagesRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (chatMessagesRefs) db.chatMessages],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (chatMessagesRefs)
-                    await $_getPrefetchedData(
-                        currentTable: table,
-                        referencedTable: $$ChatSessionsTableReferences
-                            ._chatMessagesRefsTable(db),
-                        managerFromTypedResult: (p0) =>
-                            $$ChatSessionsTableReferences(db, table, p0)
-                                .chatMessagesRefs,
-                        referencedItemsForCurrentItem:
-                            (item, referencedItems) => referencedItems
-                                .where((e) => e.sessionId == item.id),
-                        typedResults: items)
-                ];
-              },
-            );
-          },
+          prefetchHooksCallback: null,
         ));
 }
 
@@ -860,9 +773,12 @@ typedef $$ChatSessionsTableProcessedTableManager = ProcessedTableManager<
     $$ChatSessionsTableAnnotationComposer,
     $$ChatSessionsTableCreateCompanionBuilder,
     $$ChatSessionsTableUpdateCompanionBuilder,
-    (ChatSession, $$ChatSessionsTableReferences),
+    (
+      ChatSession,
+      BaseReferences<_$ChatDatabase, $ChatSessionsTable, ChatSession>
+    ),
     ChatSession,
-    PrefetchHooks Function({bool chatMessagesRefs})>;
+    PrefetchHooks Function()>;
 typedef $$ChatMessagesTableCreateCompanionBuilder = ChatMessagesCompanion
     Function({
   Value<int> id,
@@ -880,24 +796,6 @@ typedef $$ChatMessagesTableUpdateCompanionBuilder = ChatMessagesCompanion
   Value<DateTime> timestamp,
 });
 
-final class $$ChatMessagesTableReferences
-    extends BaseReferences<_$ChatDatabase, $ChatMessagesTable, ChatMessage> {
-  $$ChatMessagesTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static $ChatSessionsTable _sessionIdTable(_$ChatDatabase db) =>
-      db.chatSessions.createAlias(
-          $_aliasNameGenerator(db.chatMessages.sessionId, db.chatSessions.id));
-
-  $$ChatSessionsTableProcessedTableManager get sessionId {
-    final manager = $$ChatSessionsTableTableManager($_db, $_db.chatSessions)
-        .filter((f) => f.id($_item.sessionId));
-    final item = $_typedResult.readTableOrNull(_sessionIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: [item]));
-  }
-}
-
 class $$ChatMessagesTableFilterComposer
     extends Composer<_$ChatDatabase, $ChatMessagesTable> {
   $$ChatMessagesTableFilterComposer({
@@ -910,6 +808,9 @@ class $$ChatMessagesTableFilterComposer
   ColumnFilters<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
 
+  ColumnFilters<int> get sessionId => $composableBuilder(
+      column: $table.sessionId, builder: (column) => ColumnFilters(column));
+
   ColumnFilters<String> get message => $composableBuilder(
       column: $table.message, builder: (column) => ColumnFilters(column));
 
@@ -918,26 +819,6 @@ class $$ChatMessagesTableFilterComposer
 
   ColumnFilters<DateTime> get timestamp => $composableBuilder(
       column: $table.timestamp, builder: (column) => ColumnFilters(column));
-
-  $$ChatSessionsTableFilterComposer get sessionId {
-    final $$ChatSessionsTableFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.sessionId,
-        referencedTable: $db.chatSessions,
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$ChatSessionsTableFilterComposer(
-              $db: $db,
-              $table: $db.chatSessions,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
 }
 
 class $$ChatMessagesTableOrderingComposer
@@ -952,6 +833,9 @@ class $$ChatMessagesTableOrderingComposer
   ColumnOrderings<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<int> get sessionId => $composableBuilder(
+      column: $table.sessionId, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get message => $composableBuilder(
       column: $table.message, builder: (column) => ColumnOrderings(column));
 
@@ -960,26 +844,6 @@ class $$ChatMessagesTableOrderingComposer
 
   ColumnOrderings<DateTime> get timestamp => $composableBuilder(
       column: $table.timestamp, builder: (column) => ColumnOrderings(column));
-
-  $$ChatSessionsTableOrderingComposer get sessionId {
-    final $$ChatSessionsTableOrderingComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.sessionId,
-        referencedTable: $db.chatSessions,
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$ChatSessionsTableOrderingComposer(
-              $db: $db,
-              $table: $db.chatSessions,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
 }
 
 class $$ChatMessagesTableAnnotationComposer
@@ -994,6 +858,9 @@ class $$ChatMessagesTableAnnotationComposer
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
+  GeneratedColumn<int> get sessionId =>
+      $composableBuilder(column: $table.sessionId, builder: (column) => column);
+
   GeneratedColumn<String> get message =>
       $composableBuilder(column: $table.message, builder: (column) => column);
 
@@ -1002,26 +869,6 @@ class $$ChatMessagesTableAnnotationComposer
 
   GeneratedColumn<DateTime> get timestamp =>
       $composableBuilder(column: $table.timestamp, builder: (column) => column);
-
-  $$ChatSessionsTableAnnotationComposer get sessionId {
-    final $$ChatSessionsTableAnnotationComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.sessionId,
-        referencedTable: $db.chatSessions,
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$ChatSessionsTableAnnotationComposer(
-              $db: $db,
-              $table: $db.chatSessions,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
 }
 
 class $$ChatMessagesTableTableManager extends RootTableManager<
@@ -1033,9 +880,12 @@ class $$ChatMessagesTableTableManager extends RootTableManager<
     $$ChatMessagesTableAnnotationComposer,
     $$ChatMessagesTableCreateCompanionBuilder,
     $$ChatMessagesTableUpdateCompanionBuilder,
-    (ChatMessage, $$ChatMessagesTableReferences),
+    (
+      ChatMessage,
+      BaseReferences<_$ChatDatabase, $ChatMessagesTable, ChatMessage>
+    ),
     ChatMessage,
-    PrefetchHooks Function({bool sessionId})> {
+    PrefetchHooks Function()> {
   $$ChatMessagesTableTableManager(_$ChatDatabase db, $ChatMessagesTable table)
       : super(TableManagerState(
           db: db,
@@ -1075,46 +925,9 @@ class $$ChatMessagesTableTableManager extends RootTableManager<
             timestamp: timestamp,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (
-                    e.readTable(table),
-                    $$ChatMessagesTableReferences(db, table, e)
-                  ))
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({sessionId = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins: <
-                  T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic>>(state) {
-                if (sessionId) {
-                  state = state.withJoin(
-                    currentTable: table,
-                    currentColumn: table.sessionId,
-                    referencedTable:
-                        $$ChatMessagesTableReferences._sessionIdTable(db),
-                    referencedColumn:
-                        $$ChatMessagesTableReferences._sessionIdTable(db).id,
-                  ) as T;
-                }
-
-                return state;
-              },
-              getPrefetchedDataCallback: (items) async {
-                return [];
-              },
-            );
-          },
+          prefetchHooksCallback: null,
         ));
 }
 
@@ -1127,9 +940,12 @@ typedef $$ChatMessagesTableProcessedTableManager = ProcessedTableManager<
     $$ChatMessagesTableAnnotationComposer,
     $$ChatMessagesTableCreateCompanionBuilder,
     $$ChatMessagesTableUpdateCompanionBuilder,
-    (ChatMessage, $$ChatMessagesTableReferences),
+    (
+      ChatMessage,
+      BaseReferences<_$ChatDatabase, $ChatMessagesTable, ChatMessage>
+    ),
     ChatMessage,
-    PrefetchHooks Function({bool sessionId})>;
+    PrefetchHooks Function()>;
 
 class $ChatDatabaseManager {
   final _$ChatDatabase _db;

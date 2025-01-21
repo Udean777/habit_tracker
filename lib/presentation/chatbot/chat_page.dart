@@ -184,39 +184,44 @@ class _ChatPageState extends ConsumerState<ChatPage> {
           title: _buildAppBarTitle(colorScheme),
         ),
         body: chatSessions.when(
-          data: (sessions) => Stack(
-            children: [
-              AnimatedPadding(
-                padding: EdgeInsets.only(left: _isSidebarOpen ? 300 : 0),
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                child: currentSessionMessages.when(
-                  data: (messages) => MainContent(
-                    isLoading: _isLoading,
-                    messages: messages,
-                  ),
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (error, stack) => Center(child: Text('Error: $error')),
-                ),
-              ),
-              if (_isSidebarOpen)
-                Positioned(
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  child: Sidebar(
-                    chatSessions: sessions,
-                    currentSessionId: currentSessionId,
-                    onNewChat: _handleNewChat,
-                    onSelectSession: _handleSelectSession,
-                    onDeleteSession: (sessionId) => ref
-                        .read(chatControllerProvider.notifier)
-                        .deleteSession(sessionId),
+          data: (sessions) {
+            // developer.log('Loaded sessions: ${DateTime.now()}');
+
+            return Stack(
+              children: [
+                AnimatedPadding(
+                  padding: EdgeInsets.only(left: _isSidebarOpen ? 300 : 0),
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  child: currentSessionMessages.when(
+                    data: (messages) => MainContent(
+                      isLoading: _isLoading,
+                      messages: messages,
+                    ),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (error, stack) =>
+                        Center(child: Text('Error: $error')),
                   ),
                 ),
-            ],
-          ),
+                if (_isSidebarOpen)
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: Sidebar(
+                      chatSessions: sessions,
+                      currentSessionId: currentSessionId,
+                      onNewChat: _handleNewChat,
+                      onSelectSession: _handleSelectSession,
+                      onDeleteSession: (sessionId) => ref
+                          .read(chatControllerProvider.notifier)
+                          .deleteSession(sessionId),
+                    ),
+                  ),
+              ],
+            );
+          },
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, stack) {
             print(error);

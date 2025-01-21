@@ -18,7 +18,19 @@ class AppDatabase extends _$AppDatabase {
 
   // Mendefinisikan versi skema database
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 3;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (Migrator m) async {
+          await m.createAll();
+        },
+        onUpgrade: (Migrator m, int from, int to) async {
+          if (from < 3) {
+            await m.createTable(habitCompletions);
+          }
+        },
+      );
 
   // Mendapatkan daftar semua habit
   Future<List<Habit>> getHabits() => select(habits).get();

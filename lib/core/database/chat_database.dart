@@ -3,49 +3,35 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'chat_tables.dart';
 
+/// Bagian file yang dihasilkan oleh Drift
 part 'chat_database.g.dart';
 
-class ChatSessions extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get title => text().withDefault(const Constant('New Chat'))();
-  DateTimeColumn get createdAt => dateTime()();
-  DateTimeColumn get updatedAt => dateTime()();
-  DateTimeColumn get timestamp => dateTime()();
-}
-
-class ChatMessages extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  IntColumn get sessionId => integer().references(ChatSessions, #id)();
-  TextColumn get message => text()();
-  TextColumn get response => text()();
-  DateTimeColumn get timestamp => dateTime()();
-}
-
+/// Kelas database Drift untuk mengelola sesi obrolan dan pesan
 @DriftDatabase(tables: [ChatSessions, ChatMessages])
 class ChatDatabase extends _$ChatDatabase {
+  /// Konstruktor untuk membuka koneksi database
   ChatDatabase() : super(_openConnection());
 
+  /// Versi skema dari database
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
+  /// Strategi migrasi untuk menangani perubahan skema database
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (Migrator m) async {
+          /// Membuat semua tabel saat database pertama kali dibuat
           await m.createAll();
         },
         onUpgrade: (Migrator m, int from, int to) async {
-          if (from < 3) {
-            await customStatement(
-                'UPDATE chat_sessions SET createdAt = CURRENT_TIMESTAMP WHERE createdAt IS NULL');
-            await customStatement(
-                'UPDATE chat_sessions SET updatedAt = CURRENT_TIMESTAMP WHERE updatedAt IS NULL');
-            await customStatement(
-                'UPDATE chat_messages SET timestamp = CURRENT_TIMESTAMP WHERE timestamp IS NULL');
-          }
+          /// Menangani peningkatan database
+          if (from < 4) {}
         },
       );
 
+  // Update method createChatSession dengan tipe data yang benar
   Future<int> createChatSession() async {
     final now = DateTime.now();
     return into(chatSessions).insert(
@@ -57,6 +43,7 @@ class ChatDatabase extends _$ChatDatabase {
     );
   }
 
+  /// Stream untuk memantau sesi obrolan dengan jumlah pesan di setiap sesi
   Stream<List<SessionWithMessagesCount>> watchSessionsWithMessageCount() {
     return customSelect(
       '''
@@ -89,6 +76,7 @@ class ChatDatabase extends _$ChatDatabase {
     });
   }
 
+  /// Mendapatkan semua pesan untuk sesi obrolan tertentu
   Future<List<ChatMessage>> getMessagesForSession(int sessionId) {
     return (select(chatMessages)
           ..where((t) => t.sessionId.equals(sessionId))
@@ -96,6 +84,7 @@ class ChatDatabase extends _$ChatDatabase {
         .get();
   }
 
+  /// Memperbarui judul sesi obrolan
   Future<void> updateSessionTitle(int sessionId, String title) async {
     await (update(chatSessions)..where((t) => t.id.equals(sessionId))).write(
       ChatSessionsCompanion(
@@ -105,21 +94,18 @@ class ChatDatabase extends _$ChatDatabase {
     );
   }
 
+  /// Menambahkan pesan ke sesi obrolan dan memperbarui judul sesi jika itu adalah pesan pertama
   Future<void> addMessage(
       int sessionId, String message, String response) async {
     final now = DateTime.now();
     await transaction(() async {
-      // Get the session to check if it's the first message
       final session = await (select(chatSessions)
             ..where((t) => t.id.equals(sessionId)))
           .getSingle();
 
-      // If the title is still 'New Chat', update it with the first message
       if (session.title == 'New Chat') {
-        // Truncate the message if it's too long (e.g., first 50 characters)
         final truncatedTitle =
             message.length > 50 ? '${message.substring(0, 47)}...' : message;
-
         await updateSessionTitle(sessionId, truncatedTitle);
       }
 
@@ -128,18 +114,19 @@ class ChatDatabase extends _$ChatDatabase {
           sessionId: sessionId,
           message: message,
           response: response,
-          timestamp: now,
+          timestamp: now, // Langsung menggunakan DateTime
         ),
       );
 
       await (update(chatSessions)..where((t) => t.id.equals(sessionId))).write(
         ChatSessionsCompanion(
-          updatedAt: Value(now),
+          updatedAt: Value(now), // Langsung menggunakan DateTime
         ),
       );
     });
   }
 
+  /// Menghapus sesi obrolan dan semua pesannya
   Future<void> deleteSession(int sessionId) async {
     await transaction(() async {
       await (delete(chatMessages)..where((t) => t.sessionId.equals(sessionId)))
@@ -148,6 +135,7 @@ class ChatDatabase extends _$ChatDatabase {
     });
   }
 
+  /// Menghapus semua sesi obrolan dan pesan-pesannya
   Future<void> deleteAllSessions() async {
     await transaction(() async {
       await delete(chatMessages).go();
@@ -156,6 +144,7 @@ class ChatDatabase extends _$ChatDatabase {
   }
 }
 
+/// Membuka koneksi ke database
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
@@ -164,6 +153,7 @@ LazyDatabase _openConnection() {
   });
 }
 
+/// Kelas untuk menyimpan sesi obrolan dan jumlah pesan dalam sesi tersebut
 class SessionWithMessagesCount {
   final ChatSession session;
   final int messageCount;

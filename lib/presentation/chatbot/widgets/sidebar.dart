@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:the_habits/core/database/chat_database.dart';
+import 'dart:developer' as developer;
 
 class Sidebar extends StatelessWidget {
   final List<SessionWithMessagesCount> chatSessions;
@@ -51,35 +53,82 @@ class Sidebar extends StatelessWidget {
                 final session = chatSessions[index];
                 final isSelected = session.session.id == currentSessionId;
 
-                return Dismissible(
-                  key: Key('chat_session_${session.session.id}'),
-                  direction: DismissDirection.endToStart,
-                  background: Container(
-                    color: Colors.red,
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 16.0),
-                    child: const Icon(Icons.delete, color: Colors.white),
+                developer.log(DateTime.now().toString());
+
+                // print(session.session);
+
+                return ListTile(
+                  selected: isSelected,
+                  selectedTileColor: Colors.grey[800],
+                  title: Text(
+                    session.session.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: isSelected ? colorScheme.primary : Colors.grey,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
                   ),
-                  onDismissed: (_) => onDeleteSession(session.session.id),
-                  child: ListTile(
-                    selected: isSelected,
-                    selectedTileColor: Colors.grey[800],
-                    title: Text(
-                      session.session.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: isSelected
-                            ? colorScheme.primary
-                            : colorScheme.onSurface,
+                  subtitle: Text(
+                    // ignore: unnecessary_type_check
+                    DateFormat('hh:mm a').format(session.session.timestamp),
+                    style: TextStyle(color: Colors.grey[400]),
+                  ),
+                  onTap: () => onSelectSession(session.session.id),
+                  trailing: PopupMenuButton<String>(
+                    icon: Icon(
+                      Icons.more_horiz,
+                      color: Colors.grey[400],
+                    ),
+                    itemBuilder: (BuildContext context) => [
+                      PopupMenuItem<String>(
+                        value: 'delete',
+                        child: Row(
+                          children: const [
+                            Icon(
+                              Icons.delete,
+                              size: 20,
+                              color: Colors.red,
+                            ),
+                            SizedBox(width: 8),
+                            Text('Delete'),
+                          ],
+                        ),
                       ),
-                    ),
-                    subtitle: Text(
-                      // ignore: unnecessary_null_comparison
-                      '${session.session.createdAt}',
-                      style: TextStyle(color: Colors.grey[400]),
-                    ),
-                    onTap: () => onSelectSession(session.session.id),
+                    ],
+                    onSelected: (String value) {
+                      if (value == 'delete') {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Delete Chat'),
+                              content: const Text(
+                                  'Are you sure you want to delete this chat?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    onDeleteSession(session.session.id);
+                                  },
+                                  child: const Text(
+                                    'Delete',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }
+                    },
                   ),
                 );
               },
