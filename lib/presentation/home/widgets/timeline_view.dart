@@ -17,7 +17,7 @@ class TimelineView extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: EasyDateTimeLine(
         initialDate: selectedDate,
         onDateChange: onSelectedDateChange,

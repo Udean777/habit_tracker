@@ -120,24 +120,20 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   }
 
   Widget _buildAppBarTitle(ColorScheme colorScheme) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'ChatBot (Gemini)',
-            style: TextStyle(
-              color: colorScheme.primary,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Gemini ChatBot',
+          style: TextStyle(
+            color: colorScheme.primary,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
           ),
-          const SizedBox(height: 4),
-          _buildModelDropdown(),
-        ],
-      ),
+        ),
+        _buildModelDropdown(),
+      ],
     );
   }
 
@@ -175,6 +171,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         appBar: AppBar(
           elevation: 0,
           backgroundColor: Colors.transparent,
+          centerTitle: true,
           actions: [
             IconButton(
               icon: const Icon(Icons.menu),
