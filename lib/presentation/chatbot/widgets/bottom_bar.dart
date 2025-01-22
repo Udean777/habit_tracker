@@ -25,14 +25,17 @@ class BottomBar extends StatelessWidget {
               controller: textController,
               decoration: InputDecoration(
                 filled: true,
-                fillColor: Colors.grey[900],
+                fillColor: Colors.black,
                 hintText: 'Ask Gemini✨',
                 hintStyle: TextStyle(
-                  color: Colors.grey[500],
+                  color: Colors.white,
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide.none,
+                  borderSide: BorderSide(
+                    color: Colors.white,
+                    width: 5.0,
+                  ),
                 ),
               ),
               style: TextStyle(
@@ -50,8 +53,8 @@ class BottomBar extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
                   colors: [
-                    Colors.blue,
-                    Colors.purple,
+                    Colors.blueAccent,
+                    Color(0xFFFF4A00),
                   ],
                 ),
               ),

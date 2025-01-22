@@ -13,16 +13,12 @@ class MainContent extends StatelessWidget {
     required this.messages,
   });
 
-  // Helper function to parse formatted text into TextSpans
   List<TextSpan> parseFormattedText(String text, TextStyle baseStyle) {
     List<TextSpan> spans = [];
-
-    // Split text into segments
     RegExp exp = RegExp(r'(\*\*.*?\*\*|\*.*?\*|__.*?__|_.*?_)');
     int lastIndex = 0;
 
     for (Match match in exp.allMatches(text)) {
-      // Add text before the match
       if (match.start > lastIndex) {
         spans.add(TextSpan(
           text: text.substring(lastIndex, match.start),
@@ -31,15 +27,12 @@ class MainContent extends StatelessWidget {
       }
 
       String matchText = match.group(0)!;
-      // Handle different formatting cases
       if (matchText.startsWith('**') || matchText.startsWith('__')) {
-        // Bold text
         spans.add(TextSpan(
           text: matchText.substring(2, matchText.length - 2),
           style: baseStyle.copyWith(fontWeight: FontWeight.bold),
         ));
       } else if (matchText.startsWith('*') || matchText.startsWith('_')) {
-        // Italic text
         spans.add(TextSpan(
           text: matchText.substring(1, matchText.length - 1),
           style: baseStyle.copyWith(fontStyle: FontStyle.italic),
@@ -49,7 +42,6 @@ class MainContent extends StatelessWidget {
       lastIndex = match.end;
     }
 
-    // Add remaining text
     if (lastIndex < text.length) {
       spans.add(TextSpan(
         text: text.substring(lastIndex),
@@ -63,7 +55,6 @@ class MainContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    // Sort messages in chronological order (oldest to newest)
     final sortedMessages = List<ChatMessage>.from(messages)
       ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
@@ -71,43 +62,10 @@ class MainContent extends StatelessWidget {
       children: [
         Expanded(
           child: messages.isEmpty
-              ? Center(
-                  child: RichText(
-                    textAlign: TextAlign.center,
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: 'Hello, i\'m Gemini\n',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            foreground: Paint()
-                              ..shader = LinearGradient(
-                                colors: [Colors.blue, Colors.purple],
-                              ).createShader(
-                                Rect.fromLTWH(0, 0, 200, 70),
-                              ),
-                          ),
-                        ),
-                        TextSpan(
-                          text: 'What you wanna ask?',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            foreground: Paint()
-                              ..shader = LinearGradient(
-                                colors: [Colors.blue, Colors.purple],
-                              ).createShader(
-                                Rect.fromLTWH(0, 0, 200, 70),
-                              ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
+              ? _buildEmptyState(context)
               : ListView.builder(
-                  padding: const EdgeInsets.all(16),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   itemCount: sortedMessages.length + (isLoading ? 1 : 0),
                   reverse: true,
                   itemBuilder: (context, index) {
@@ -128,7 +86,7 @@ class MainContent extends StatelessWidget {
                         _buildMessageCard(
                           message.message,
                           'You',
-                          Colors.blue.withValues(alpha: 0.8),
+                          Color(0xFFFF4A00),
                           colorScheme,
                           message.timestamp,
                         ),
@@ -136,7 +94,7 @@ class MainContent extends StatelessWidget {
                         _buildMessageCard(
                           message.response,
                           'Gemini',
-                          Colors.grey[900]!,
+                          Colors.black, // Bot Color
                           colorScheme,
                           message.timestamp,
                         ),
@@ -147,6 +105,38 @@ class MainContent extends StatelessWidget {
                 ),
         ),
       ],
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.chat_bubble_outline,
+            size: 80,
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.6),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No messages yet',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Start chatting with Gemini!',
+            style: TextStyle(
+              fontSize: 16,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -161,7 +151,7 @@ class MainContent extends StatelessWidget {
     String formattedTime = DateFormat('hh:mm a').format(timestamp);
 
     TextStyle baseStyle = TextStyle(
-      color: colorScheme.primary,
+      color: isUser ? Colors.white : colorScheme.onSurface,
       fontSize: 16,
     );
 
@@ -174,7 +164,18 @@ class MainContent extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: isUser
+              ? [
+                  BoxShadow(
+                      color: Colors.green.withValues(alpha: 0.3), blurRadius: 6)
+                ]
+              : [
+                  BoxShadow(
+                      color: Colors.grey.withValues(alpha: 0.3), blurRadius: 4)
+                ],
+          border:
+              isUser ? null : Border.all(color: Colors.grey.shade300, width: 2),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

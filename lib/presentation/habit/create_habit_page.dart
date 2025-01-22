@@ -249,28 +249,28 @@ class CreateHabitPage extends HookConsumerWidget {
                 ),
               ),
             ),
-            GestureDetector(
-              onTap: () => {},
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.blue, Colors.purple],
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(
-                  child: Text(
-                    'Create Habit with AI✨',
-                    style: TextStyle(
-                      color: colorScheme.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            // GestureDetector(
+            //   onTap: () => {},
+            //   child: Container(
+            //     width: double.infinity,
+            //     padding: const EdgeInsets.symmetric(vertical: 16),
+            //     decoration: BoxDecoration(
+            //       gradient: LinearGradient(
+            //         colors: [Colors.blue, Colors.purple],
+            //       ),
+            //       borderRadius: BorderRadius.circular(8),
+            //     ),
+            //     child: Center(
+            //       child: Text(
+            //         'Create Habit with AI✨',
+            //         style: TextStyle(
+            //           color: colorScheme.primary,
+            //           fontWeight: FontWeight.bold,
+            //         ),
+            //       ),
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),
