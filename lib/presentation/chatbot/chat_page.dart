@@ -172,7 +172,6 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        backgroundColor: Colors.grey[900],
         appBar: AppBar(
           elevation: 0,
           backgroundColor: Colors.transparent,
@@ -225,7 +224,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
           },
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, stack) {
-            print(error);
+            // print(error);
             return Center(child: Text('Error: $error'));
           },
         ),

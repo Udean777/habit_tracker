@@ -25,17 +25,14 @@ class BottomBar extends StatelessWidget {
               controller: textController,
               decoration: InputDecoration(
                 filled: true,
-                fillColor: Colors.black,
+                fillColor: Colors.grey[900],
                 hintText: 'Ask Gemini✨',
                 hintStyle: TextStyle(
-                  color: Colors.white,
+                  color: Colors.grey[500],
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide(
-                    color: Colors.white,
-                    width: 5.0,
-                  ),
+                  borderSide: BorderSide.none,
                 ),
               ),
               style: TextStyle(

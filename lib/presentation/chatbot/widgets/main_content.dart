@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:the_habits/core/database/chat_database.dart';
+import 'package:the_habits/core/utils/parse_formatted_text.dart';
 import 'package:the_habits/core/widgets/shimmer_loading.dart';
 
 class MainContent extends StatelessWidget {
@@ -12,45 +13,6 @@ class MainContent extends StatelessWidget {
     required this.isLoading,
     required this.messages,
   });
-
-  List<TextSpan> parseFormattedText(String text, TextStyle baseStyle) {
-    List<TextSpan> spans = [];
-    RegExp exp = RegExp(r'(\*\*.*?\*\*|\*.*?\*|__.*?__|_.*?_)');
-    int lastIndex = 0;
-
-    for (Match match in exp.allMatches(text)) {
-      if (match.start > lastIndex) {
-        spans.add(TextSpan(
-          text: text.substring(lastIndex, match.start),
-          style: baseStyle,
-        ));
-      }
-
-      String matchText = match.group(0)!;
-      if (matchText.startsWith('**') || matchText.startsWith('__')) {
-        spans.add(TextSpan(
-          text: matchText.substring(2, matchText.length - 2),
-          style: baseStyle.copyWith(fontWeight: FontWeight.bold),
-        ));
-      } else if (matchText.startsWith('*') || matchText.startsWith('_')) {
-        spans.add(TextSpan(
-          text: matchText.substring(1, matchText.length - 1),
-          style: baseStyle.copyWith(fontStyle: FontStyle.italic),
-        ));
-      }
-
-      lastIndex = match.end;
-    }
-
-    if (lastIndex < text.length) {
-      spans.add(TextSpan(
-        text: text.substring(lastIndex),
-        style: baseStyle,
-      ));
-    }
-
-    return spans;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +48,7 @@ class MainContent extends StatelessWidget {
                         _buildMessageCard(
                           message.message,
                           'You',
-                          Color(0xFFFF4A00),
+                          Colors.white,
                           colorScheme,
                           message.timestamp,
                         ),
@@ -94,7 +56,7 @@ class MainContent extends StatelessWidget {
                         _buildMessageCard(
                           message.response,
                           'Gemini',
-                          Colors.black, // Bot Color
+                          Colors.black,
                           colorScheme,
                           message.timestamp,
                         ),
@@ -165,15 +127,6 @@ class MainContent extends StatelessWidget {
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: isUser
-              ? [
-                  BoxShadow(
-                      color: Colors.green.withValues(alpha: 0.3), blurRadius: 6)
-                ]
-              : [
-                  BoxShadow(
-                      color: Colors.grey.withValues(alpha: 0.3), blurRadius: 4)
-                ],
           border:
               isUser ? null : Border.all(color: Colors.grey.shade300, width: 2),
         ),
@@ -183,7 +136,7 @@ class MainContent extends StatelessWidget {
             Text(
               sender,
               style: TextStyle(
-                color: colorScheme.primary,
+                color: isUser ? colorScheme.onPrimary : colorScheme.primary,
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
               ),
@@ -191,7 +144,12 @@ class MainContent extends StatelessWidget {
             const SizedBox(height: 8),
             RichText(
               text: TextSpan(
-                children: parseFormattedText(text, baseStyle),
+                children: parseFormattedText(
+                  text,
+                  baseStyle,
+                  isUser,
+                  colorScheme,
+                ),
               ),
             ),
             const SizedBox(height: 4),
@@ -200,7 +158,7 @@ class MainContent extends StatelessWidget {
               child: Text(
                 formattedTime,
                 style: TextStyle(
-                  color: colorScheme.secondary,
+                  color: isUser ? colorScheme.onPrimary : colorScheme.primary,
                   fontSize: 12,
                 ),
               ),
