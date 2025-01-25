@@ -17,29 +17,32 @@ class AIHabitCreationService {
 
   AIHabitCreationService(this.ref);
 
-  Future<bool> createHabitFromPrompt(String prompt) async {
+  Future<Map<String, dynamic>?> generateHabitFromPrompt(String prompt) async {
     try {
-      final res = await _callGeminiApi(prompt);
+      // Make API call to Gemini or another AI service
+      final response = await _callGeminiApi(prompt);
+      return response;
+    } catch (e) {
+      print('Error generating AI habit: $e');
+      return null;
+    }
+  }
 
-      if (res != null) {
-        final habit = HabitsCompanion.insert(
-          title: res['title'],
-          description: drift.Value(
-            res['description'],
-          ),
-          reminderTime: drift.Value(
-            res['reminderTime'],
-          ),
-          createdAt: drift.Value(DateTime.now()),
-        );
+  Future<bool> createHabitFromDetails(Map<String, dynamic> habitDetails) async {
+    try {
+      // Create habit using the database method
+      final habit = HabitsCompanion.insert(
+        title: habitDetails['title'],
+        description: drift.Value(habitDetails['description']),
+        reminderTime: drift.Value(habitDetails['reminderTime']),
+        createdAt: drift.Value(DateTime.now()),
+      );
 
-        await ref.read(databaseProvider).createHabit(habit);
-        return false;
-      }
-
+      // Save habit to database
+      await ref.read(databaseProvider).createHabit(habit);
       return true;
     } catch (e) {
-      developer.log('Error creating AI habit: $e');
+      print('Error creating AI habit: $e');
       return false;
     }
   }

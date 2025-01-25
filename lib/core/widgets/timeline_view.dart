@@ -31,6 +31,9 @@ class CustomTimelineView extends StatelessWidget {
           final isSelected = date.day == selectedDate.day &&
               date.month == selectedDate.month &&
               date.year == selectedDate.year;
+          final isToday = date.day == now.day &&
+              date.month == now.month &&
+              date.year == now.year;
 
           return GestureDetector(
             onTap: () => onSelectedDateChange(date),
@@ -38,8 +41,11 @@ class CustomTimelineView extends StatelessWidget {
               width: 50,
               margin: EdgeInsets.symmetric(horizontal: 4),
               decoration: BoxDecoration(
-                color:
-                    isSelected ? Colors.white : Colors.white.withOpacity(0.1),
+                color: isSelected
+                    ? Colors.white
+                    : isToday
+                        ? Colors.grey
+                        : Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(

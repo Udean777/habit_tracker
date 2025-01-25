@@ -16,6 +16,14 @@ class HomePage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedDate = useState(DateTime.now());
 
+    final dailySummaryAsyncValue =
+        ref.watch(dailySummaryProvider(selectedDate.value));
+    final habitsAsyncValue =
+        ref.watch(habitsForDateProvider(selectedDate.value));
+
+    final isLoading =
+        dailySummaryAsyncValue.isLoading || habitsAsyncValue.isLoading;
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -41,153 +49,147 @@ class HomePage extends HookConsumerWidget {
           ],
         ),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              DateFormat('MMMM yyyy').format(selectedDate.value),
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.start,
-            ),
-          ),
-          const SizedBox(
-            height: 8,
-          ),
-          CustomTimelineView(
-            selectedDate: selectedDate.value,
-            onSelectedDateChange: (date) => selectedDate.value = date,
-          ),
-          ref.watch(dailySummaryProvider(selectedDate.value)).when(
-                data: (data) => Container(
-                  margin: EdgeInsets.all(16),
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.check_circle, color: Colors.green),
-                          SizedBox(width: 8),
-                          Text(
-                            'Daily Summary',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        '${data.$1} Completed • ${data.$2} Total',
-                        style: TextStyle(color: Colors.white70),
-                      ),
-                    ],
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    DateFormat('MMMM yyyy').format(selectedDate.value),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.start,
                   ),
                 ),
-                error: (error, st) => Text(error.toString()),
-                loading: () => const CircularProgressIndicator(),
-              ),
-          Expanded(
-            child: Consumer(
-              builder: (context, ref, child) {
-                final habitsAsyncValue =
-                    ref.watch(habitsForDateProvider(selectedDate.value));
-
-                return habitsAsyncValue.when(
-                  data: (habits) {
-                    if (habits.isEmpty) {
-                      return Center(
-                        child: Text(
-                          'No habits for today',
-                          style: TextStyle(color: Colors.white70),
-                        ),
-                      );
-                    }
-
-                    return ListView.builder(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: 24,
-                      itemBuilder: (context, hour) {
-                        final habitsAtHour = habits
-                            .where((h) =>
-                                h.habit.reminderTime != null &&
-                                parseTimeOfDay(h.habit.reminderTime!).hour ==
-                                    hour)
-                            .toList();
-
-                        return Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(
+                  height: 8,
+                ),
+                CustomTimelineView(
+                  selectedDate: selectedDate.value,
+                  onSelectedDateChange: (date) => selectedDate.value = date,
+                ),
+                dailySummaryAsyncValue.when(
+                  data: (data) => Container(
+                    margin: EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           children: [
-                            SizedBox(
-                              width: 40,
-                              child: Text(
-                                '$hour:00',
-                                style: TextStyle(color: Colors.white70),
+                            Icon(Icons.check_circle, color: Colors.green),
+                            SizedBox(width: 8),
+                            Text(
+                              'Daily Summary',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                            if (habitsAtHour.isNotEmpty)
-                              Expanded(
-                                child: Column(
-                                  children: habitsAtHour
-                                      .map((habit) => HabitCard(
-                                            title: habit.habit.title,
-                                            description:
-                                                habit.habit.description!,
-                                            reminderTime: parseTimeOfDay(
-                                                habit.habit.reminderTime!),
-                                            isCompleted: habit.isCompleted,
-                                            backgroundColor:
-                                                _getBackgroundColor(
-                                                    habit.habit.title),
-                                            onComplete: () async {
-                                              await ref
-                                                  .read(databaseProvider)
-                                                  .completeHabit(
-                                                    habit.habit.id,
-                                                    selectedDate.value,
-                                                  );
-                                            },
-                                            onDelete: () async {
-                                              await ref
-                                                  .read(databaseProvider)
-                                                  .deleteHabit(
-                                                    habit.habit.id,
-                                                  );
-                                            },
-                                            onEdit: () {},
-                                          ))
-                                      .toList(),
+                          ],
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          '${data.$1} Completed • ${data.$2} Total',
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                      ],
+                    ),
+                  ),
+                  error: (error, st) => Text(error.toString()),
+                  loading: () => const SizedBox.shrink(),
+                ),
+                Expanded(
+                  child: habitsAsyncValue.when(
+                    data: (habits) {
+                      if (habits.isEmpty) {
+                        return Center(
+                          child: Text(
+                            'No habits for today',
+                            style: TextStyle(color: Colors.white70),
+                          ),
+                        );
+                      }
+
+                      return ListView.builder(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: 24,
+                        itemBuilder: (context, hour) {
+                          final habitsAtHour = habits
+                              .where((h) =>
+                                  h.habit.reminderTime != null &&
+                                  parseTimeOfDay(h.habit.reminderTime!).hour ==
+                                      hour)
+                              .toList();
+
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(
+                                width: 40,
+                                child: Text(
+                                  '$hour:00',
+                                  style: TextStyle(color: Colors.white70),
                                 ),
                               ),
-                          ],
-                        );
-                      },
-                    );
-                  },
-                  error: (error, st) => Center(
-                    child: Text(error.toString(),
-                        style: TextStyle(color: Colors.white)),
+                              if (habitsAtHour.isNotEmpty)
+                                Expanded(
+                                  child: Column(
+                                    children: habitsAtHour
+                                        .map((habit) => HabitCard(
+                                              title: habit.habit.title,
+                                              description:
+                                                  habit.habit.description!,
+                                              reminderTime: parseTimeOfDay(
+                                                  habit.habit.reminderTime!),
+                                              isCompleted: habit.isCompleted,
+                                              backgroundColor:
+                                                  _getBackgroundColor(
+                                                      habit.habit.title),
+                                              onComplete: () async {
+                                                await ref
+                                                    .read(databaseProvider)
+                                                    .completeHabit(
+                                                      habit.habit.id,
+                                                      selectedDate.value,
+                                                    );
+                                              },
+                                              onDelete: () async {
+                                                await ref
+                                                    .read(databaseProvider)
+                                                    .deleteHabit(
+                                                      habit.habit.id,
+                                                    );
+                                              },
+                                              onEdit: () {},
+                                            ))
+                                        .toList(),
+                                  ),
+                                ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    error: (error, st) => Center(
+                      child: Text(error.toString(),
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                    loading: () => const SizedBox.shrink(),
                   ),
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                );
-              },
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 

@@ -19,26 +19,42 @@ class _AIHabitPromptDialogState extends State<AIHabitPromptDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Create Habit with AI'),
+      title: Text(
+        'Create Habit with AI',
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 20,
+        ),
+      ),
       content: TextField(
         controller: _promptController,
         decoration: InputDecoration(
-          hintText: "What kind of habit would you like to create?",
+          hintText: 'Enter habit creation prompt',
+          helperText: 'Example: Create a morning exercise habit at 6 AM',
+          border: OutlineInputBorder(),
         ),
         maxLines: 3,
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text('Cancel'),
+          child: Text(
+            'Cancel',
+            style: TextStyle(
+              color: Colors.red,
+            ),
+          ),
         ),
         ElevatedButton(
           onPressed: () {
             Navigator.of(context).pop(_promptController.text);
           },
-          child: Text('Create'),
+          child: Text('Generate'),
         ),
       ],
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
     );
   }
 }
