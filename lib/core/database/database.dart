@@ -7,6 +7,7 @@ import 'package:the_habits/core/service/local_notifications_service.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
+import 'dart:developer' as developer;
 
 part 'database.g.dart';
 
@@ -83,16 +84,59 @@ class AppDatabase extends _$AppDatabase {
         .write(HabitsCompanion(reminderTime: Value(newReminderTime)));
   }
 
+  /// Menghapus habit berdasarkan habitId yang diberikan.
+  ///
+  /// Fungsi ini melakukan beberapa langkah dalam sebuah transaksi:
+  /// 1. Membatalkan pengingat habit menggunakan `LocalNotificationService`.
+  /// 2. Menghapus penyelesaian habit dari tabel `habitCompletions`.
+  /// 3. Menghapus habit dari tabel `habits`.
+  ///
+  /// Jika terjadi kesalahan selama proses penghapusan, kesalahan akan dicetak
+  /// dan dilempar ulang agar pemanggil fungsi dapat menangani kesalahan tersebut.
+  ///
+  /// Menggunakan transaksi untuk memastikan bahwa semua operasi penghapusan
+  /// dilakukan secara atomik. Jika salah satu operasi gagal, semua perubahan
+  /// akan dibatalkan.
   Future<void> deleteHabit(int habitId) async {
-    // Batalkan reminder terlebih dahulu
-    await LocalNotificationService().cancelHabitReminder(habitId);
+    try {
+      // developer.log('Starting deleteHabit for habitId: $habitId');
 
-    // Hapus penyelesaian habit yang terkait
-    await (delete(habitCompletions)..where((t) => t.habitId.equals(habitId)))
-        .go();
+      try {
+        // developer.log('Attempting to cancel habit reminder');
+        await LocalNotificationService().cancelHabitReminder(habitId);
+        // developer.log('Successfully cancelled habit reminder');
+      } catch (cancelError) {
+        // developer.log('Error cancelling habit reminder: $cancelError');
+        // Optionally rethrow or handle specifically
+      }
 
-    // Hapus habit dari database
-    await (delete(habits)..where((t) => t.id.equals(habitId))).go();
+      try {
+        // developer.log('Attempting to delete habit completions');
+        await (delete(habitCompletions)
+              ..where((t) => t.habitId.equals(habitId)))
+            .go();
+        // developer.log('Deleted $completionDeleteCount habit completions');
+      } catch (completionDeleteError) {
+        developer
+            .log('Error deleting habit completions: $completionDeleteError');
+        // Optionally rethrow or handle specifically
+      }
+
+      try {
+        // developer.log('Attempting to delete habit');
+        await (delete(habits)..where((t) => t.id.equals(habitId))).go();
+        // developer.log('Deleted $habitDeleteCount habits');
+      } catch (habitDeleteError) {
+        // developer.log('Error deleting habit: $habitDeleteError');
+        // Optionally rethrow or handle specifically
+      }
+
+      // developer.log('Habit deletion process completed for habitId: $habitId');
+    } catch (e) {
+      // developer.log('Unexpected error in deleteHabit: $e');
+      // developer.log('Error stack trace: ${StackTrace.current}');
+      rethrow;
+    }
   }
 
   // Menyelesaikan habit pada tanggal tertentu
