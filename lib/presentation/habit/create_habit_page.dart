@@ -1,9 +1,11 @@
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:the_habits/core/database/database.dart';
+import 'package:the_habits/core/providers/ai_habit_provider.dart';
 import 'package:the_habits/core/providers/database_provider.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:the_habits/presentation/habit/widgets/ai_habit_prompt_dialog.dart';
 
 class CreateHabitPage extends HookConsumerWidget {
   const CreateHabitPage({super.key});
@@ -120,6 +122,34 @@ class CreateHabitPage extends HookConsumerWidget {
             );
           },
         );
+      }
+    }
+
+    Future<void> createHabitWithAI() async {
+      final prompt = await showDialog(
+        context: context,
+        builder: (context) => AIHabitPromptDialog(),
+      );
+
+      if (prompt != null && prompt.isNotEmpty) {
+        final aiService = ref.read(aiHabitCreationProvider);
+        final success = await aiService.createHabitFromPrompt(prompt);
+
+        if (success && context.mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('Success'),
+              content: Text('Habit created successfully using AI!'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('Close'),
+                ),
+              ],
+            ),
+          );
+        }
       }
     }
 
@@ -249,28 +279,28 @@ class CreateHabitPage extends HookConsumerWidget {
                 ),
               ),
             ),
-            // GestureDetector(
-            //   onTap: () => {},
-            //   child: Container(
-            //     width: double.infinity,
-            //     padding: const EdgeInsets.symmetric(vertical: 16),
-            //     decoration: BoxDecoration(
-            //       gradient: LinearGradient(
-            //         colors: [Colors.blue, Colors.purple],
-            //       ),
-            //       borderRadius: BorderRadius.circular(8),
-            //     ),
-            //     child: Center(
-            //       child: Text(
-            //         'Create Habit with AI✨',
-            //         style: TextStyle(
-            //           color: colorScheme.primary,
-            //           fontWeight: FontWeight.bold,
-            //         ),
-            //       ),
-            //     ),
-            //   ),
-            // ),
+            GestureDetector(
+              onTap: createHabitWithAI,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.blue, Colors.purple],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Text(
+                    'Create Habit with AI✨',
+                    style: TextStyle(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),

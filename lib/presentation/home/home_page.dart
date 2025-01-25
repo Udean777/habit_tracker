@@ -29,10 +29,6 @@ class HomePage extends HookConsumerWidget {
         ],
         title: Row(
           children: [
-            Image.asset(
-              'assets/logo.png',
-              height: 50,
-            ),
             const SizedBox(width: 8),
             Text(
               'The Habits',
@@ -126,8 +122,9 @@ class HomePage extends HookConsumerWidget {
                       itemBuilder: (context, hour) {
                         final habitsAtHour = habits
                             .where((h) =>
+                                h.habit.reminderTime != null &&
                                 parseTimeOfDay(h.habit.reminderTime!).hour ==
-                                hour)
+                                    hour)
                             .toList();
 
                         return Row(
