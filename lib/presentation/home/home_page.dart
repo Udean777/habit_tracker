@@ -3,6 +3,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:the_habits/core/providers/daily_summary_provider.dart';
 import 'package:the_habits/core/providers/database_provider.dart';
 import 'package:the_habits/core/providers/habits_for_date_provider.dart';
+import 'package:the_habits/core/utils/get_background_color.dart';
+import 'package:the_habits/core/utils/is_sameday.dart';
 import 'package:the_habits/core/utils/parse_timeofday.dart';
 import 'package:the_habits/core/widgets/timeline_view.dart';
 import 'package:the_habits/presentation/home/widgets/habit_card.dart';
@@ -154,15 +156,30 @@ class HomePage extends HookConsumerWidget {
                                                   habit.habit.reminderTime!),
                                               isCompleted: habit.isCompleted,
                                               backgroundColor:
-                                                  _getBackgroundColor(
-                                                      habit.habit.title),
+                                                  getBackgroundColor(
+                                                habit.habit.title,
+                                              ),
                                               onComplete: () async {
-                                                await ref
-                                                    .read(databaseProvider)
-                                                    .completeHabit(
-                                                      habit.habit.id,
-                                                      selectedDate.value,
-                                                    );
+                                                if (isSameDay(
+                                                    selectedDate.value,
+                                                    DateTime.now())) {
+                                                  await ref
+                                                      .read(databaseProvider)
+                                                      .completeHabit(
+                                                        habit.habit.id,
+                                                        selectedDate.value,
+                                                      );
+                                                } else {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    SnackBar(
+                                                      content: Text(
+                                                          'You can only complete today\'s tasks!'),
+                                                      backgroundColor:
+                                                          Colors.red,
+                                                    ),
+                                                  );
+                                                }
                                               },
                                               onDelete: () async {
                                                 await ref
@@ -191,16 +208,5 @@ class HomePage extends HookConsumerWidget {
               ],
             ),
     );
-  }
-
-  Color _getBackgroundColor(String title) {
-    final colors = [
-      Colors.purple.withValues(alpha: 0.3),
-      Colors.blue.withValues(alpha: 0.3),
-      Colors.green.withValues(alpha: 0.3),
-      Colors.orange.withValues(alpha: 0.3),
-    ];
-
-    return colors[title.hashCode % colors.length];
   }
 }

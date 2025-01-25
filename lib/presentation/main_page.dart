@@ -4,7 +4,6 @@ import 'package:the_habits/presentation/habit/create_habit_page.dart';
 import 'package:the_habits/presentation/home/home_page.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-// Define a provider for managing the selected index
 final selectedIndexProvider = StateProvider<int>((ref) => 0);
 
 class MainPage extends HookConsumerWidget {
@@ -13,7 +12,6 @@ class MainPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
-    // Watch the selected index state
     final selectedIndex = ref.watch(selectedIndexProvider);
 
     final List<Widget> pages = [
@@ -28,7 +26,6 @@ class MainPage extends HookConsumerWidget {
         currentIndex: selectedIndex,
         onTap: (index) {
           if (index == 1) {
-            // Navigate to CreateHabitPage
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -36,7 +33,6 @@ class MainPage extends HookConsumerWidget {
               ),
             );
           } else if (index == 2) {
-            // Navigate to ChatPage
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -44,7 +40,6 @@ class MainPage extends HookConsumerWidget {
               ),
             );
           } else {
-            // Update the selected index state
             ref.read(selectedIndexProvider.notifier).state = index;
           }
         },
