@@ -38,6 +38,8 @@ class BottomBar extends StatelessWidget {
               style: TextStyle(
                 color: colorScheme.primary,
               ),
+              keyboardType: TextInputType.multiline,
+              maxLines: null,
               onSubmitted: (_) => onSendMessage(),
             ),
           ),

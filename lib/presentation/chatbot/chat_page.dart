@@ -225,10 +225,15 @@ class _ChatPageState extends ConsumerState<ChatPage> {
             return Center(child: Text('Error: $error'));
           },
         ),
-        bottomNavigationBar: BottomBar(
-          isLoading: _isLoading,
-          onSendMessage: sendMessage,
-          textController: _textController,
+        bottomNavigationBar: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: BottomBar(
+            isLoading: _isLoading,
+            onSendMessage: sendMessage,
+            textController: _textController,
+          ),
         ),
       ),
     );
