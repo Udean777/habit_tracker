@@ -1,4 +1,3 @@
-// chat_provider.dart
 import 'package:drift/drift.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:the_habits/core/database/chat_database.dart';

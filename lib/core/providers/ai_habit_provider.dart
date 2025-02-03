@@ -23,7 +23,7 @@ class AIHabitCreationService {
     } catch (e) {
       developer.log('Error generating AI habit: $e');
       if (e is AIServiceException) {
-        throw e; // Re-throw custom exception
+        rethrow;
       }
       throw AIServiceException(
           'Terjadi kesalahan saat memproses permintaan AI');

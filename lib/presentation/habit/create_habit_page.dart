@@ -29,6 +29,25 @@ class CreateHabitPage extends HookConsumerWidget {
       return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
     }
 
+    // void showAIIssueDialog(BuildContext context) {
+    //   showDialog(
+    //     context: context,
+    //     builder: (BuildContext context) {
+    //       return AlertDialog(
+    //         title: const Text('AI Service Issue'),
+    //         content: const Text(
+    //             'Sorry, there is currently an issue with Gemini. The AI service for creating habits is under maintenance.'),
+    //         actions: [
+    //           TextButton(
+    //             onPressed: () => Navigator.of(context).pop(),
+    //             child: const Text('Close'),
+    //           ),
+    //         ],
+    //       );
+    //     },
+    //   );
+    // }
+
     Future<void> onPressed() async {
       if (titleController.text.isEmpty) {
         scaffoldMessenger.showSnackBar(

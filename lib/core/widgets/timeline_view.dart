@@ -20,7 +20,7 @@ class CustomTimelineView extends StatelessWidget {
           .add(Duration(days: index));
     });
 
-    return Container(
+    return SizedBox(
       height: 80,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
@@ -45,7 +45,7 @@ class CustomTimelineView extends StatelessWidget {
                     ? Colors.white
                     : isToday
                         ? Colors.grey
-                        : Colors.white.withOpacity(0.1),
+                        : Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(

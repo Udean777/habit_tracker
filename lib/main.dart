@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:the_habits/core/database/chat_database.dart';
@@ -10,6 +12,15 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:the_habits/presentation/splash/splash_page.dart';
 
+Future<void> checkAndroidPermissions() async {
+  if (Platform.isAndroid) {
+    final status = await Permission.notification.status;
+    if (!status.isGranted) {
+      await Permission.notification.request();
+    }
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -20,9 +31,7 @@ void main() async {
   await dotenv.load(fileName: ".env");
 
   // Meminta izin notifikasi
-  if (await Permission.notification.isDenied) {
-    await Permission.notification.request();
-  }
+  await checkAndroidPermissions();
 
   if (await Permission.scheduleExactAlarm.isDenied) {
     await Permission.scheduleExactAlarm.request();

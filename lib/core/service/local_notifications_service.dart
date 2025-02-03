@@ -1,7 +1,7 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-// import 'dart:developer' as developer;
+import 'dart:developer' as developer;
 
 class LocalNotificationService {
   static final LocalNotificationService _instance =
@@ -18,39 +18,52 @@ class LocalNotificationService {
 
   Future<void> initialize() async {
     try {
-      // developer.log('Starting notification service initialization',
-      //     name: 'LocalNotificationService');
-
       tz.initializeTimeZones();
 
-      const androidSettings =
+      // Default to UTC timezone
+      final String timeZoneName = 'UTC';
+      tz.setLocalLocation(tz.getLocation(timeZoneName));
+
+      const AndroidInitializationSettings androidSettings =
           AndroidInitializationSettings('@mipmap/ic_launcher');
-      const iosSettings = DarwinInitializationSettings(
-        requestSoundPermission: true,
-        requestBadgePermission: true,
+
+      const DarwinInitializationSettings iosSettings =
+          DarwinInitializationSettings(
         requestAlertPermission: true,
+        requestBadgePermission: true,
+        requestSoundPermission: true,
       );
 
-      const initSettings = InitializationSettings(
+      final initSettings = InitializationSettings(
         android: androidSettings,
         iOS: iosSettings,
       );
 
-      final result = await _notifications.initialize(initSettings,
-          onDidReceiveNotificationResponse: _onNotificationTap,
-          onDidReceiveBackgroundNotificationResponse:
-              _onBackgroundNotificationTap);
+      await _notifications.initialize(
+        initSettings,
+        onDidReceiveNotificationResponse: _onNotificationTap,
+        onDidReceiveBackgroundNotificationResponse:
+            _onBackgroundNotificationTap,
+      );
 
-      _isInitialized = result ?? false;
+      // Create Android notification channel
+      const AndroidNotificationChannel channel = AndroidNotificationChannel(
+        'the_habits_channel',
+        'Habit Reminders',
+        description: 'Channel for habit reminder notifications',
+        importance: Importance.high,
+        playSound: true,
+      );
 
-      // developer.log(
-      //     'Notification service initialization result: $_isInitialized',
-      //     name: 'LocalNotificationService');
-    } catch (e) {
-      // developer.log('Notification service initialization error',
-      //     name: 'LocalNotificationService', error: e, stackTrace: stackTrace);
+      await _notifications
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.createNotificationChannel(channel);
+
+      _isInitialized = true;
+    } catch (e, stack) {
+      developer.log('Notification Error: $e\n$stack');
       _isInitialized = false;
-      rethrow;
     }
   }
 
@@ -96,69 +109,54 @@ class LocalNotificationService {
     required String description,
     required String reminderTime,
   }) async {
-    try {
-      // developer.log(
-      //     'Scheduling habit reminder - habitId: $habitId, title: $title, time: $reminderTime',
-      //     name: 'LocalNotificationService');
+    if (!_isInitialized) await initialize();
 
-      if (!_isInitialized) {
-        // developer.log(
-        //     'Notification service not initialized, attempting to initialize',
-        //     name: 'LocalNotificationService');
-        await initialize();
-      }
+    final timeParts = reminderTime.split(':');
+    final hour = int.parse(timeParts[0]);
+    final minute = int.parse(timeParts[1]);
 
-      final timeParts = reminderTime.split(':');
-      final hour = int.parse(timeParts[0]);
-      final minute = int.parse(timeParts[1]);
+    // Create scheduled time in device's local time
+    final now = DateTime.now();
+    var scheduledDate = DateTime(now.year, now.month, now.day, hour, minute);
 
-      final now = DateTime.now();
-      var scheduledDate = DateTime(now.year, now.month, now.day, hour, minute);
+    // Adjust to next day if time has passed
+    if (scheduledDate.isBefore(now)) {
+      scheduledDate = scheduledDate.add(const Duration(days: 1));
+    }
 
-      if (scheduledDate.isBefore(now)) {
-        scheduledDate = scheduledDate.add(const Duration(days: 1));
-      }
+    // Convert to TZDateTime in UTC
+    final utcTime = scheduledDate.toUtc();
+    final tzScheduledDate = tz.TZDateTime.from(utcTime, tz.UTC);
 
-      final androidDetails = AndroidNotificationDetails(
-        'The Habits',
-        'Your Habit:',
-        channelDescription: 'Pengingat harian untuk kebiasaan Anda',
-        importance: Importance.high,
-        priority: Priority.high,
-        styleInformation: BigTextStyleInformation(description),
-        playSound: true,
-        enableVibration: true,
-      );
+    const androidDetails = AndroidNotificationDetails(
+      'the_habits_channel',
+      'Habit Reminders',
+      channelDescription: 'Channel for habit reminder notifications',
+      importance: Importance.high,
+      priority: Priority.high,
+      enableVibration: true,
+    );
 
-      final iosDetails = DarwinNotificationDetails(
-        presentAlert: true,
-        presentBadge: true,
-        presentSound: true,
-      );
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
 
-      final details = NotificationDetails(
+    await _notifications.zonedSchedule(
+      habitId,
+      title,
+      description,
+      tzScheduledDate,
+      const NotificationDetails(
         android: androidDetails,
         iOS: iosDetails,
-      );
-
-      await _notifications.zonedSchedule(
-        habitId,
-        title,
-        description,
-        tz.TZDateTime.from(scheduledDate, tz.local),
-        details,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-        matchDateTimeComponents: DateTimeComponents.time,
-      );
-
-      // developer.log('Scheduled habit reminder',
-      //     name: 'LocalNotificationService');
-    } catch (e) {
-      // developer.log('Error scheduling habit reminder',
-      //     name: 'LocalNotificationService', error: e, stackTrace: stackTrace);
-      rethrow;
-    }
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.time,
+      payload: 'habit-$habitId',
+    );
   }
 }
