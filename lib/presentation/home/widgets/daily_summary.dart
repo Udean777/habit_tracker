@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class DailySummary extends StatelessWidget {
   final AsyncValue dailySummaryAsyncValue;
@@ -41,7 +41,8 @@ class DailySummary extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               '${data.$1} Completed • ${data.$2} Total',
-              style: TextStyle(color: colorScheme.onPrimary.withValues(alpha: 0.7)),
+              style: TextStyle(
+                  color: colorScheme.onPrimary.withValues(alpha: 0.7)),
             ),
           ],
         ),

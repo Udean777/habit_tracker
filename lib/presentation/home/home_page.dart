@@ -4,7 +4,7 @@ import 'package:the_habits/core/providers/habits_for_date_provider.dart';
 import 'package:the_habits/core/widgets/timeline_view.dart';
 import 'package:the_habits/presentation/home/widgets/daily_summary.dart';
 import 'package:the_habits/presentation/home/widgets/date_header.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:the_habits/presentation/home/widgets/habits_list.dart';
 import 'package:the_habits/presentation/home/widgets/home_appbar.dart';
 

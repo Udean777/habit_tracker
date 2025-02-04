@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:the_habits/core/providers/database_provider.dart';
 import 'package:the_habits/core/utils/get_background_color.dart';
 import 'package:the_habits/core/utils/is_sameday.dart';

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:the_habits/core/providers/chat_provider.dart';
 import 'package:the_habits/presentation/chatbot/widgets/bottom_bar.dart';
 import 'package:the_habits/presentation/chatbot/widgets/main_content.dart';

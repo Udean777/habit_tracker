@@ -1,6 +1,6 @@
 import 'package:the_habits/core/providers/database_provider.dart';
 
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Mendefinisikan `dailySummaryProvider` sebagai `StreamProvider`
 /// yang menggunakan `family` untuk menerima parameter `DateTime`.

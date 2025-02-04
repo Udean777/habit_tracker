@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:the_habits/core/database/chat_database.dart';
 
 final chatDatabaseProvider = Provider<ChatDatabase>((ref) {

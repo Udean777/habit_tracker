@@ -1,6 +1,6 @@
 import 'package:the_habits/core/database/database.dart';
 
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Mendefinisikan provider untuk AppDatabase menggunakan Riverpod.
 /// Provider ini akan melempar UnimplementedError karena AppDatabase belum diimplementasikan.

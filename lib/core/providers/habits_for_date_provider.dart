@@ -1,6 +1,6 @@
 import 'package:the_habits/core/database/database.dart';
 import 'package:the_habits/core/providers/database_provider.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Penyedia stream untuk daftar kebiasaan berdasarkan tanggal tertentu.
 ///
