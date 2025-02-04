@@ -5,11 +5,15 @@ import 'package:the_habits/core/exception/ai_service_exception.dart';
 import 'package:the_habits/core/providers/ai_habit_provider.dart';
 import 'package:the_habits/core/providers/database_provider.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:the_habits/presentation/habit/widgets/ai_habit_approve_dialog.dart';
 import 'package:the_habits/presentation/habit/widgets/ai_habit_prompt_dialog.dart';
 
-class CreateHabitPage extends HookConsumerWidget {
+final hasReminderProvider = StateProvider<bool>((ref) => false);
+final reminderTimeProvider =
+    StateProvider<TimeOfDay?>((ref) => const TimeOfDay(hour: 10, minute: 0));
+final isLoadingProvider = StateProvider<bool>((ref) => false);
+
+class CreateHabitPage extends ConsumerWidget {
   const CreateHabitPage({super.key});
 
   @override
@@ -17,36 +21,16 @@ class CreateHabitPage extends HookConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
-    final titleController = useTextEditingController();
-    final descriptionController = useTextEditingController();
-    final hasReminder = useState(false);
-    final reminderTime =
-        useState<TimeOfDay?>(const TimeOfDay(hour: 10, minute: 0));
-    final isLoading = useState(false);
+    final titleController = TextEditingController();
+    final descriptionController = TextEditingController();
+    final hasReminder = ref.watch(hasReminderProvider);
+    final reminderTime = ref.watch(reminderTimeProvider);
+    final isLoading = ref.watch(isLoadingProvider);
 
     String? convertTimeOfDayTo24Hour(TimeOfDay? time) {
       if (time == null) return null;
       return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
     }
-
-    // void showAIIssueDialog(BuildContext context) {
-    //   showDialog(
-    //     context: context,
-    //     builder: (BuildContext context) {
-    //       return AlertDialog(
-    //         title: const Text('AI Service Issue'),
-    //         content: const Text(
-    //             'Sorry, there is currently an issue with Gemini. The AI service for creating habits is under maintenance.'),
-    //         actions: [
-    //           TextButton(
-    //             onPressed: () => Navigator.of(context).pop(),
-    //             child: const Text('Close'),
-    //           ),
-    //         ],
-    //       );
-    //     },
-    //   );
-    // }
 
     Future<void> onPressed() async {
       if (titleController.text.isEmpty) {
@@ -56,12 +40,12 @@ class CreateHabitPage extends HookConsumerWidget {
         return;
       }
 
-      isLoading.value = true;
+      ref.read(isLoadingProvider.notifier).state = true;
 
       final habit = HabitsCompanion.insert(
         title: titleController.text,
         description: drift.Value(descriptionController.text),
-        reminderTime: drift.Value(convertTimeOfDayTo24Hour(reminderTime.value)),
+        reminderTime: drift.Value(convertTimeOfDayTo24Hour(reminderTime)),
         createdAt: drift.Value(DateTime.now()),
       );
 
@@ -69,10 +53,11 @@ class CreateHabitPage extends HookConsumerWidget {
 
       titleController.clear();
       descriptionController.clear();
-      hasReminder.value = false;
-      reminderTime.value = const TimeOfDay(hour: 10, minute: 0);
+      ref.read(hasReminderProvider.notifier).state = false;
+      ref.read(reminderTimeProvider.notifier).state =
+          const TimeOfDay(hour: 10, minute: 0);
 
-      isLoading.value = false;
+      ref.read(isLoadingProvider.notifier).state = false;
 
       if (context.mounted) {
         showDialog(
@@ -109,7 +94,7 @@ class CreateHabitPage extends HookConsumerWidget {
       );
 
       if (prompt != null && prompt.isNotEmpty) {
-        isLoading.value = true;
+        ref.read(isLoadingProvider.notifier).state = true;
 
         try {
           final aiService = ref.read(aiHabitCreationProvider);
@@ -142,7 +127,7 @@ class CreateHabitPage extends HookConsumerWidget {
               content:
                   Text('An error occurred while creating the habit from AI')));
         } finally {
-          isLoading.value = false;
+          ref.read(isLoadingProvider.notifier).state = false;
         }
       }
     }
@@ -176,37 +161,47 @@ class CreateHabitPage extends HookConsumerWidget {
               children: [
                 TextFormField(
                   controller: titleController,
-                  decoration: const InputDecoration(hintText: 'Title'),
+                  decoration: InputDecoration(
+                    hintText: 'Title',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
                   style: TextStyle(color: colorScheme.primary),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: descriptionController,
-                  decoration: const InputDecoration(hintText: 'Description'),
+                  decoration: InputDecoration(
+                    hintText: 'Description',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
                   style: TextStyle(color: colorScheme.primary),
                 ),
                 const SizedBox(height: 16),
                 SwitchListTile(
-                  value: hasReminder.value,
+                  value: hasReminder,
                   onChanged: (value) {
-                    hasReminder.value = value;
+                    ref.read(hasReminderProvider.notifier).state = value;
                     if (value) {
                       showTimePicker(
                         context: context,
-                        initialTime: reminderTime.value ??
+                        initialTime: reminderTime ??
                             const TimeOfDay(hour: 10, minute: 0),
                       ).then((time) {
                         if (time != null) {
-                          reminderTime.value = time;
+                          ref.read(reminderTimeProvider.notifier).state = time;
                         }
                       });
                     }
                   },
                   title: Text('Has Reminder',
                       style: TextStyle(color: colorScheme.primary)),
-                  subtitle: hasReminder.value
+                  subtitle: hasReminder
                       ? Text(
-                          '${convertTimeOfDayTo24Hour(reminderTime.value)} ${getTimeZoneName()}',
+                          '${convertTimeOfDayTo24Hour(reminderTime)} ${getTimeZoneName()}',
                           style: TextStyle(color: colorScheme.primary),
                         )
                       : null,
@@ -219,6 +214,10 @@ class CreateHabitPage extends HookConsumerWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colorScheme.primary,
                       foregroundColor: colorScheme.onPrimary,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                     child: const Text('Create Habit'),
                   ),
@@ -231,6 +230,10 @@ class CreateHabitPage extends HookConsumerWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                     child: const Text('Create Habit with AI ✨'),
                   ),
@@ -238,7 +241,7 @@ class CreateHabitPage extends HookConsumerWidget {
               ],
             ),
           ),
-          if (isLoading.value)
+          if (isLoading)
             Container(
               color: Colors.black54,
               child: const Center(child: CircularProgressIndicator()),

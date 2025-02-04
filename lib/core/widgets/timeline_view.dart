@@ -4,11 +4,13 @@ import 'package:intl/intl.dart';
 class CustomTimelineView extends StatelessWidget {
   final DateTime selectedDate;
   final void Function(DateTime) onSelectedDateChange;
+  final ColorScheme colorScheme;
 
   const CustomTimelineView({
     super.key,
     required this.selectedDate,
     required this.onSelectedDateChange,
+    required this.colorScheme,
   });
 
   @override
@@ -42,10 +44,10 @@ class CustomTimelineView extends StatelessWidget {
               margin: EdgeInsets.symmetric(horizontal: 4),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? Colors.white
+                    ? colorScheme.primary
                     : isToday
                         ? Colors.grey
-                        : Colors.white.withValues(alpha: 0.1),
+                        : colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -54,7 +56,9 @@ class CustomTimelineView extends StatelessWidget {
                   Text(
                     date.day.toString(),
                     style: TextStyle(
-                      color: isSelected ? Colors.black : Colors.white,
+                      color: isSelected
+                          ? colorScheme.surface
+                          : colorScheme.primary,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -63,7 +67,9 @@ class CustomTimelineView extends StatelessWidget {
                   Text(
                     DateFormat('E').format(date).toLowerCase(),
                     style: TextStyle(
-                      color: isSelected ? Colors.black : Colors.white70,
+                      color: isSelected
+                          ? colorScheme.surface
+                          : colorScheme.primary,
                       fontSize: 14,
                     ),
                   ),

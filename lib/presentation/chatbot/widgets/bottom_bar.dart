@@ -25,10 +25,10 @@ class BottomBar extends StatelessWidget {
               controller: textController,
               decoration: InputDecoration(
                 filled: true,
-                fillColor: Colors.grey[900],
+                fillColor: colorScheme.surface,
                 hintText: 'Ask Gemini✨',
                 hintStyle: TextStyle(
-                  color: Colors.grey[500],
+                  color: colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
@@ -36,7 +36,7 @@ class BottomBar extends StatelessWidget {
                 ),
               ),
               style: TextStyle(
-                color: colorScheme.primary,
+                color: colorScheme.onSurface,
               ),
               keyboardType: TextInputType.multiline,
               maxLines: null,
@@ -52,14 +52,16 @@ class BottomBar extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
                   colors: [
-                    Colors.blueAccent,
-                    Color(0xFFFF4A00),
+                    colorScheme.primary,
+                    colorScheme.secondary,
                   ],
                 ),
               ),
               child: Icon(
                 Icons.send,
-                color: isLoading ? Colors.grey : Colors.white,
+                color: isLoading
+                    ? colorScheme.onSurface.withValues(alpha: 0.5)
+                    : colorScheme.onPrimary,
               ),
             ),
           ),

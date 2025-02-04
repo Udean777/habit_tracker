@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:the_habits/core/providers/daily_summary_provider.dart';
 import 'package:the_habits/core/providers/habits_for_date_provider.dart';
 import 'package:the_habits/core/widgets/timeline_view.dart';
@@ -9,22 +8,27 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:the_habits/presentation/home/widgets/habits_list.dart';
 import 'package:the_habits/presentation/home/widgets/home_appbar.dart';
 
-class HomePage extends HookConsumerWidget {
+final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
+
+class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedDate = useState(DateTime.now());
+    final selectedDate = ref.watch(selectedDateProvider.notifier);
     final dailySummaryAsyncValue =
-        ref.watch(dailySummaryProvider(selectedDate.value));
+        ref.watch(dailySummaryProvider(selectedDate.state));
     final habitsAsyncValue =
-        ref.watch(habitsForDateProvider(selectedDate.value));
+        ref.watch(habitsForDateProvider(selectedDate.state));
     final isLoading =
         dailySummaryAsyncValue.isLoading || habitsAsyncValue.isLoading;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: HomeAppbar(),
+      backgroundColor: colorScheme.surface,
+      appBar: HomeAppbar(
+        colorScheme: colorScheme,
+      ),
       body: isLoading
           ? Center(
               child: CircularProgressIndicator(),
@@ -35,18 +39,26 @@ class HomePage extends HookConsumerWidget {
                 SizedBox(
                   height: 20,
                 ),
-                DateHeader(selectedDate: selectedDate.value),
+                DateHeader(
+                  selectedDate: selectedDate.state,
+                  colorScheme: colorScheme,
+                ),
                 SizedBox(height: 8),
                 CustomTimelineView(
-                  selectedDate: selectedDate.value,
-                  onSelectedDateChange: (date) => selectedDate.value = date,
+                  selectedDate: selectedDate.state,
+                  onSelectedDateChange: (date) => selectedDate.state = date,
+                  colorScheme: colorScheme,
                 ),
-                DailySummary(dailySummaryAsyncValue: dailySummaryAsyncValue),
+                DailySummary(
+                  dailySummaryAsyncValue: dailySummaryAsyncValue,
+                  colorScheme: colorScheme,
+                ),
                 Expanded(
                   child: HabitsList(
                     habitsAsyncValue: habitsAsyncValue,
-                    selectedDate: selectedDate,
+                    selectedDate: ValueNotifier(selectedDate.state),
                     ref: ref,
+                    colorScheme: colorScheme,
                   ),
                 ),
               ],

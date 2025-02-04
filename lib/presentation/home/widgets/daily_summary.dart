@@ -3,8 +3,13 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class DailySummary extends StatelessWidget {
   final AsyncValue dailySummaryAsyncValue;
+  final ColorScheme colorScheme;
 
-  const DailySummary({required this.dailySummaryAsyncValue, super.key});
+  const DailySummary({
+    required this.dailySummaryAsyncValue,
+    super.key,
+    required this.colorScheme,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -13,20 +18,20 @@ class DailySummary extends StatelessWidget {
         margin: const EdgeInsets.all(16),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.green.withAlpha((0.2 * 255).toInt()),
+          color: colorScheme.primary,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              children: const [
-                Icon(Icons.check_circle, color: Colors.green),
-                SizedBox(width: 8),
+              children: [
+                Icon(Icons.check_circle, color: colorScheme.onPrimary),
+                const SizedBox(width: 8),
                 Text(
                   'Daily Summary',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: colorScheme.onPrimary,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -36,12 +41,13 @@ class DailySummary extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               '${data.$1} Completed • ${data.$2} Total',
-              style: const TextStyle(color: Colors.white70),
+              style: TextStyle(color: colorScheme.onPrimary.withValues(alpha: 0.7)),
             ),
           ],
         ),
       ),
-      error: (error, st) => Text(error.toString()),
+      error: (error, st) =>
+          Text(error.toString(), style: TextStyle(color: colorScheme.error)),
       loading: () => const SizedBox.shrink(),
     );
   }

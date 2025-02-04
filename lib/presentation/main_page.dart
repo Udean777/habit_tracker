@@ -6,7 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 final selectedIndexProvider = StateProvider<int>((ref) => 0);
 
-class MainPage extends HookConsumerWidget {
+class MainPage extends ConsumerWidget {
   const MainPage({super.key});
 
   @override
@@ -43,15 +43,15 @@ class MainPage extends HookConsumerWidget {
             ref.read(selectedIndexProvider.notifier).state = index;
           }
         },
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
         items: [
           BottomNavigationBarItem(
             icon: Image.asset(
               'assets/icons8-home-96.png',
               width: 30,
               height: 30,
-              color: colorScheme.primary,
+              color: selectedIndex == 0 ? colorScheme.primary : Colors.grey,
             ),
             label: "Home",
           ),
@@ -60,7 +60,7 @@ class MainPage extends HookConsumerWidget {
               'assets/icons8-add-100.png',
               width: 30,
               height: 30,
-              color: colorScheme.primary,
+              color: selectedIndex == 1 ? colorScheme.primary : Colors.grey,
             ),
             label: "Create",
           ),
@@ -69,14 +69,16 @@ class MainPage extends HookConsumerWidget {
               'assets/icons8-chat-96.png',
               width: 30,
               height: 30,
-              color: colorScheme.primary,
+              color: selectedIndex == 2 ? colorScheme.primary : Colors.grey,
             ),
             label: "Chat Bot",
           ),
         ],
-        backgroundColor: const Color(0xFF000000),
+        backgroundColor: colorScheme.onPrimary,
         selectedItemColor: colorScheme.primary,
         unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
+        elevation: 10,
       ),
     );
   }

@@ -48,17 +48,19 @@ class MainContent extends StatelessWidget {
                         _buildMessageCard(
                           message.message,
                           'You',
-                          Colors.white,
-                          colorScheme,
+                          colorScheme.primary,
+                          colorScheme.onPrimary,
                           message.timestamp,
+                          colorScheme,
                         ),
                         const SizedBox(height: 8),
                         _buildMessageCard(
                           message.response,
                           'Gemini',
-                          Colors.black,
-                          colorScheme,
+                          colorScheme.surface,
+                          colorScheme.onSurface,
                           message.timestamp,
+                          colorScheme,
                         ),
                         const SizedBox(height: 16),
                       ],
@@ -71,6 +73,7 @@ class MainContent extends StatelessWidget {
   }
 
   Widget _buildEmptyState(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -78,7 +81,7 @@ class MainContent extends StatelessWidget {
           Icon(
             Icons.chat_bubble_outline,
             size: 80,
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.6),
+            color: colorScheme.primary.withValues(alpha: 0.6),
           ),
           const SizedBox(height: 16),
           Text(
@@ -86,7 +89,7 @@ class MainContent extends StatelessWidget {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w600,
-              color: Theme.of(context).colorScheme.onSurface,
+              color: colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 8),
@@ -94,7 +97,7 @@ class MainContent extends StatelessWidget {
             'Start chatting with Gemini!',
             style: TextStyle(
               fontSize: 16,
-              color: Theme.of(context).colorScheme.onSurface,
+              color: colorScheme.onSurface,
             ),
           ),
         ],
@@ -106,14 +109,15 @@ class MainContent extends StatelessWidget {
     String text,
     String sender,
     Color backgroundColor,
-    ColorScheme colorScheme,
+    Color textColor,
     DateTime timestamp,
+    ColorScheme colorScheme,
   ) {
     bool isUser = sender == 'You';
     String formattedTime = DateFormat('hh:mm a').format(timestamp);
 
     TextStyle baseStyle = TextStyle(
-      color: isUser ? Colors.white : colorScheme.onSurface,
+      color: textColor,
       fontSize: 16,
     );
 
@@ -136,7 +140,7 @@ class MainContent extends StatelessWidget {
             Text(
               sender,
               style: TextStyle(
-                color: isUser ? colorScheme.onPrimary : colorScheme.primary,
+                color: textColor,
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
               ),
@@ -158,7 +162,7 @@ class MainContent extends StatelessWidget {
               child: Text(
                 formattedTime,
                 style: TextStyle(
-                  color: isUser ? colorScheme.onPrimary : colorScheme.primary,
+                  color: textColor.withValues(alpha: 0.7),
                   fontSize: 12,
                 ),
               ),

@@ -25,7 +25,7 @@ class Sidebar extends StatelessWidget {
 
     return Container(
       width: 300,
-      color: Colors.grey[900],
+      color: colorScheme.surface,
       child: Column(
         children: [
           Padding(
@@ -54,8 +54,6 @@ class Sidebar extends StatelessWidget {
                 final isSelected = session.session.id == currentSessionId;
 
                 developer.log(DateTime.now().toString());
-
-                // print(session.session);
 
                 return ListTile(
                   selected: isSelected,

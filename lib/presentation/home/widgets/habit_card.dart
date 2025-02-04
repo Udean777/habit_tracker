@@ -10,6 +10,7 @@ class HabitCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onComplete;
   final Color backgroundColor;
+  final ColorScheme colorScheme;
 
   const HabitCard({
     required this.title,
@@ -21,21 +22,25 @@ class HabitCard extends StatelessWidget {
     required this.onComplete,
     required this.backgroundColor,
     super.key,
+    required this.colorScheme,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      margin: EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
-          Icon(Icons.library_books_outlined, color: Colors.white70),
-          const SizedBox(width: 12),
+          Icon(
+            Icons.library_books_outlined,
+            color: colorScheme.onSurface,
+          ),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,7 +50,7 @@ class HabitCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: Colors.white,
+                    color: colorScheme.onSurface,
                     decoration: isCompleted ? TextDecoration.lineThrough : null,
                   ),
                 ),
@@ -53,7 +58,7 @@ class HabitCard extends StatelessWidget {
                   description,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.white70,
+                    color: colorScheme.onSurface,
                     decoration: isCompleted ? TextDecoration.lineThrough : null,
                   ),
                 ),
@@ -61,7 +66,7 @@ class HabitCard extends StatelessWidget {
                   parseTimeOfDay(reminderTime).format(context),
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.white70,
+                    color: colorScheme.onSurface,
                     decoration: isCompleted ? TextDecoration.lineThrough : null,
                   ),
                 ),
@@ -71,12 +76,12 @@ class HabitCard extends StatelessWidget {
           IconButton(
             icon: Icon(
               isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-              color: Colors.white70,
+              color: colorScheme.onSurface,
             ),
             onPressed: onComplete,
           ),
           PopupMenuButton<String>(
-            icon: Icon(Icons.more_vert, color: Colors.white70),
+            icon: Icon(Icons.more_vert, color: colorScheme.onSurface),
             onSelected: (String value) {
               switch (value) {
                 case 'Delete':
@@ -121,7 +126,7 @@ class HabitCard extends StatelessWidget {
                         Icons.delete,
                         color: Color(0xFFE57373),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Text('Delete'),
                     ],
                   ),

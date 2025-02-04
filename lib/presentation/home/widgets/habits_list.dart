@@ -10,12 +10,14 @@ class HabitsList extends StatelessWidget {
   final AsyncValue habitsAsyncValue;
   final ValueNotifier<DateTime> selectedDate;
   final WidgetRef ref;
+  final ColorScheme colorScheme;
 
   const HabitsList({
     required this.habitsAsyncValue,
     required this.selectedDate,
     required this.ref,
     super.key,
+    required this.colorScheme,
   });
 
   @override
@@ -26,7 +28,7 @@ class HabitsList extends StatelessWidget {
           return Center(
             child: Text(
               'No habits for today',
-              style: TextStyle(color: Colors.white70),
+              style: TextStyle(color: colorScheme.onSurface),
             ),
           );
         }
@@ -48,7 +50,7 @@ class HabitsList extends StatelessWidget {
                   width: 40,
                   child: Text(
                     '$hour:00',
-                    style: TextStyle(color: Colors.white70),
+                    style: TextStyle(color: colorScheme.onSurface),
                   ),
                 ),
                 if (habitsAtHour.isNotEmpty)
@@ -61,8 +63,8 @@ class HabitsList extends StatelessWidget {
                               description: habit.habit.description!,
                               reminderTime: habit.habit.reminderTime!,
                               isCompleted: habit.isCompleted,
-                              backgroundColor:
-                                  getBackgroundColor(habit.habit.title),
+                              backgroundColor: getBackgroundColor(
+                                  context, habit.habit.title),
                               onComplete: () async {
                                 if (isSameDay(
                                     selectedDate.value, DateTime.now())) {
@@ -91,6 +93,7 @@ class HabitsList extends StatelessWidget {
                                     .deleteHabit(habit.habit.id);
                               },
                               onEdit: () {},
+                              colorScheme: colorScheme,
                             ),
                           )
                           .toList(),
@@ -104,7 +107,7 @@ class HabitsList extends StatelessWidget {
       error: (error, st) => Center(
         child: Text(
           error.toString(),
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: colorScheme.onSurface),
         ),
       ),
       loading: () => SizedBox.shrink(),
