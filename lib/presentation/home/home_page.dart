@@ -36,7 +36,7 @@ class HomePage extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
-                  height: 20,
+                  height: 8,
                 ),
                 DateHeader(
                   selectedDate: selectedDate,

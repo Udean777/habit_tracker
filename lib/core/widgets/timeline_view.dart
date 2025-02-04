@@ -46,7 +46,7 @@ class CustomTimelineView extends StatelessWidget {
                 color: isSelected
                     ? colorScheme.primary
                     : isToday
-                        ? Colors.grey
+                        ? colorScheme.primary.withValues(alpha: 0.5)
                         : colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -65,7 +65,7 @@ class CustomTimelineView extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    DateFormat('E').format(date).toLowerCase(),
+                    DateFormat('E').format(date).toUpperCase(),
                     style: TextStyle(
                       color: isSelected
                           ? colorScheme.surface
