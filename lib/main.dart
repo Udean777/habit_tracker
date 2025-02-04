@@ -59,7 +59,10 @@ class MyApp extends StatelessWidget {
       darkTheme: FlexThemeData.dark(
         scheme: FlexScheme.blackWhite,
       ),
-      themeMode: ThemeMode.dark,
+      theme: FlexThemeData.light(
+        scheme: FlexScheme.bahamaBlue,
+      ),
+      // themeMode: ThemeMode.dark,
       home: const SplashPage(),
     );
   }
