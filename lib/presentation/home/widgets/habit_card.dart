@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:the_habits/core/utils/parse_timeofday.dart';
 
 class HabitCard extends StatelessWidget {
   final String title;
   final String description;
-  final TimeOfDay reminderTime;
+  final String reminderTime;
   final bool isCompleted;
   final VoidCallback onDelete;
   final VoidCallback onEdit;
@@ -56,6 +57,14 @@ class HabitCard extends StatelessWidget {
                     decoration: isCompleted ? TextDecoration.lineThrough : null,
                   ),
                 ),
+                Text(
+                  parseTimeOfDay(reminderTime).format(context),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white70,
+                    decoration: isCompleted ? TextDecoration.lineThrough : null,
+                  ),
+                ),
               ],
             ),
           ),
@@ -70,28 +79,40 @@ class HabitCard extends StatelessWidget {
             icon: Icon(Icons.more_vert, color: Colors.white70),
             onSelected: (String value) {
               switch (value) {
-                // Gonna implement edit later
-                // case 'Edit':
-                //   onEdit();
-                //   break;
                 case 'Delete':
-                  onDelete();
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Confirm Delete'),
+                        content:
+                            Text('Are you sure you want to delete this habit?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              onDelete();
+                            },
+                            child: Text(
+                              'Delete',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
                   break;
               }
             },
             itemBuilder: (BuildContext context) {
               return [
-                // Gonna implement edit later
-                // PopupMenuItem<String>(
-                //   value: 'Edit',
-                //   child: Row(
-                //     children: [
-                //       Icon(Icons.edit, color: Colors.black),
-                //       const SizedBox(width: 8),
-                //       Text('Edit'),
-                //     ],
-                //   ),
-                // ),
                 PopupMenuItem<String>(
                   value: 'Delete',
                   child: Row(

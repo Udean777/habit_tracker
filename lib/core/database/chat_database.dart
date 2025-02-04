@@ -66,9 +66,9 @@ class ChatDatabase extends _$ChatDatabase {
           ChatSession(
             id: row.read<int>('id'),
             title: row.read<String>('title'),
-            createdAt: DateTime.parse(row.read<String>('created_at')),
-            updatedAt: DateTime.parse(row.read<String>('updated_at')),
-            timestamp: DateTime.parse(row.read<String>('timestamp')),
+            createdAt: row.read<DateTime>('created_at'),
+            updatedAt: row.read<DateTime>('updated_at'),
+            timestamp: row.read<DateTime>('timestamp'),
           ),
           row.read<int>('message_count'),
         );

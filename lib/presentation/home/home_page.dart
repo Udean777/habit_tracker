@@ -152,8 +152,8 @@ class HomePage extends HookConsumerWidget {
                                               title: habit.habit.title,
                                               description:
                                                   habit.habit.description!,
-                                              reminderTime: parseTimeOfDay(
-                                                  habit.habit.reminderTime!),
+                                              reminderTime:
+                                                  habit.habit.reminderTime!,
                                               isCompleted: habit.isCompleted,
                                               backgroundColor:
                                                   getBackgroundColor(
