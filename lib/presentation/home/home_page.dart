@@ -15,11 +15,10 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedDate = ref.watch(selectedDateProvider.notifier);
+    final selectedDate = ref.watch(selectedDateProvider);
     final dailySummaryAsyncValue =
-        ref.watch(dailySummaryProvider(selectedDate.state));
-    final habitsAsyncValue =
-        ref.watch(habitsForDateProvider(selectedDate.state));
+        ref.watch(dailySummaryProvider(selectedDate));
+    final habitsAsyncValue = ref.watch(habitsForDateProvider(selectedDate));
     final isLoading =
         dailySummaryAsyncValue.isLoading || habitsAsyncValue.isLoading;
     final colorScheme = Theme.of(context).colorScheme;
@@ -40,13 +39,14 @@ class HomePage extends ConsumerWidget {
                   height: 20,
                 ),
                 DateHeader(
-                  selectedDate: selectedDate.state,
+                  selectedDate: selectedDate,
                   colorScheme: colorScheme,
                 ),
                 SizedBox(height: 8),
                 CustomTimelineView(
-                  selectedDate: selectedDate.state,
-                  onSelectedDateChange: (date) => selectedDate.state = date,
+                  selectedDate: selectedDate,
+                  onSelectedDateChange: (date) =>
+                      ref.read(selectedDateProvider.notifier).state = date,
                   colorScheme: colorScheme,
                 ),
                 DailySummary(
@@ -56,7 +56,7 @@ class HomePage extends ConsumerWidget {
                 Expanded(
                   child: HabitsList(
                     habitsAsyncValue: habitsAsyncValue,
-                    selectedDate: ValueNotifier(selectedDate.state),
+                    selectedDate: ValueNotifier(selectedDate),
                     ref: ref,
                     colorScheme: colorScheme,
                   ),

@@ -31,14 +31,14 @@ class HabitCard extends StatelessWidget {
       margin: EdgeInsets.only(bottom: 12),
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: backgroundColor,
+        color: colorScheme.primary,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
           Icon(
             Icons.library_books_outlined,
-            color: colorScheme.onSurface,
+            color: colorScheme.onPrimary,
           ),
           SizedBox(width: 12),
           Expanded(
@@ -49,8 +49,8 @@ class HabitCard extends StatelessWidget {
                   title,
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onPrimary,
                     decoration: isCompleted ? TextDecoration.lineThrough : null,
                   ),
                 ),
@@ -58,7 +58,7 @@ class HabitCard extends StatelessWidget {
                   description,
                   style: TextStyle(
                     fontSize: 14,
-                    color: colorScheme.onSurface,
+                    color: colorScheme.onPrimary,
                     decoration: isCompleted ? TextDecoration.lineThrough : null,
                   ),
                 ),
@@ -66,7 +66,7 @@ class HabitCard extends StatelessWidget {
                   parseTimeOfDay(reminderTime).format(context),
                   style: TextStyle(
                     fontSize: 14,
-                    color: colorScheme.onSurface,
+                    color: colorScheme.onPrimary,
                     decoration: isCompleted ? TextDecoration.lineThrough : null,
                   ),
                 ),
@@ -76,12 +76,12 @@ class HabitCard extends StatelessWidget {
           IconButton(
             icon: Icon(
               isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-              color: colorScheme.onSurface,
+              color: colorScheme.onPrimary,
             ),
             onPressed: onComplete,
           ),
           PopupMenuButton<String>(
-            icon: Icon(Icons.more_vert, color: colorScheme.onSurface),
+            icon: Icon(Icons.more_vert, color: colorScheme.onPrimary),
             onSelected: (String value) {
               switch (value) {
                 case 'Delete':
