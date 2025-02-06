@@ -7,6 +7,8 @@ class AIHabitApprovalDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return AlertDialog(
       title: Text(
         'Review your prompt result',
@@ -23,7 +25,7 @@ class AIHabitApprovalDialog extends StatelessWidget {
             'Title: ${habitDetails['title']}',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.white,
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -32,7 +34,7 @@ class AIHabitApprovalDialog extends StatelessWidget {
             'Description: ${habitDetails['description']}',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.white,
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -41,7 +43,7 @@ class AIHabitApprovalDialog extends StatelessWidget {
             'Reminder Time: ${habitDetails['reminderTime']}',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.white,
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -67,6 +69,7 @@ class AIHabitApprovalDialog extends StatelessWidget {
             'Approve',
             style: TextStyle(
               fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
           ),
         ),

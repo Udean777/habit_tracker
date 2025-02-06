@@ -112,12 +112,15 @@ class HabitsList extends StatelessWidget {
           },
         );
       },
-      error: (error, st) => Center(
-        child: Text(
-          error.toString(),
-          style: TextStyle(color: colorScheme.onSurface),
-        ),
-      ),
+      error: (error, st) {
+        print(error);
+        return Center(
+          child: Text(
+            'Error in habits list: ${error.toString()}',
+            style: TextStyle(color: colorScheme.onSurface),
+          ),
+        );
+      },
       loading: () => SizedBox.shrink(),
     );
   }

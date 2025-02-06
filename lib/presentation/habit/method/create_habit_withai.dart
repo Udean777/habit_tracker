@@ -35,17 +35,25 @@ Future<void> createHabitWithAI(
 
           if (success && context.mounted) {
             scaffoldMessenger.showSnackBar(
-              SnackBar(content: Text('Habit created successfully using AI!')),
+              SnackBar(
+                content: Text('Habit created successfully using AI!'),
+              ),
             );
           }
         }
       }
     } on AIServiceException catch (e) {
-      scaffoldMessenger
-          .showSnackBar(SnackBar(content: Text('Error: ${e.message}')));
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.message}'),
+        ),
+      );
     } catch (e) {
-      scaffoldMessenger.showSnackBar(SnackBar(
-          content: Text('An error occurred while creating the habit from AI')));
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text('An error occurred while creating the habit from AI'),
+        ),
+      );
     } finally {
       ref.read(isLoadingProvider.notifier).state = false;
     }

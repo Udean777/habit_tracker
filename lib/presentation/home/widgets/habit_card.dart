@@ -31,7 +31,7 @@ class HabitCard extends StatelessWidget {
       margin: EdgeInsets.only(bottom: 12),
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: colorScheme.primary,
+        color: isCompleted ? Colors.red : colorScheme.primary,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(

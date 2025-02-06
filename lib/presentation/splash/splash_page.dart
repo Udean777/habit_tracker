@@ -26,20 +26,21 @@ class _SplashPageState extends State<SplashPage> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final logoAsset = isDarkTheme ? 'assets/logo.png' : 'assets/logo_light.png';
 
     return Scaffold(
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
-          color: Colors.black,
+          color: isDarkTheme ? Colors.black : Colors.white,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 20,
           children: [
             Image.asset(
-              'assets/logo.png',
+              logoAsset,
               height: 300,
             ),
             Text(
