@@ -50,12 +50,7 @@ class BottomBar extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [
-                    colorScheme.primary,
-                    colorScheme.secondary,
-                  ],
-                ),
+                color: colorScheme.primary,
               ),
               child: Icon(
                 Icons.send,

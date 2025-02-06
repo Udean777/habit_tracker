@@ -146,15 +146,26 @@ class _ChatPageState extends ConsumerState<ChatPage> {
           value: model['id'],
           child: Text(
             model['name']!,
-            style: const TextStyle(color: Colors.grey, fontSize: 14),
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 14,
+            ),
           ),
         );
       }).toList(),
-      style: const TextStyle(color: Colors.grey, fontSize: 14),
-      icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey, size: 16),
+      style: const TextStyle(
+        color: Colors.black,
+        fontSize: 14,
+      ),
+      icon: const Icon(
+        Icons.keyboard_arrow_down,
+        color: Colors.black,
+        size: 16,
+      ),
       underline: Container(),
-      dropdownColor: Colors.grey[900],
+      dropdownColor: Colors.white,
       isDense: true,
+      alignment: Alignment.center,
     );
   }
 
