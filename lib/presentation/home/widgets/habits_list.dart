@@ -47,10 +47,12 @@ class HabitsList extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
-                  width: 40,
+                  width: 50,
                   child: Text(
                     '$hour:00',
                     style: TextStyle(color: colorScheme.onSurface),
+                    maxLines: 1,
+                    overflow: TextOverflow.fade,
                   ),
                 ),
                 if (habitsAtHour.isNotEmpty)
@@ -64,14 +66,20 @@ class HabitsList extends StatelessWidget {
                               reminderTime: habit.habit.reminderTime!,
                               isCompleted: habit.isCompleted,
                               backgroundColor: getBackgroundColor(
-                                  context, habit.habit.title),
+                                context,
+                                habit.habit.title,
+                              ),
                               onComplete: () async {
                                 if (isSameDay(
-                                    selectedDate.value, DateTime.now())) {
+                                  selectedDate.value,
+                                  DateTime.now(),
+                                )) {
                                   await ref
                                       .read(databaseProvider)
                                       .completeHabit(
-                                          habit.habit.id, selectedDate.value);
+                                        habit.habit.id,
+                                        selectedDate.value,
+                                      );
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(

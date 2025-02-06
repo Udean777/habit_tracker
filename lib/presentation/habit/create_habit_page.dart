@@ -10,6 +10,12 @@ final hasReminderProvider = StateProvider<bool>((ref) => false);
 final reminderTimeProvider =
     StateProvider<TimeOfDay?>((ref) => const TimeOfDay(hour: 10, minute: 0));
 final isLoadingProvider = StateProvider<bool>((ref) => false);
+final titleControllerProvider = StateProvider<TextEditingController>(
+  (ref) => TextEditingController(),
+);
+final descriptionControllerProvider = StateProvider<TextEditingController>(
+  (ref) => TextEditingController(),
+);
 
 class CreateHabitPage extends ConsumerWidget {
   const CreateHabitPage({super.key});
@@ -19,8 +25,8 @@ class CreateHabitPage extends ConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
-    final titleController = TextEditingController();
-    final descriptionController = TextEditingController();
+    final titleController = ref.watch(titleControllerProvider);
+    final descriptionController = ref.watch(descriptionControllerProvider);
     final hasReminder = ref.watch(hasReminderProvider);
     final reminderTime = ref.watch(reminderTimeProvider);
     final isLoading = ref.watch(isLoadingProvider);

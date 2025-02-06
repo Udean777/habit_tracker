@@ -11,7 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 ///
 /// [date] adalah parameter tanggal yang digunakan untuk memfilter kebiasaan.
 ///
-/// [databse] adalah instance dari database yang diambil dari [databaseProvider].
+/// [database] adalah instance dari database yang diambil dari [databaseProvider].
 ///
 /// Mengembalikan stream dari daftar [HabitWithCompletion] yang difilter berdasarkan [date].
 
