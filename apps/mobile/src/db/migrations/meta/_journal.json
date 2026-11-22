@@ -8,6 +8,13 @@
       "when": 1795341966491,
       "tag": "0000_youthful_thundra",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1795370016974,
+      "tag": "0001_flimsy_thunderbolts",
+      "breakpoints": true
     }
   ]
 }

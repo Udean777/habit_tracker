@@ -10,6 +10,17 @@ export const colors = {
   border: "#E5E5E5",
 } as const;
 
+export const worldColors = {
+  nightBg: "#070B14",
+  nightSurface: "#111827",
+  glowCyan: "#22D3EE",
+  glowEmerald: "#34D399",
+  glowViolet: "#A78BFA",
+  glowAmber: "#FBBF24",
+  dimmed: "#475569",
+  particle: "#BAE6FD",
+} as const;
+
 export const spacing = {
   xs: 4,
   sm: 8,

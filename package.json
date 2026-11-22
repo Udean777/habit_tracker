@@ -1,7 +1,10 @@
 {
   "name": "habit-tracker",
   "private": true,
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev:api": "bun run --filter @habit/api dev",
     "dev:mobile": "bun run --filter @habit/mobile start",
