@@ -1,0 +1,26 @@
+{
+  "name": "@habit/api",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "bun run --hot src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo \"configure eslint\"",
+    "test": "bun test",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
+  },
+  "dependencies": {
+    "@habit/shared": "workspace:*",
+    "@hono/zod-validator": "latest",
+    "drizzle-orm": "latest",
+    "hono": "latest",
+    "postgres": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "drizzle-kit": "latest",
+    "typescript": "^5.9.3"
+  }
+}

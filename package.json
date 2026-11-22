@@ -1,0 +1,17 @@
+{
+  "name": "habit-tracker",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev:api": "bun run --filter @habit/api dev",
+    "dev:mobile": "bun run --filter @habit/mobile start",
+    "typecheck": "bun run --filter '*' typecheck",
+    "lint": "bun run --filter '*' lint",
+    "test": "bun run --filter '*' test",
+    "db:generate": "bun run --filter @habit/mobile db:generate && bun run --filter @habit/api db:generate",
+    "db:migrate": "bun run --filter @habit/api db:migrate"
+  },
+  "overrides": {
+    "lightningcss": "1.30.1"
+  }
+}
