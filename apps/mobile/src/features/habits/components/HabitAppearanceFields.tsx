@@ -1,28 +1,17 @@
 import { Pressable, View } from "react-native";
-import type { HabitColorKey, HabitIconKey } from "@habit/shared";
+import {
+  habitColorKeySchema,
+  habitIconKeySchema,
+  type HabitColorKey,
+  type HabitIconKey,
+} from "@habit/shared";
 import { HabitIcon } from "@/components/HabitIcon";
 import { Text } from "@/components/Text";
 import { habitAccents, radii } from "@/theme/tokens";
 import { useTheme } from "@/theme/useTheme";
 
-const ICON_KEYS: readonly HabitIconKey[] = [
-  "check",
-  "book",
-  "water",
-  "run",
-  "code",
-  "moon",
-  "leaf",
-  "flame",
-];
-
-const COLOR_KEYS: readonly HabitColorKey[] = [
-  "primary",
-  "emerald",
-  "violet",
-  "amber",
-  "cyan",
-];
+const ICON_KEYS = habitIconKeySchema.options;
+const COLOR_KEYS = habitColorKeySchema.options;
 
 type HabitAppearanceFieldsProps = {
   readonly selectedIcon: HabitIconKey;
@@ -53,6 +42,7 @@ export function HabitAppearanceFields({
               key={iconKey}
               accessibilityRole="button"
               accessibilityLabel={`Icon ${iconKey}`}
+              accessibilityState={{ selected: active }}
               onPress={() => onSelectIcon(iconKey)}
               style={{
                 borderRadius: radii.button,
@@ -66,7 +56,7 @@ export function HabitAppearanceFields({
               <HabitIcon
                 icon={iconKey}
                 size={20}
-                color={active ? "#FFFFFF" : colors.textPrimary}
+                color={active ? colors.primaryText : colors.textPrimary}
               />
             </Pressable>
           );

@@ -3,8 +3,10 @@ import {
   addDays,
   computeStreak,
   diffDays,
+  groupLogsByHabit,
   isScheduledOnDay,
   isWithinBackfillWindow,
+  toHabitSchedule,
   toLocalDate,
 } from "../index";
 
@@ -151,5 +153,31 @@ describe("computeStreak", () => {
 
     expect(stats.currentStreak).toBe(4);
     expect(stats.bestStreak).toBe(4);
+  });
+
+  it("maps habit record fields to schedule and groups logs by habitId", () => {
+    const schedule = toHabitSchedule({
+      scheduleType: "weekdays",
+      scheduleDays: 21,
+      scheduleTimes: null,
+    });
+    expect(schedule).toEqual({
+      type: "weekdays",
+      daysBitmask: 21,
+      timesPerWeek: null,
+    });
+
+    const grouped = groupLogsByHabit(
+      [
+        { habitId: "h1", logDate: "2026-11-22", value: 1 },
+        { habitId: "h1", logDate: "2026-11-23", value: 2 },
+        { habitId: "h2", logDate: "2026-11-23", value: 5 },
+      ],
+      "2026-11-23",
+    );
+
+    expect(grouped.logsByHabitId.get("h1")).toHaveLength(2);
+    expect(grouped.valueOnTargetDateByHabitId.get("h1")).toBe(2);
+    expect(grouped.valueOnTargetDateByHabitId.get("h2")).toBe(5);
   });
 });

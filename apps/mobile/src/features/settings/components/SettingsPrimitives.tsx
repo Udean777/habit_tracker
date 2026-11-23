@@ -9,6 +9,7 @@ import Animated, {
 import Check from "lucide-react-native/icons/check";
 import ChevronDown from "lucide-react-native/icons/chevron-down";
 import ChevronRight from "lucide-react-native/icons/chevron-right";
+import { Badge } from "@/components/Badge";
 import { Text } from "@/components/Text";
 import { radii } from "@/theme/tokens";
 import { useTheme } from "@/theme/useTheme";
@@ -27,7 +28,7 @@ export function Section({
       layout={LinearTransition.duration(180).easing(Easing.out(Easing.cubic))}
       className="mb-6"
     >
-      <Text className="mb-2 px-1 text-xs font-bold uppercase tracking-wider text-[#6B6285]">
+      <Text variant="label" className="mb-2 px-1">
         {title}
       </Text>
       <Animated.View
@@ -84,7 +85,9 @@ export function SettingRow<T extends string | number>({
         className="min-h-[56px] flex-row items-center justify-between px-4 py-3"
       >
         <View className="flex-1 pr-3">
-          <Text className="text-base font-semibold text-[#2A2140]">{title}</Text>
+          <Text variant="body" className="font-semibold">
+            {title}
+          </Text>
           {subtitle ? (
             <Text variant="caption" className="mt-0.5">
               {subtitle}
@@ -92,17 +95,12 @@ export function SettingRow<T extends string | number>({
           ) : null}
         </View>
         <View className="flex-row items-center gap-1.5">
-          <View
-            style={{
-              borderRadius: radii.badge,
-              backgroundColor: colors.surfaceMuted,
-            }}
+          <Badge
+            label={valueLabel}
+            variant="muted"
             className="px-2.5 py-1"
-          >
-            <Text className="text-xs font-bold capitalize text-[#2A2140]">
-              {valueLabel}
-            </Text>
-          </View>
+            textClassName="text-xs font-bold capitalize"
+          />
           {expanded ? (
             <ChevronDown size={16} color={colors.primary} />
           ) : (
@@ -140,10 +138,9 @@ export function SettingRow<T extends string | number>({
                 className="min-h-[44px] flex-row items-center justify-between px-3 py-2"
               >
                 <Text
+                  tone={isSelected ? "primary" : "secondary"}
                   className={`text-sm capitalize ${
-                    isSelected
-                      ? "font-bold text-[#2A2140]"
-                      : "font-medium text-[#6B6285]"
+                    isSelected ? "font-bold" : "font-medium"
                   }`}
                 >
                   {opt.label}

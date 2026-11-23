@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Pressable, View } from "react-native";
-import * as Haptics from "expo-haptics";
+import { Card } from "@/components/Card";
 import { Text } from "@/components/Text";
 import type { HeatmapCell } from "@/features/stats/mappers";
-import type { QualityTier } from "@/features/world/mappers";
 import { formatReadableDate } from "@/lib/dateFormat";
-import { elevation, radii } from "@/theme/tokens";
+import { triggerHaptic } from "@/lib/haptics";
+import type { QualityTier } from "@/lib/motion";
 import { useTheme } from "@/theme/useTheme";
 
 type FluidHeatmapProps = {
@@ -40,25 +40,11 @@ export function FluidHeatmap({
 
   function handleSelect(cell: HeatmapCell) {
     setSelectedCell(cell);
-    if (hapticsEnabled) {
-      void Haptics.selectionAsync().catch(() => {});
-    }
+    triggerHaptic("selection", hapticsEnabled);
   }
 
   return (
-    <View
-      style={[
-        {
-          borderRadius: radii.card,
-          borderWidth: 2,
-          borderBottomWidth: 4,
-          borderColor: colors.border,
-          backgroundColor: colors.surface,
-        },
-        elevation.card,
-      ]}
-      className="mb-4 p-4"
-    >
+    <Card elevated className="mb-4 p-4">
       <View className="flex-row flex-wrap gap-1.5">
         {monthCells.map((cell) => {
           const isSelected = selectedCell?.date === cell.date;
@@ -133,6 +119,6 @@ export function FluidHeatmap({
           />
         </View>
       </View>
-    </View>
+    </Card>
   );
 }

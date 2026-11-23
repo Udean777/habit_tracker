@@ -80,6 +80,15 @@ export const settingsSchema = z.object({
 });
 export type Settings = z.infer<typeof settingsSchema>;
 
+export const DEFAULT_SETTINGS: Settings = {
+  theme: "system",
+  hapticsEnabled: true,
+  reduceMotion: "system",
+  qualityTier: "auto",
+  dayStartOffsetMin: 0,
+  backfillWindowDays: 14,
+};
+
 export const outboxEntitySchema = z.enum([
   "habit",
   "habit_log",

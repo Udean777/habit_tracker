@@ -9,6 +9,8 @@ import Animated, {
 } from "react-native-reanimated";
 import Flame from "lucide-react-native/icons/flame";
 import Trophy from "lucide-react-native/icons/trophy";
+import { Badge } from "@/components/Badge";
+import { Card } from "@/components/Card";
 import { Text } from "@/components/Text";
 import { useUiStore } from "@/stores/uiStore";
 import { radii } from "@/theme/tokens";
@@ -73,16 +75,7 @@ export function QuestHud({ progress, reduceMotion }: QuestHudProps) {
     progress.completedToday === progress.scheduledToday;
 
   return (
-    <View
-      style={{
-        borderRadius: radii.card,
-        borderWidth: 2,
-        borderBottomWidth: 4,
-        borderColor: colors.primaryPressed,
-        backgroundColor: colors.primary,
-      }}
-      className="mb-4 p-4"
-    >
+    <Card variant="primary" className="mb-4 p-4">
       <View className="flex-row items-center gap-3.5">
         <PixelAvatar
           state={avatarState}
@@ -94,59 +87,62 @@ export function QuestHud({ progress, reduceMotion }: QuestHudProps) {
         <View className="flex-1">
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center gap-2">
-              <Animated.View
-                style={[
-                  {
-                    borderRadius: radii.badge,
-                    backgroundColor: colors.accent,
-                  },
-                  badgeStyle,
-                ]}
-                className="flex-row items-center gap-1 px-2 py-0.5"
-              >
-                <Trophy size={13} color={colors.textPrimary} strokeWidth={2.5} />
-                <Text
+              <Animated.View style={badgeStyle}>
+                <Badge
+                  label={`LVL ${progress.level}`}
+                  variant="accent"
                   tabularNums
-                  className="text-xs font-extrabold text-[#2A2140]"
-                >
-                  LVL {progress.level}
-                </Text>
+                  icon={
+                    <Trophy
+                      size={13}
+                      color={colors.accentText}
+                      strokeWidth={2.5}
+                    />
+                  }
+                />
               </Animated.View>
               <Text
                 numberOfLines={1}
-                className="text-sm font-extrabold text-white"
+                tone="onPrimary"
+                className="text-sm font-extrabold"
               >
                 {avatarState.classTitle}
               </Text>
             </View>
 
             {progress.comboMultiplier >= 2 ? (
-              <Animated.View
-                style={[
-                  {
-                    borderRadius: radii.pill,
-                    backgroundColor: colors.accent,
-                  },
-                  badgeStyle,
-                ]}
-                className="flex-row items-center gap-1 px-2 py-0.5"
-              >
-                <Flame size={13} color={colors.textPrimary} strokeWidth={2.5} />
-                <Text
+              <Animated.View style={badgeStyle}>
+                <Badge
+                  label={`${progress.comboMultiplier}x`}
+                  variant="accent"
+                  pill
                   tabularNums
-                  className="text-[11px] font-extrabold text-[#2A2140]"
-                >
-                  {progress.comboMultiplier}x
-                </Text>
+                  textClassName="text-[11px] font-extrabold"
+                  icon={
+                    <Flame
+                      size={13}
+                      color={colors.accentText}
+                      strokeWidth={2.5}
+                    />
+                  }
+                />
               </Animated.View>
             ) : null}
           </View>
 
           <View className="mt-1.5 flex-row items-center justify-between">
-            <Text tabularNums className="text-xs font-bold text-white/95">
+            <Text
+              tabularNums
+              tone="onPrimary"
+              className="text-xs font-bold opacity-95"
+            >
               {progress.xpIntoLevel} / {progress.xpForNextLevel} XP
             </Text>
-            <Text tabularNums className="text-xs font-semibold text-white/85">
+            <Text
+              tabularNums
+              tone="onPrimary"
+              className="text-xs font-semibold opacity-85"
+            >
               {progress.completedToday}/{progress.scheduledToday} Quests
             </Text>
           </View>
@@ -176,13 +172,16 @@ export function QuestHud({ progress, reduceMotion }: QuestHudProps) {
             />
           </View>
 
-          <Text className="mt-1.5 text-[11px] font-medium text-white/90">
+          <Text
+            tone="onPrimary"
+            className="mt-1.5 text-[11px] font-medium opacity-90"
+          >
             {allDone
               ? "All daily quests complete! +25 XP bonus earned."
               : `${progress.scheduledToday - progress.completedToday} quests left today (+25 XP each)`}
           </Text>
         </View>
       </View>
-    </View>
+    </Card>
   );
 }

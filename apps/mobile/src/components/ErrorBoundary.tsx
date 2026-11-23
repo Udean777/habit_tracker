@@ -26,7 +26,7 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <View className="flex-1 items-center justify-center gap-4 bg-white p-6">
+        <View className="flex-1 items-center justify-center gap-4 p-6">
           <Text variant="title">Something went wrong</Text>
           <Text variant="caption" className="text-center">
             {this.state.message || "An unexpected error occurred."}

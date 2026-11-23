@@ -7,6 +7,32 @@ export type DayLogEntry = {
   readonly value: number;
 };
 
+export function groupLogsByHabit(
+  logs: readonly {
+    readonly habitId: string;
+    readonly logDate: LocalDate;
+    readonly value: number;
+  }[],
+  targetDate?: LocalDate,
+): {
+  readonly logsByHabitId: ReadonlyMap<string, readonly DayLogEntry[]>;
+  readonly valueOnTargetDateByHabitId: ReadonlyMap<string, number>;
+} {
+  const logsByHabitId = new Map<string, DayLogEntry[]>();
+  const valueOnTargetDateByHabitId = new Map<string, number>();
+
+  for (const log of logs) {
+    const list = logsByHabitId.get(log.habitId) ?? [];
+    list.push({ logDate: log.logDate, value: log.value });
+    logsByHabitId.set(log.habitId, list);
+    if (targetDate !== undefined && log.logDate === targetDate) {
+      valueOnTargetDateByHabitId.set(log.habitId, log.value);
+    }
+  }
+
+  return { logsByHabitId, valueOnTargetDateByHabitId };
+}
+
 export type StreakStats = {
   readonly currentStreak: number;
   readonly bestStreak: number;

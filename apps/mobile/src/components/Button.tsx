@@ -1,21 +1,22 @@
-import * as Haptics from "expo-haptics";
-import { Pressable, Text } from "react-native";
+import { Pressable } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
+import { triggerHaptic } from "@/lib/haptics";
 import { motion, radii } from "@/theme/tokens";
 import { useTheme } from "@/theme/useTheme";
+import { Text } from "./Text";
 
 type ButtonVariant = "primary" | "secondary" | "danger";
 
 type ButtonProps = {
-  label: string;
-  onPress: () => void;
-  variant?: ButtonVariant;
-  disabled?: boolean;
-  className?: string;
+  readonly label: string;
+  readonly onPress: () => void;
+  readonly variant?: ButtonVariant;
+  readonly disabled?: boolean;
+  readonly className?: string;
 };
 
 export function Button({
@@ -32,11 +33,8 @@ export function Button({
     variant === "primary"
       ? { backgroundColor: colors.primary, borderColor: colors.primaryPressed }
       : variant === "danger"
-        ? { backgroundColor: colors.danger, borderColor: "#991B1B" }
+        ? { backgroundColor: colors.danger, borderColor: colors.dangerPressed }
         : { backgroundColor: colors.surfaceMuted, borderColor: colors.border };
-
-  const labelColor =
-    variant === "secondary" ? colors.textPrimary : "#FFFFFF";
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: pressProgress.value * 2 }],
@@ -44,7 +42,7 @@ export function Button({
 
   function handlePressIn() {
     pressProgress.value = withSpring(1, motion.springs.snappy);
-    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    triggerHaptic("light");
   }
 
   function handlePressOut() {
@@ -52,7 +50,7 @@ export function Button({
   }
 
   return (
-    <Animated.View style={animatedStyle}>
+    <Animated.View style={animatedStyle} className={className}>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={label}
@@ -64,9 +62,12 @@ export function Button({
           variantStyle,
           { borderRadius: radii.button, borderBottomWidth: 3 },
         ]}
-        className={`min-h-[44px] items-center justify-center px-4 py-2 ${disabled ? "opacity-50" : ""} ${className}`}
+        className={`min-h-[44px] items-center justify-center px-4 py-2 ${disabled ? "opacity-50" : ""}`}
       >
-        <Text className="font-semibold" style={{ color: labelColor }}>
+        <Text
+          className="font-semibold"
+          tone={variant === "secondary" ? "primary" : "onPrimary"}
+        >
           {label}
         </Text>
       </Pressable>

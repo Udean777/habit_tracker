@@ -1,5 +1,4 @@
 import { useEffect, useMemo } from "react";
-import * as Haptics from "expo-haptics";
 import { Pressable, View } from "react-native";
 import { Canvas, Group, Rect, RoundedRect } from "@shopify/react-native-skia";
 import {
@@ -11,6 +10,7 @@ import {
   withTiming,
   type SharedValue,
 } from "react-native-reanimated";
+import { triggerHaptic } from "@/lib/haptics";
 import { radii } from "@/theme/tokens";
 import { useTheme } from "@/theme/useTheme";
 import type { AvatarVisualState } from "../avatarMapper";
@@ -178,7 +178,7 @@ export function PixelAvatar({
   }, [reduceMotion, frameCount, phase]);
 
   function handlePress() {
-    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    triggerHaptic("light");
     if (reduceMotion || frameCount <= 1) return;
     const nextStart = (Math.floor(phase.get()) + 1) % frameCount;
     phase.set(nextStart);

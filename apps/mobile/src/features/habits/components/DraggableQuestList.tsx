@@ -10,7 +10,8 @@ import Animated, {
   type SharedValue,
 } from "react-native-reanimated";
 import GripVertical from "lucide-react-native/icons/grip-vertical";
-import { colors, motion } from "@/theme/tokens";
+import { motion } from "@/theme/tokens";
+import { useTheme } from "@/theme/useTheme";
 
 const ROW_HEIGHT = 104;
 
@@ -35,6 +36,7 @@ function SortableItem({
   onReorder,
   children,
 }: SortableItemProps) {
+  const { colors } = useTheme();
   const dragY = useSharedValue(0);
   const originY = useSharedValue(0);
   const slotY = useSharedValue(index * ROW_HEIGHT);

@@ -1,4 +1,9 @@
-import { isDayCompleted, isScheduledOnDay, type LocalDate } from "@habit/shared";
+import {
+  isDayCompleted,
+  isScheduledOnDay,
+  toHabitSchedule,
+  type LocalDate,
+} from "@habit/shared";
 import type { HabitLogRecord } from "@/features/logs";
 import type { HabitRecord } from "./repository";
 
@@ -40,15 +45,7 @@ export function computeQuestProgress(
   }
 
   for (const habit of habits) {
-    const scheduled = isScheduledOnDay(
-      {
-        type: habit.scheduleType,
-        daysBitmask: habit.scheduleDays,
-        timesPerWeek: habit.scheduleTimes,
-      },
-      selectedDate,
-    );
-    if (!scheduled) continue;
+    if (!isScheduledOnDay(toHabitSchedule(habit), selectedDate)) continue;
     scheduledToday += 1;
     const val = todayLogs.get(habit.id) ?? 0;
     if (isDayCompleted(val, habit.type, habit.targetValue)) {

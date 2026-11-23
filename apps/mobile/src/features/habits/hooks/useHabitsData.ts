@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { getDeviceLocalDate, type LocalDate, type Settings } from "@habit/shared";
+import {
+  DEFAULT_SETTINGS,
+  getDeviceLocalDate,
+  type LocalDate,
+  type Settings,
+} from "@habit/shared";
 import {
   listActiveHabits,
   listArchivedHabits,
@@ -25,15 +30,6 @@ type HabitsDataState = {
   readonly effectiveToday: LocalDate;
 };
 
-const INITIAL_SETTINGS: Settings = {
-  theme: "system",
-  hapticsEnabled: true,
-  reduceMotion: "system",
-  qualityTier: "auto",
-  dayStartOffsetMin: 0,
-  backfillWindowDays: 14,
-};
-
 export function useHabitsData() {
   const dataVersion = useUiStore((s) => s.dataVersion);
   const bumpDataVersion = useUiStore((s) => s.bumpDataVersion);
@@ -44,7 +40,7 @@ export function useHabitsData() {
     activeHabits: [],
     archivedHabits: [],
     logs: [],
-    settings: INITIAL_SETTINGS,
+    settings: DEFAULT_SETTINGS,
     pendingOutbox: 0,
     effectiveToday: getDeviceLocalDate(),
   });

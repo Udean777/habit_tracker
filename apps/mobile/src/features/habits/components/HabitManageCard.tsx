@@ -1,8 +1,7 @@
 import { View } from "react-native";
 import { Button } from "@/components/Button";
+import { Card } from "@/components/Card";
 import { Text } from "@/components/Text";
-import { radii } from "@/theme/tokens";
-import { useTheme } from "@/theme/useTheme";
 
 type HabitManageCardProps = {
   readonly onArchive: () => void;
@@ -13,18 +12,8 @@ export function HabitManageCard({
   onArchive,
   onDelete,
 }: HabitManageCardProps) {
-  const { colors } = useTheme();
-
   return (
-    <View
-      style={{
-        borderRadius: radii.card,
-        borderWidth: 1,
-        borderColor: colors.border,
-        backgroundColor: colors.surface,
-      }}
-      className="mb-4 p-4"
-    >
+    <Card tactile={false} className="mb-4 p-4">
       <Text variant="heading" className="mb-1">
         Manage Quest
       </Text>
@@ -45,6 +34,6 @@ export function HabitManageCard({
           onPress={onDelete}
         />
       </View>
-    </View>
+    </Card>
   );
 }

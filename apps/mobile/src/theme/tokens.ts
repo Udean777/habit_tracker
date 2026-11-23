@@ -15,6 +15,8 @@ export const lightColors = {
   sky: "#4FB3FF",
   success: "#15803D",
   danger: "#DC2626",
+  dangerPressed: "#991B1B",
+  dangerSurface: "#FEF2F2",
   border: "#A9D8FF",
   borderStrong: "#6B6285",
 } as const;
@@ -34,6 +36,8 @@ export const darkColors = {
   sky: "#4FB3FF",
   success: "#22C55E",
   danger: "#EF4444",
+  dangerPressed: "#B91C1C",
+  dangerSurface: "#3B1822",
   border: "#3B3159",
   borderStrong: "#6B6285",
 } as const;
@@ -51,17 +55,6 @@ export const habitAccents: Record<HabitColorKey, string> = {
   amber: "#D97706",
   cyan: "#0891B2",
 };
-
-export const worldColors = {
-  nightBg: "#070B14",
-  nightSurface: "#111827",
-  glowCyan: "#22D3EE",
-  glowEmerald: "#34D399",
-  glowViolet: "#A78BFA",
-  glowAmber: "#FBBF24",
-  dimmed: "#475569",
-  particle: "#BAE6FD",
-} as const;
 
 export const spacing = {
   xs: 4,

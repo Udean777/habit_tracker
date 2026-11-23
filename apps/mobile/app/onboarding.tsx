@@ -7,7 +7,8 @@ import { HabitIcon } from "@/components/HabitIcon";
 import { Screen } from "@/components/Screen";
 import { Text } from "@/components/Text";
 import { useHabitsData } from "@/features/habits";
-import { colors, radii } from "@/theme/tokens";
+import { radii } from "@/theme/tokens";
+import { useTheme } from "@/theme/useTheme";
 
 type Preset = Omit<CreateHabitInput, "startDate">;
 
@@ -59,6 +60,7 @@ const PRESETS: readonly Preset[] = [
 ];
 
 export default function OnboardingScreen() {
+  const { colors } = useTheme();
   const { effectiveToday, onCreateHabit } = useHabitsData();
   const [selected, setSelected] = useState<readonly string[]>([
     "Morning Walk",
@@ -98,7 +100,8 @@ export default function OnboardingScreen() {
         </View>
         <Text variant="title">Welcome to Glimkin</Text>
         <Text variant="caption" className="mt-1 mb-6">
-          Pick a few starter quests. Every completion earns XP and levels up your hero.
+          Pick a few starter quests. Every completion earns XP and levels up
+          your hero.
         </Text>
 
         <View className="gap-3">
@@ -109,6 +112,7 @@ export default function OnboardingScreen() {
                 key={preset.name}
                 accessibilityRole="button"
                 accessibilityLabel={`Select ${preset.name}`}
+                accessibilityState={{ selected: active }}
                 onPress={() => togglePreset(preset.name)}
                 style={{
                   borderRadius: radii.card,

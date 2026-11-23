@@ -1,20 +1,11 @@
 import { eq, like } from "drizzle-orm";
-import { settingsSchema, type Settings } from "@habit/shared";
+import { DEFAULT_SETTINGS, settingsSchema, type Settings } from "@habit/shared";
 import { appDb, type AppDb } from "@/db/client";
 import { habits, settings, syncState } from "@/db/schema";
 import { createId } from "@/lib/id";
 import { enqueueOutbox } from "@/sync/outbox";
 
 const SINGLETON_ID = "singleton";
-
-const DEFAULT_SETTINGS: Settings = {
-  theme: "system",
-  hapticsEnabled: true,
-  reduceMotion: "system",
-  qualityTier: "auto",
-  dayStartOffsetMin: 0,
-  backfillWindowDays: 14,
-};
 
 function mapRowToSettings(row: typeof settings.$inferSelect): Settings {
   return settingsSchema.parse({

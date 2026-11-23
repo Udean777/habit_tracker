@@ -10,15 +10,15 @@ import {
   DateStrip,
   DraggableQuestList,
   HabitQuestRow,
+  OffDayQuestsSection,
   QuestHud,
   computeQuestProgress,
   useHabitsData,
+  useTodayQuests,
   type HabitRecord,
 } from "@/features/habits";
-import { parseLocalDateParts } from "@/features/habits/components/DateStrip";
-import { OffDayQuestsSection } from "@/features/habits/components/OffDayQuestsSection";
-import { useTodayQuests } from "@/features/habits/hooks/useTodayQuests";
-import { useMotionPreferences } from "@/features/world/qualityTier";
+import { formatReadableDate } from "@/lib/dateFormat";
+import { useMotionPreferences } from "@/lib/motion";
 import { useUiStore } from "@/stores/uiStore";
 
 const EMPTY_HABIT_LOGS: readonly { logDate: LocalDate; value: number }[] = [];
@@ -71,7 +71,7 @@ export default function TodayScreen() {
   if (error) {
     return (
       <Screen className="items-center justify-center gap-4 p-6">
-        <Text variant="body" className="text-red-600">
+        <Text variant="body" tone="danger">
           {error}
         </Text>
         <Button label="Retry" onPress={refresh} />
@@ -94,7 +94,6 @@ export default function TodayScreen() {
     );
   }
 
-  const { weekday, dayNum, month } = parseLocalDateParts(selectedDate);
   const datePrefix = selectedDate === effectiveToday ? "Today" : "Past day";
 
   return (
@@ -103,7 +102,7 @@ export default function TodayScreen() {
         <View>
           <Text variant="title">Today</Text>
           <Text variant="caption" tabularNums>
-            {`${datePrefix} · ${weekday}, ${dayNum} ${month}`}
+            {`${datePrefix} · ${formatReadableDate(selectedDate)}`}
           </Text>
         </View>
         <Button
@@ -158,7 +157,9 @@ export default function TodayScreen() {
             entering={
               motionPrefs.reduceMotion
                 ? undefined
-                : FadeIn.delay(40).duration(180).easing(Easing.out(Easing.cubic))
+                : FadeIn.delay(40)
+                    .duration(180)
+                    .easing(Easing.out(Easing.cubic))
             }
           >
             <DraggableQuestList

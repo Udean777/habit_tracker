@@ -1,6 +1,8 @@
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import { isDayCompleted, type LocalDate } from "@habit/shared";
+import { SelectableChip } from "@/components/SelectableChip";
 import { Text } from "@/components/Text";
+import { ValueStepper } from "@/components/ValueStepper";
 import { formatReadableDate } from "@/lib/dateFormat";
 import { radii } from "@/theme/tokens";
 import { useTheme } from "@/theme/useTheme";
@@ -10,7 +12,11 @@ type HabitBackfillListProps = {
   readonly habit: HabitRecord;
   readonly days: readonly LocalDate[];
   readonly logMap: ReadonlyMap<LocalDate, number>;
-  readonly onLogValue: (habitId: string, date: LocalDate, value: number) => Promise<void>;
+  readonly onLogValue: (
+    habitId: string,
+    date: LocalDate,
+    value: number,
+  ) => Promise<void>;
 };
 
 export function HabitBackfillList({
@@ -52,63 +58,21 @@ export function HabitBackfillList({
             </View>
 
             {habit.type === "boolean" ? (
-              <Pressable
-                accessibilityRole="button"
+              <SelectableChip
+                label={done ? "Done" : "Mark"}
+                selected={done}
                 accessibilityLabel={`Toggle ${date}`}
                 onPress={() => void onLogValue(habit.id, date, done ? 0 : 1)}
-                style={{
-                  borderRadius: radii.button,
-                  borderWidth: 1,
-                  borderBottomWidth: 3,
-                  borderColor: done
-                    ? colors.primaryPressed
-                    : colors.borderStrong,
-                  backgroundColor: done ? colors.primary : colors.surface,
-                }}
-                className="min-h-[44px] min-w-[76px] items-center justify-center px-3"
-              >
-                <Text
-                  className={`font-semibold ${
-                    done ? "text-white" : "text-[#2A2140]"
-                  }`}
-                >
-                  {done ? "Done" : "Mark"}
-                </Text>
-              </Pressable>
+                className="min-w-[76px] px-3"
+              />
             ) : (
-              <View className="flex-row gap-2">
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={`Decrease ${date}`}
-                  onPress={() =>
-                    void onLogValue(habit.id, date, Math.max(0, val - step))
-                  }
-                  style={{
-                    borderRadius: radii.button,
-                    borderWidth: 1,
-                    borderColor: colors.borderStrong,
-                    backgroundColor: colors.surface,
-                  }}
-                  className="min-h-[44px] min-w-[44px] items-center justify-center"
-                >
-                  <Text className="text-lg font-bold text-[#2A2140]">-</Text>
-                </Pressable>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={`Increase ${date}`}
-                  onPress={() => void onLogValue(habit.id, date, val + step)}
-                  style={{
-                    borderRadius: radii.button,
-                    borderWidth: 1,
-                    borderBottomWidth: 3,
-                    borderColor: colors.primaryPressed,
-                    backgroundColor: colors.primary,
-                  }}
-                  className="min-h-[44px] min-w-[44px] items-center justify-center"
-                >
-                  <Text className="text-lg font-bold text-white">+</Text>
-                </Pressable>
-              </View>
+              <ValueStepper
+                targetLabel={date}
+                onDecrement={() =>
+                  void onLogValue(habit.id, date, Math.max(0, val - step))
+                }
+                onIncrement={() => void onLogValue(habit.id, date, val + step)}
+              />
             )}
           </View>
         );

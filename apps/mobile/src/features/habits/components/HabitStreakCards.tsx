@@ -1,72 +1,41 @@
 import { View } from "react-native";
 import type { StreakStats } from "@habit/shared";
+import { Card } from "@/components/Card";
 import { Text } from "@/components/Text";
-import { elevation, radii } from "@/theme/tokens";
-import { useTheme } from "@/theme/useTheme";
 
 export function HabitStreakCards({ stats }: { readonly stats: StreakStats }) {
-  const { colors } = useTheme();
-
   return (
     <>
       <View className="mb-4 flex-row gap-3">
-        <View
-          style={[
-            {
-              borderRadius: radii.card,
-              borderWidth: 2,
-              borderBottomWidth: 4,
-              borderColor: colors.primaryPressed,
-              backgroundColor: colors.primary,
-            },
-            elevation.card,
-          ]}
-          className="flex-1 p-4"
-        >
-          <Text className="text-xs font-semibold text-white/90">
+        <Card variant="primary" elevated className="flex-1 p-4">
+          <Text tone="onPrimary" className="text-xs font-semibold opacity-90">
             Current Streak
           </Text>
-          <Text className="mt-1 text-2xl font-bold text-white" tabularNums>
+          <Text
+            tone="onPrimary"
+            className="mt-1 text-2xl font-bold"
+            tabularNums
+          >
             {stats.currentStreak}d
           </Text>
-        </View>
-        <View
-          style={[
-            {
-              borderRadius: radii.card,
-              borderWidth: 2,
-              borderBottomWidth: 4,
-              borderColor: colors.accent,
-              backgroundColor: colors.accentBg,
-            },
-            elevation.card,
-          ]}
-          className="flex-1 p-4"
-        >
-          <Text className="text-xs font-semibold text-[#2A2140]">
+        </Card>
+        <Card variant="accent" elevated className="flex-1 p-4">
+          <Text tone="onAccent" className="text-xs font-semibold">
             Best Streak
           </Text>
-          <Text className="mt-1 text-2xl font-bold text-[#2A2140]" tabularNums>
+          <Text tone="onAccent" className="mt-1 text-2xl font-bold" tabularNums>
             {stats.bestStreak}d
           </Text>
-        </View>
+        </Card>
       </View>
 
-      <View
-        style={{
-          borderRadius: radii.card,
-          borderWidth: 1,
-          borderColor: colors.border,
-          backgroundColor: colors.surface,
-        }}
-        className="mb-4 p-3"
-      >
+      <Card tactile={false} className="mb-4 p-3">
         <Text variant="caption" tabularNums>
           Completion Rate: 7d {Math.round(stats.rate7d * 100)}% | 30d{" "}
           {Math.round(stats.rate30d * 100)}% | 90d{" "}
           {Math.round(stats.rate90d * 100)}%
         </Text>
-      </View>
+      </Card>
     </>
   );
 }

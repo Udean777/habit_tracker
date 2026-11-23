@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import * as Haptics from "expo-haptics";
 import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
@@ -13,6 +12,7 @@ import CalendarCheck2 from "lucide-react-native/icons/calendar-check-2";
 import Settings from "lucide-react-native/icons/settings";
 import type { BottomTabBarProps } from "expo-router/build/react-navigation/bottom-tabs";
 import { Text } from "@/components/Text";
+import { triggerHaptic } from "@/lib/haptics";
 import { radii } from "@/theme/tokens";
 import { useTheme } from "@/theme/useTheme";
 
@@ -167,7 +167,7 @@ export function FloatingPillTabBar({
                   canPreventDefault: true,
                 });
                 if (!focused && !event.defaultPrevented) {
-                  void Haptics.selectionAsync().catch(() => {});
+                  triggerHaptic("selection");
                   navigation.navigate(route.name);
                 }
               }}

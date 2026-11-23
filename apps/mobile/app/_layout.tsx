@@ -1,6 +1,6 @@
 import "../global.css";
 import { useEffect, useRef, useState } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -8,6 +8,7 @@ import * as Notifications from "expo-notifications";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Text } from "@/components/Text";
 import { appDb } from "@/db/client";
 import migrations from "@/db/migrations/migrations";
 import { listActiveHabits } from "@/features/habits";
@@ -88,9 +89,10 @@ export default function RootLayout() {
     return (
       <View
         onLayout={handleRootLayout}
-        className="flex-1 items-center justify-center bg-white p-6"
+        style={{ backgroundColor: themeColors.background }}
+        className="flex-1 items-center justify-center p-6"
       >
-        <Text className="text-base font-semibold text-red-600">
+        <Text tone="danger" className="text-base font-semibold">
           {error?.message ?? seedError}
         </Text>
       </View>

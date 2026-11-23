@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Pressable, TextInput, View } from "react-native";
+import { Pressable, View } from "react-native";
 import Animated, { Easing, FadeIn } from "react-native-reanimated";
 import { router } from "expo-router";
 import ArrowLeft from "lucide-react-native/icons/arrow-left";
 import { Button } from "@/components/Button";
 import { Text } from "@/components/Text";
+import { TextField } from "@/components/TextField";
 import { radii } from "@/theme/tokens";
 import { useTheme } from "@/theme/useTheme";
 
@@ -70,17 +71,10 @@ export function HabitDetailHeader({
           }
           className="mb-4 gap-2"
         >
-          <TextInput
+          <TextField
             value={editingName}
             onChangeText={setEditingName}
-            style={{
-              borderRadius: radii.button,
-              borderWidth: 1,
-              borderColor: colors.borderStrong,
-              backgroundColor: colors.surface,
-              color: colors.textPrimary,
-            }}
-            className="min-h-[44px] px-3 text-base"
+            containerClassName=""
           />
           <View className="flex-row gap-2">
             <Button label="Save Name" onPress={() => void saveNameEdit()} />

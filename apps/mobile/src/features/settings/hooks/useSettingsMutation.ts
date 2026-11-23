@@ -1,5 +1,5 @@
-import * as Haptics from "expo-haptics";
 import { getDeviceLocalDate, type Settings } from "@habit/shared";
+import { triggerHaptic } from "@/lib/haptics";
 import { useUiStore } from "@/stores/uiStore";
 import { updateSettings } from "../repository";
 
@@ -14,9 +14,7 @@ export function useSettingsMutation(hapticsEnabled: boolean) {
         getDeviceLocalDate(new Date(), updated.dayStartOffsetMin),
       );
     }
-    if (hapticsEnabled) {
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
+    triggerHaptic("light", hapticsEnabled);
     bumpDataVersion();
   }
 
