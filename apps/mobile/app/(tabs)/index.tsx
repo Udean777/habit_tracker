@@ -23,6 +23,7 @@ import {
   HabitQuestRow,
   OffDayQuestsSection,
   QuestHud,
+  QuestLoadingView,
   computeQuestProgress,
   mapQuestProgressToAvatar,
   useHabitsData,
@@ -134,9 +135,12 @@ export default function TodayScreen() {
 
   if (loading) {
     return (
-      <Screen className="items-center justify-center p-6">
-        <Text variant="body">Loading habits...</Text>
-      </Screen>
+      <QuestLoadingView
+        title="Preparing Today's Quests"
+        subtitle="Reading your local SQLite guild ledger..."
+        reduceMotion={motionPrefs.reduceMotion}
+        hapticsEnabled={settings.hapticsEnabled}
+      />
     );
   }
 

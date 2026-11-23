@@ -31,8 +31,7 @@ export function Section({
       <Text variant="label" className="mb-2 px-1">
         {title}
       </Text>
-      <Animated.View
-        layout={LinearTransition.duration(180).easing(Easing.out(Easing.cubic))}
+      <View
         style={{
           borderRadius: radii.card,
           borderWidth: 2,
@@ -43,7 +42,7 @@ export function Section({
         }}
       >
         {children}
-      </Animated.View>
+      </View>
     </Animated.View>
   );
 }
