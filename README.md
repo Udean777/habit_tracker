@@ -50,7 +50,7 @@ bun run dev:mobile
 
 ## CI/CD & Deployment
 
-- **CI (`.github/workflows/ci.yml`):** Runs `typecheck`, `lint`, and `test` on every push and PR.
+- **CI (`.github/workflows/ci.yml`):** Runs `typecheck`, `lint`, and `test` on pull requests.
 - **Deploy API (`.github/workflows/deploy-api.yml`):** Auto-deploys to Cloudflare Workers on `push` to `main` when `apps/api/**` or `packages/shared/**` changes (or manually via `workflow_dispatch`), automatically running Neon migrations when `apps/api/src/db/migrations/**` changes and verifying `GET /health?db=1`.
 - **Release Mobile (`.github/workflows/release.yml`):** Manual `workflow_dispatch` on `main` to build signed Android AAB + ABI-split APKs with `EXPO_PUBLIC_API_URL` baked in.
 

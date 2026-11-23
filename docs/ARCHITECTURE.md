@@ -186,7 +186,7 @@ Default decision (reversible, see PRD open question 4): custom JWT.
 - **API:** Cloudflare Workers (`apps/api/wrangler.jsonc`, deployed to `https://glimkin-api.hono-backend.workers.dev`) connected to **Neon PostgreSQL** via **Cloudflare Hyperdrive** (`HYPERDRIVE` binding). Request-scoped `postgres-js` client (`prepare: false`).
 - **API Deployment (CI/CD):** `.github/workflows/deploy-api.yml` handles Neon migrations and `wrangler deploy` automatically on `push` to `main` when backend paths (`apps/api/**`, `packages/shared/**`, `bun.lock`, `package.json`) change, or manually via `workflow_dispatch` (`migrations: auto | always | skip`). Local development stays 100% local.
 - **Mobile Releases:** GitHub Actions (`.github/workflows/release.yml`) builds signed Android AAB + ABI-split APKs via Gradle; `apps/mobile/eas.json` is kept in sync for EAS Build (`development`, `preview`, `production`).
-- **CI:** `.github/workflows/ci.yml` runs `typecheck`, `lint`, and `test` on push/PR.
+- **CI:** `.github/workflows/ci.yml` runs `typecheck`, `lint`, and `test` on pull requests.
 
 ### 8.2 Environment Separation (Local vs Production)
 

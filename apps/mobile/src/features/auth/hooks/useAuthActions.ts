@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   apiClient,
   clearAuthTokens,
@@ -14,6 +14,7 @@ import {
 import { getLocalDeviceId } from "../repository";
 
 export function useAuthActions() {
+  const dataVersion = useUiStore((s) => s.dataVersion);
   const bumpDataVersion = useUiStore((s) => s.bumpDataVersion);
   const [accountEmail, setAccountEmail] = useState<string | null>(null);
 
@@ -21,6 +22,18 @@ export function useAuthActions() {
     const auth = await getAuthTokens();
     setAccountEmail(auth?.email ?? null);
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void getAuthTokens().then((auth) => {
+      if (!cancelled) {
+        setAccountEmail(auth?.email ?? null);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [dataVersion]);
 
   const authenticate = useCallback(
     async (
@@ -32,19 +45,27 @@ export function useAuthActions() {
       const res =
         mode === "login"
           ? await apiClient.auth.login.$post({
-              json: { email, password, deviceId },
+              json: { email: email.trim(), password, deviceId },
             })
           : await apiClient.auth.register.$post({
-              json: { email, password, deviceId },
+              json: { email: email.trim(), password, deviceId },
             });
 
       if (!res.ok) {
+        let serverMessage: string | undefined;
+        try {
+          const errBody = (await res.json()) as { error?: { message?: string } };
+          serverMessage = errBody?.error?.message;
+        } catch {
+          // Ignore non-JSON error body
+        }
         return {
           ok: false,
           message:
-            mode === "login"
+            serverMessage ??
+            (mode === "login"
               ? "Invalid email or password"
-              : "Could not create account",
+              : "Could not create account"),
         };
       }
 
@@ -54,6 +75,7 @@ export function useAuthActions() {
         refreshToken: data.refreshToken,
         email: data.user.email,
       });
+      setAccountEmail(data.user.email);
 
       await enqueueAllLocalDataForSync();
       await runSyncCycle();
@@ -66,7 +88,8 @@ export function useAuthActions() {
   const signOut = useCallback(async () => {
     await clearAuthTokens();
     setAccountEmail(null);
-  }, []);
+    bumpDataVersion();
+  }, [bumpDataVersion]);
 
   const syncNow = useCallback(async (): Promise<SyncResult> => {
     const result = await runSyncCycle();

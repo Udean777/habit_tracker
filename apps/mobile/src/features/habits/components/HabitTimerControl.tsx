@@ -73,17 +73,13 @@ export function HabitTimerControl({
         clearInterval(timer);
         endTimeMsRef.current = null;
         setIsRunning(false);
-        setOverrideRemainingSec(null);
-        if (!committedDoneRef.current) {
-          committedDoneRef.current = true;
-          triggerHaptic("success", hapticsEnabled);
-          onCommitMinutes(safeTargetMin);
-        }
+        setOverrideRemainingSec(0);
+        triggerHaptic("success", hapticsEnabled);
       }
     }, TICK_INTERVAL_MS);
 
     return () => clearInterval(timer);
-  }, [isRunning, hapticsEnabled, onCommitMinutes, safeTargetMin]);
+  }, [isRunning, hapticsEnabled]);
 
   function handleToggleRun() {
     if (isRunning) {
@@ -134,7 +130,8 @@ export function HabitTimerControl({
     100,
     Math.round((elapsedSec / totalSeconds) * 100),
   );
-  const hasStarted = elapsedSec > 0 || loggedMinutes > 0;
+  const isTimerFinished = remainingSec <= 0 || isDone;
+  const hasStarted = elapsedSec > 0 || loggedMinutes > 0 || isTimerFinished;
 
   return (
     <View
@@ -160,11 +157,13 @@ export function HabitTimerControl({
             <Text variant="caption" tabularNums className="text-[11px]">
               {isDone
                 ? `Completed · ${safeTargetMin}m`
-                : isRunning
-                  ? `Running · ${safeTargetMin}m goal`
-                  : hasStarted
-                    ? `Paused · ${progressPct}%`
-                    : `${safeTargetMin}m countdown`}
+                : isTimerFinished
+                  ? `Time up · Tap Done to claim`
+                  : isRunning
+                    ? `Running · ${safeTargetMin}m goal`
+                    : hasStarted
+                      ? `Paused · ${progressPct}%`
+                      : `${safeTargetMin}m countdown`}
             </Text>
           </View>
         </View>
@@ -173,7 +172,7 @@ export function HabitTimerControl({
           {hasStarted ? (
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`Reset ${habitName} timer`}
+              accessibilityLabel={`Restart ${habitName} timer`}
               onPress={handleReset}
               style={{
                 borderRadius: radii.button,
@@ -187,57 +186,59 @@ export function HabitTimerControl({
             </Pressable>
           ) : null}
 
-          {!isDone ? (
-            <>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={
-                  isRunning
-                    ? `Pause ${habitName} timer`
-                    : `Start ${habitName} timer`
-                }
-                onPress={handleToggleRun}
-                style={{
-                  borderRadius: radii.button,
-                  borderWidth: 1,
-                  borderBottomWidth: 3,
-                  borderColor: isRunning
-                    ? colors.accentBorder
-                    : colors.primaryPressed,
-                  backgroundColor: isRunning
-                    ? colors.accentBg
-                    : colors.primary,
-                }}
-                className="min-h-[44px] flex-row items-center gap-1.5 px-3.5"
+          {!isTimerFinished ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={
+                isRunning
+                  ? `Pause ${habitName} timer`
+                  : `Start ${habitName} timer`
+              }
+              onPress={handleToggleRun}
+              style={{
+                borderRadius: radii.button,
+                borderWidth: 1,
+                borderBottomWidth: 3,
+                borderColor: isRunning
+                  ? colors.accentBorder
+                  : colors.primaryPressed,
+                backgroundColor: isRunning
+                  ? colors.accentBg
+                  : colors.primary,
+              }}
+              className="min-h-[44px] flex-row items-center gap-1.5 px-3.5"
+            >
+              {isRunning ? (
+                <Pause size={15} color={colors.accentText} strokeWidth={2.5} />
+              ) : (
+                <Play size={15} color={colors.primaryText} strokeWidth={2.5} />
+              )}
+              <Text
+                tone={isRunning ? "onAccent" : "onPrimary"}
+                className="text-xs font-extrabold"
               >
-                {isRunning ? (
-                  <Pause size={15} color={colors.accentText} strokeWidth={2.5} />
-                ) : (
-                  <Play size={15} color={colors.primaryText} strokeWidth={2.5} />
-                )}
-                <Text
-                  tone={isRunning ? "onAccent" : "onPrimary"}
-                  className="text-xs font-extrabold"
-                >
-                  {isRunning ? "Pause" : hasStarted ? "Resume" : "Start"}
-                </Text>
-              </Pressable>
-
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={`Mark ${habitName} timer complete`}
-                onPress={handleCompleteNow}
-                style={{
-                  borderRadius: radii.button,
-                  borderWidth: 1,
-                  borderColor: colors.borderStrong,
-                  backgroundColor: colors.surfaceMuted,
-                }}
-                className="min-h-[44px] min-w-[44px] items-center justify-center"
-              >
-                <Check size={17} color={colors.textPrimary} strokeWidth={2.75} />
-              </Pressable>
-            </>
+                {isRunning ? "Pause" : hasStarted ? "Resume" : "Start"}
+              </Text>
+            </Pressable>
+          ) : !isDone ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Complete ${habitName} timer`}
+              onPress={handleCompleteNow}
+              style={{
+                borderRadius: radii.button,
+                backgroundColor: colors.primary,
+                borderWidth: 1,
+                borderBottomWidth: 3,
+                borderColor: colors.primaryPressed,
+              }}
+              className="min-h-[44px] flex-row items-center gap-1.5 px-3.5"
+            >
+              <Check size={16} color={colors.primaryText} strokeWidth={3} />
+              <Text tone="onPrimary" className="text-xs font-extrabold">
+                Done
+              </Text>
+            </Pressable>
           ) : (
             <View
               style={{

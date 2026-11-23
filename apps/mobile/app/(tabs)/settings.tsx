@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ScrollView, View } from "react-native";
+import { useFocusEffect } from "expo-router";
 import { Badge } from "@/components/Badge";
 import { Screen } from "@/components/Screen";
 import { Text } from "@/components/Text";
@@ -64,9 +65,11 @@ export default function SettingsScreen() {
   const tourOpen = useTourStore((s) => s.isOpen);
   const tourStepIndex = useTourStore((s) => s.stepIndex);
 
-  useEffect(() => {
-    void loadAccountEmail();
-  }, [loadAccountEmail]);
+  useFocusEffect(
+    useCallback(() => {
+      void loadAccountEmail();
+    }, [loadAccountEmail]),
+  );
 
   useEffect(() => {
     if (
