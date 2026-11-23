@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Pressable, View } from "react-native";
 import * as Haptics from "expo-haptics";
 import { Text } from "@/components/Text";
-import type { HeatmapCell, QualityTier } from "@/features/world/mappers";
+import type { HeatmapCell } from "@/features/stats/mappers";
+import type { QualityTier } from "@/features/world/mappers";
 import { formatReadableDate } from "@/lib/dateFormat";
-import { colors, elevation, radii } from "@/theme/tokens";
+import { elevation, radii } from "@/theme/tokens";
+import { useTheme } from "@/theme/useTheme";
 
 type FluidHeatmapProps = {
   readonly cells: readonly HeatmapCell[];
@@ -16,6 +18,7 @@ export function FluidHeatmap({
   cells,
   hapticsEnabled,
 }: FluidHeatmapProps) {
+  const { colors } = useTheme();
   const [selectedCell, setSelectedCell] = useState<HeatmapCell | null>(null);
 
   const lastDate = cells[cells.length - 1]?.date ?? "2026-01-01";

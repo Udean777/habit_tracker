@@ -1,6 +1,6 @@
 import type { HabitColorKey } from "@habit/shared";
 
-export const colors = {
+export const lightColors = {
   background: "#FFF7EA",
   surface: "#FFFFFF",
   surfaceMuted: "#D9EEFF",
@@ -18,6 +18,31 @@ export const colors = {
   border: "#A9D8FF",
   borderStrong: "#6B6285",
 } as const;
+
+export const darkColors = {
+  background: "#130F1E",
+  surface: "#1E1830",
+  surfaceMuted: "#2A2242",
+  textPrimary: "#F8FAFC",
+  textSecondary: "#B8B0CC",
+  primary: "#6B4DF5",
+  primaryPressed: "#5438D6",
+  primaryText: "#FFFFFF",
+  accent: "#FFD23F",
+  accentBg: "#FFD23F",
+  accentText: "#2A2140",
+  sky: "#4FB3FF",
+  success: "#22C55E",
+  danger: "#EF4444",
+  border: "#3B3159",
+  borderStrong: "#6B6285",
+} as const;
+
+export type ThemeColors = {
+  readonly [K in keyof typeof lightColors]: string;
+};
+
+export const colors = lightColors;
 
 export const habitAccents: Record<HabitColorKey, string> = {
   primary: "#2D6A4F",

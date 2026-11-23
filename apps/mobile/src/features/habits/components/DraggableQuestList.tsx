@@ -11,7 +11,7 @@ import Animated, {
 import GripVertical from "lucide-react-native/icons/grip-vertical";
 import { colors, motion } from "@/theme/tokens";
 
-const ROW_HEIGHT = 90;
+const ROW_HEIGHT = 104;
 
 type SortableItemProps = {
   readonly id: string;

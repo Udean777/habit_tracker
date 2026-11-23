@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pressable, View } from "react-native";
+import { Image, Pressable, View } from "react-native";
 import { router } from "expo-router";
 import type { CreateHabitInput } from "@habit/shared";
 import { Button } from "@/components/Button";
@@ -88,9 +88,17 @@ export default function OnboardingScreen() {
   return (
     <Screen className="justify-between py-6">
       <View>
-        <Text variant="title">Welcome to Your Garden</Text>
+        <View className="mb-4 items-center">
+          <Image
+            source={require("../assets/images/splash-icon.png")}
+            style={{ width: 68, height: 68 }}
+            resizeMode="contain"
+            accessibilityLabel="Glimkin logo"
+          />
+        </View>
+        <Text variant="title">Welcome to Glimkin</Text>
         <Text variant="caption" className="mt-1 mb-6">
-          Pick a few starter habits. Each one grows a living organism.
+          Pick a few starter quests. Every completion earns XP and levels up your hero.
         </Text>
 
         <View className="gap-3">

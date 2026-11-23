@@ -23,3 +23,5 @@ export {
 export { PixelAvatar } from "./components/PixelAvatar";
 export { QuestHud } from "./components/QuestHud";
 export { DraggableQuestList } from "./components/DraggableQuestList";
+export { DateStrip } from "./components/DateStrip";
+export { HabitQuestRow } from "./components/HabitQuestRow";

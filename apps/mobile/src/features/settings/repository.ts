@@ -1,14 +1,7 @@
 import { eq, like } from "drizzle-orm";
 import { settingsSchema, type Settings } from "@habit/shared";
 import { appDb, type AppDb } from "@/db/client";
-import {
-  habitLogs,
-  habits,
-  outbox,
-  settings,
-  streakFreezes,
-  syncState,
-} from "@/db/schema";
+import { habits, settings, syncState } from "@/db/schema";
 import { createId } from "@/lib/id";
 import { enqueueOutbox } from "@/sync/outbox";
 
@@ -119,28 +112,4 @@ export async function updateSettings(
   });
 
   return next;
-}
-
-export async function exportAllLocalData(db: AppDb = appDb): Promise<string> {
-  const [habitRows, logRows, freezeRows, settingRows, outboxRows] =
-    await Promise.all([
-      db.select().from(habits),
-      db.select().from(habitLogs),
-      db.select().from(streakFreezes),
-      db.select().from(settings),
-      db.select().from(outbox),
-    ]);
-
-  return JSON.stringify(
-    {
-      exportedAt: new Date().toISOString(),
-      habits: habitRows,
-      habitLogs: logRows,
-      streakFreezes: freezeRows,
-      settings: settingRows,
-      pendingOutboxCount: outboxRows.length,
-    },
-    null,
-    2,
-  );
 }

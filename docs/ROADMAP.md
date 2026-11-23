@@ -32,7 +32,7 @@ Total: about 9–11 weeks.
 
 See `docs/ANIMATION.md` section 7.
 
-- Skia scene with ~10 organisms and ambient particles
+- Skia scene with procedural 16x16 pixel avatar and ambient particles
 - Hold-to-complete prototype with haptics and burst
 - Fluid heatmap prototype with fake data
 - Measure fps on the reference mid-range device
@@ -55,7 +55,7 @@ See `docs/ANIMATION.md` section 7.
 
 ## Phase 3: Signature Visuals (production quality)
 
-- Living World wired to real data via the pure state-mapping functions
+- Arcade Quest HUD & Pixel Avatar wired to real habit/XP/combo data via pure mappers
 - Production hold-to-complete with undo, accessibility alternative
 - Fluid heatmap in habit detail/stats
 - Shared-element transitions: World ↔ detail ↔ stats

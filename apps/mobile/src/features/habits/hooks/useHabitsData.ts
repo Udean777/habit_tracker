@@ -1,32 +1,18 @@
 import { useEffect, useState } from "react";
-import * as Haptics from "expo-haptics";
+import { getDeviceLocalDate, type LocalDate, type Settings } from "@habit/shared";
 import {
-  getDeviceLocalDate,
-  type CreateHabitInput,
-  type LocalDate,
-  type Settings,
-  type UpdateHabitInput,
-} from "@habit/shared";
-import {
-  archiveHabit,
-  createHabit,
   listActiveHabits,
   listArchivedHabits,
-  reorderHabits,
-  softDeleteHabit,
-  unarchiveHabit,
-  updateHabit,
   type HabitRecord,
 } from "@/features/habits/repository";
 import {
   countPendingOutbox,
   listAllActiveLogs,
-  upsertHabitLog,
   type HabitLogRecord,
 } from "@/features/logs";
-import { getSettings, updateSettings } from "@/features/settings";
-import { reconcileNotifications } from "@/lib/notifications";
+import { getSettings, useSettingsMutation } from "@/features/settings";
 import { useUiStore } from "@/stores/uiStore";
+import { useHabitMutations } from "./useHabitMutations";
 
 type HabitsDataState = {
   readonly loading: boolean;
@@ -51,7 +37,6 @@ const INITIAL_SETTINGS: Settings = {
 export function useHabitsData() {
   const dataVersion = useUiStore((s) => s.dataVersion);
   const bumpDataVersion = useUiStore((s) => s.bumpDataVersion);
-  const setSelectedDate = useUiStore((s) => s.setSelectedDate);
 
   const [state, setState] = useState<HabitsDataState>({
     loading: true,
@@ -116,131 +101,20 @@ export function useHabitsData() {
     };
   }, [dataVersion]);
 
-  async function maybeHaptic(kind: "light" | "success") {
-    if (!state.settings.hapticsEnabled) return;
-    if (kind === "light") {
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    } else {
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
-  }
+  const mutations = useHabitMutations({
+    activeHabits: state.activeHabits,
+    settings: state.settings,
+    effectiveToday: state.effectiveToday,
+    onOptimisticReorder: (nextHabits) =>
+      setState((prev) => ({ ...prev, activeHabits: nextHabits })),
+  });
 
-  async function syncNotifications() {
-    const active = await listActiveHabits();
-    await reconcileNotifications(active);
-  }
-
-  async function onCreateHabit(input: CreateHabitInput) {
-    await createHabit(input);
-    await syncNotifications();
-    await maybeHaptic("success");
-    bumpDataVersion();
-  }
-
-  async function onUpdateHabit(id: string, input: UpdateHabitInput) {
-    await updateHabit(id, input);
-    await syncNotifications();
-    await maybeHaptic("light");
-    bumpDataVersion();
-  }
-
-  async function onLogValue(habitId: string, logDate: LocalDate, value: number) {
-    await upsertHabitLog({
-      habitId,
-      logDate,
-      value,
-      today: state.effectiveToday,
-      backfillWindowDays: state.settings.backfillWindowDays,
-    });
-    await maybeHaptic(value > 0 ? "success" : "light");
-    bumpDataVersion();
-  }
-
-  async function onMoveHabit(habitId: string, direction: "up" | "down") {
-    const ids = state.activeHabits.map((h) => h.id);
-    const idx = ids.indexOf(habitId);
-    const targetIdx = direction === "up" ? idx - 1 : idx + 1;
-    if (idx < 0 || targetIdx < 0 || targetIdx >= ids.length) return;
-
-    const current = ids[idx];
-    const target = ids[targetIdx];
-    if (!current || !target) return;
-
-    const reordered = [...ids];
-    reordered[idx] = target;
-    reordered[targetIdx] = current;
-
-    await reorderHabits(reordered);
-    await maybeHaptic("light");
-    bumpDataVersion();
-  }
-
-  async function onReorderHabit(habitId: string, targetIndex: number) {
-    const ids = state.activeHabits.map((h) => h.id);
-    const idx = ids.indexOf(habitId);
-    if (
-      idx < 0 ||
-      targetIndex < 0 ||
-      targetIndex >= ids.length ||
-      idx === targetIndex
-    ) {
-      return;
-    }
-    const nextHabits = [...state.activeHabits];
-    const [movedHabit] = nextHabits.splice(idx, 1);
-    if (!movedHabit) return;
-    nextHabits.splice(targetIndex, 0, movedHabit);
-
-    // Update UI order synchronously so the list doesn't flash back before SQLite finishes.
-    setState((prev) => ({ ...prev, activeHabits: nextHabits }));
-
-    await reorderHabits(nextHabits.map((h) => h.id));
-    await maybeHaptic("light");
-  }
-
-  async function onArchiveHabit(id: string) {
-    await archiveHabit(id);
-    await syncNotifications();
-    await maybeHaptic("light");
-    bumpDataVersion();
-  }
-
-  async function onUnarchiveHabit(id: string) {
-    await unarchiveHabit(id);
-    await syncNotifications();
-    await maybeHaptic("light");
-    bumpDataVersion();
-  }
-
-  async function onDeleteHabit(id: string) {
-    await softDeleteHabit(id);
-    await syncNotifications();
-    await maybeHaptic("light");
-    bumpDataVersion();
-  }
-
-  async function onUpdateSettings(patch: Partial<Settings>) {
-    const updated = await updateSettings(patch);
-    if (patch.dayStartOffsetMin !== undefined) {
-      setSelectedDate(
-        getDeviceLocalDate(new Date(), updated.dayStartOffsetMin),
-      );
-    }
-    await maybeHaptic("light");
-    bumpDataVersion();
-  }
+  const settingsMutation = useSettingsMutation(state.settings.hapticsEnabled);
 
   return {
     ...state,
     refresh: bumpDataVersion,
-    onCreateHabit,
-    onUpdateHabit,
-    onLogValue,
-    onMoveHabit,
-    onReorderHabit,
-    onArchiveHabit,
-    onUnarchiveHabit,
-    onDeleteHabit,
-    onUpdateSettings,
+    ...mutations,
+    ...settingsMutation,
   };
 }

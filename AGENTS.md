@@ -5,7 +5,7 @@ Read this file fully before making changes. Detailed specs live in `docs/`.
 
 ## 1. Project Summary
 
-**Habit Tracker (working title)**: an offline-first, animation-driven habit tracker built with Expo React Native, backed by a self-hosted Hono API. The product goal is a habit app whose visuals and interactions feel unlike typical habit trackers. The personal goal is to learn React Native at an intermediate-to-advanced level.
+**Glimkin**: an offline-first, animation-driven habit tracker built with Expo React Native, backed by a self-hosted Hono API. The product goal is a habit app whose visuals and interactions feel unlike typical habit trackers. The personal goal is to learn React Native at an intermediate-to-advanced level.
 
 Docs index:
 
