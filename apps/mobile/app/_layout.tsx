@@ -1,7 +1,8 @@
 import "../global.css";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Text, View } from "react-native";
 import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import * as Notifications from "expo-notifications";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -20,12 +21,23 @@ import {
 import { hydrateAvatarClass, useUiStore } from "@/stores/uiStore";
 import { useTheme } from "@/theme/useTheme";
 
+// Keep the native splash screen visible until migrations and initial local data are ready.
+void SplashScreen.preventAutoHideAsync().catch((err) => {
+  console.warn("Failed to prevent splash screen auto-hide:", err);
+});
+
+SplashScreen.setOptions({
+  duration: 400,
+  fade: true,
+});
+
 configureNotificationHandler();
 
 export default function RootLayout() {
   const { success, error } = useMigrations(appDb, migrations);
   const [seeded, setSeeded] = useState(false);
   const [seedError, setSeedError] = useState<string | null>(null);
+  const splashHiddenRef = useRef(false);
 
   const bumpDataVersion = useUiStore((s) => s.bumpDataVersion);
   const { isDark, colors: themeColors } = useTheme();
@@ -66,9 +78,18 @@ export default function RootLayout() {
     return () => sub.remove();
   }, [bumpDataVersion]);
 
+  function handleRootLayout() {
+    if (splashHiddenRef.current) return;
+    splashHiddenRef.current = true;
+    SplashScreen.hide();
+  }
+
   if (error || seedError) {
     return (
-      <View className="flex-1 items-center justify-center bg-white p-6">
+      <View
+        onLayout={handleRootLayout}
+        className="flex-1 items-center justify-center bg-white p-6"
+      >
         <Text className="text-base font-semibold text-red-600">
           {error?.message ?? seedError}
         </Text>
@@ -80,7 +101,10 @@ export default function RootLayout() {
 
   return (
     <ErrorBoundary>
-      <GestureHandlerRootView style={{ flex: 1 }}>
+      <GestureHandlerRootView
+        style={{ flex: 1 }}
+        onLayout={handleRootLayout}
+      >
         <StatusBar style={isDark ? "light" : "dark"} />
         <Stack
           screenOptions={{

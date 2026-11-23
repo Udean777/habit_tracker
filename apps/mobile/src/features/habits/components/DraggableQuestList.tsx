@@ -3,6 +3,7 @@ import { View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   runOnJS,
+  useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -26,6 +27,7 @@ type SortableItemProps = {
 
 function SortableItem({
   id,
+  index,
   totalCount,
   reduceMotion,
   positions,
@@ -35,6 +37,18 @@ function SortableItem({
 }: SortableItemProps) {
   const dragY = useSharedValue(0);
   const originY = useSharedValue(0);
+  const slotY = useSharedValue(index * ROW_HEIGHT);
+
+  useAnimatedReaction(
+    () => positions.value[id] ?? 0,
+    (slot, prevSlot) => {
+      if (prevSlot === null || slot === prevSlot) return;
+      const targetTop = slot * ROW_HEIGHT;
+      slotY.set(
+        reduceMotion ? targetTop : withSpring(targetTop, motion.springs.snappy),
+      );
+    },
+  );
 
   const panGesture = Gesture.Pan()
     .onStart(() => {
@@ -72,6 +86,7 @@ function SortableItem({
     })
     .onEnd(() => {
       const finalSlot = positions.get()[id] ?? 0;
+      slotY.set(finalSlot * ROW_HEIGHT);
       activeId.set(null);
       runOnJS(onReorder)(id, finalSlot);
     })
@@ -81,18 +96,12 @@ function SortableItem({
 
   const animatedStyle = useAnimatedStyle(() => {
     const isDragging = activeId.value === id;
-    const slot = positions.value[id] ?? 0;
-    const targetTop = slot * ROW_HEIGHT;
-
     return {
       position: "absolute",
       left: 0,
       right: 0,
-      top: isDragging
-        ? dragY.value
-        : reduceMotion
-          ? targetTop
-          : withSpring(targetTop, motion.springs.snappy),
+      top: 0,
+      transform: [{ translateY: isDragging ? dragY.value : slotY.value }],
       opacity: isDragging ? 0.96 : 1,
       zIndex: isDragging ? 100 : 1,
     };

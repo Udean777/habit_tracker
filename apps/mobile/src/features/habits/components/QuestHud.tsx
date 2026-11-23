@@ -36,6 +36,7 @@ export function QuestHud({ progress, reduceMotion }: QuestHudProps) {
       : 0;
 
   const barWidth = useSharedValue(ratio);
+  const trackWidth = useSharedValue(0);
   const badgeScale = useSharedValue(1);
 
   useEffect(() => {
@@ -60,7 +61,7 @@ export function QuestHud({ progress, reduceMotion }: QuestHudProps) {
   }, [progress.completedToday, progress.level, reduceMotion, badgeScale]);
 
   const fillStyle = useAnimatedStyle(() => ({
-    width: `${Math.round(barWidth.value * 100)}%`,
+    transform: [{ translateX: (barWidth.value - 1) * trackWidth.value }],
   }));
 
   const badgeStyle = useAnimatedStyle(() => ({
@@ -151,6 +152,9 @@ export function QuestHud({ progress, reduceMotion }: QuestHudProps) {
           </View>
 
           <View
+            onLayout={(e) => {
+              trackWidth.set(e.nativeEvent.layout.width);
+            }}
             style={{
               height: 10,
               borderRadius: radii.pill,
@@ -162,6 +166,7 @@ export function QuestHud({ progress, reduceMotion }: QuestHudProps) {
             <Animated.View
               style={[
                 {
+                  width: "100%",
                   height: "100%",
                   borderRadius: radii.pill,
                   backgroundColor: colors.accent,

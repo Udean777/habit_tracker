@@ -6,7 +6,7 @@ import {
   exportAllLocalData,
   seedTier2DemoData,
   seedTier3DemoData,
-} from "@/features/settings";
+} from "../demoSeed";
 import { radii } from "@/theme/tokens";
 import { useTheme } from "@/theme/useTheme";
 import { Section } from "./SettingsPrimitives";
@@ -36,16 +36,20 @@ export function BackupSection({ onRefresh }: { readonly onRefresh: () => void })
         <Text variant="caption">
           Export your local habits and logs as JSON.
         </Text>
-        <Button
-          label="Seed Tier 2 Demo (Level 3)"
-          variant="secondary"
-          onPress={() => void handleSeedTier2()}
-        />
-        <Button
-          label="Seed Tier 3 Demo (Level 5)"
-          variant="secondary"
-          onPress={() => void handleSeedTier3()}
-        />
+        {__DEV__ ? (
+          <>
+            <Button
+              label="Seed Tier 2 Demo (Level 3)"
+              variant="secondary"
+              onPress={() => void handleSeedTier2()}
+            />
+            <Button
+              label="Seed Tier 3 Demo (Level 5)"
+              variant="secondary"
+              onPress={() => void handleSeedTier3()}
+            />
+          </>
+        ) : null}
         <Button
           label="Export Local Data (JSON)"
           variant="secondary"

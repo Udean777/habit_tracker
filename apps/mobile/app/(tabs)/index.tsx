@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { ScrollView, View } from "react-native";
 import Animated, { Easing, FadeIn } from "react-native-reanimated";
 import { router } from "expo-router";
+import type { LocalDate } from "@habit/shared";
 import { Button } from "@/components/Button";
 import { Screen } from "@/components/Screen";
 import { Text } from "@/components/Text";
@@ -19,6 +20,8 @@ import { OffDayQuestsSection } from "@/features/habits/components/OffDayQuestsSe
 import { useTodayQuests } from "@/features/habits/hooks/useTodayQuests";
 import { useMotionPreferences } from "@/features/world/qualityTier";
 import { useUiStore } from "@/stores/uiStore";
+
+const EMPTY_HABIT_LOGS: readonly { logDate: LocalDate; value: number }[] = [];
 
 export default function TodayScreen() {
   const selectedDate = useUiStore((s) => s.selectedDate);
@@ -81,7 +84,7 @@ export default function TodayScreen() {
       <HabitQuestRow
         habit={habit}
         currentValue={logsByHabitId.get(habit.id) ?? 0}
-        habitLogs={allLogsByHabitId.get(habit.id) ?? []}
+        habitLogs={allLogsByHabitId.get(habit.id) ?? EMPTY_HABIT_LOGS}
         selectedDate={selectedDate}
         effectiveToday={effectiveToday}
         hapticsEnabled={settings.hapticsEnabled}

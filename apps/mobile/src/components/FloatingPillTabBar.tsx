@@ -44,14 +44,12 @@ function TabItem({ routeName, label, focused, onPress }: TabItemProps) {
       [0, 1],
       ["rgba(107, 77, 245, 0)", colors.primary],
     ),
-    paddingHorizontal: 14 + progress.value * 6,
     transform: [{ scale: pressScale.value }],
   }));
 
   const labelContainerStyle = useAnimatedStyle(() => ({
-    maxWidth: progress.value * 76,
+    maxWidth: progress.value * 84,
     opacity: progress.value,
-    marginLeft: progress.value * 8,
     transform: [{ translateX: (1 - progress.value) * -6 }],
   }));
 
@@ -76,6 +74,7 @@ function TabItem({ routeName, label, focused, onPress }: TabItemProps) {
         style={[
           {
             height: 46,
+            paddingHorizontal: 18,
             borderRadius: radii.pill,
             flexDirection: "row",
             alignItems: "center",
@@ -98,7 +97,7 @@ function TabItem({ routeName, label, focused, onPress }: TabItemProps) {
 
         <Animated.View
           style={[
-            { overflow: "hidden", justifyContent: "center" },
+            { overflow: "hidden", justifyContent: "center", paddingLeft: 8 },
             labelContainerStyle,
           ]}
         >
