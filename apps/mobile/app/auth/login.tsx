@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -71,9 +72,17 @@ export default function LoginScreen() {
             layout={LinearTransition.duration(180).easing(Easing.out(Easing.cubic))}
           >
             <View className="flex-row items-center justify-between pb-6">
-              <Text variant="title">
-                {mode === "login" ? "Sign In" : "Create Account"}
-              </Text>
+              <View className="flex-row items-center gap-3">
+                <Image
+                  source={require("../../assets/images/splash-icon.png")}
+                  style={{ width: 40, height: 40 }}
+                  resizeMode="contain"
+                  accessibilityLabel="Glimkin logo"
+                />
+                <Text variant="title">
+                  {mode === "login" ? "Sign In" : "Create Account"}
+                </Text>
+              </View>
               <Button
                 label="Cancel"
                 variant="secondary"
