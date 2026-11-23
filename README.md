@@ -24,6 +24,7 @@
 |---|---|
 | **Mobile** (`apps/mobile`) | Expo (RN), TypeScript strict, Expo Router, NativeWind, Zustand, `expo-sqlite` + Drizzle, Reanimated, Gesture Handler, Skia |
 | **API** (`apps/api`) | Hono (Bun dev / Cloudflare Workers + Hyperdrive prod), Drizzle ORM, PostgreSQL (local / Neon), Zod, JWT rotating refresh |
+| **Web** (`apps/web`) | Astro (0 KB JS static output, `@astrojs/sitemap`, Cloudflare Pages) |
 | **Shared** (`packages/shared`) | Zod schemas, shared types, pure streak/schedule/date & gamification economy logic |
 
 ## Quick Start
@@ -50,9 +51,10 @@ bun run dev:mobile
 
 ## CI/CD & Deployment
 
-- **CI (`.github/workflows/ci.yml`):** Runs `typecheck`, `lint`, and `test` on pull requests.
-- **Deploy API (`.github/workflows/deploy-api.yml`):** Auto-deploys to Cloudflare Workers on `push` to `main` when `apps/api/**` or `packages/shared/**` changes (or manually via `workflow_dispatch`), automatically running Neon migrations when `apps/api/src/db/migrations/**` changes and verifying `GET /health?db=1`.
-- **Release Mobile (`.github/workflows/release.yml`):** Manual `workflow_dispatch` on `main` to build signed Android AAB + ABI-split APKs with `EXPO_PUBLIC_API_URL` baked in.
+- **PR Checks (`.github/workflows/ci.yml`):** Runs separate checks for Shared & API, Mobile, and Web (Astro build) on pull requests.
+- **Deploy API (`.github/workflows/deploy-api.yml`):** Auto-deploys to Cloudflare Workers when a PR touching `apps/api/**` or `packages/shared/**` is merged to `main` (or manually via `workflow_dispatch`), automatically running Neon migrations when `apps/api/src/db/migrations/**` changes and verifying `GET /health?db=1`.
+- **Deploy Web (`.github/workflows/deploy-web.yml`):** Auto-deploys the Astro static site (`apps/web`) to Cloudflare Pages (`glimkin.pages.dev`) when a PR touching `apps/web/**` is merged to `main` (or manually via `workflow_dispatch`).
+- **Release Mobile (`.github/workflows/release.yml`):** Manual `workflow_dispatch` only on `main` to build signed Android AAB + ABI-split APKs with `EXPO_PUBLIC_API_URL` baked in.
 
 Required GitHub Actions **Secrets**: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `NEON_DATABASE_URL`, `EXPO_PUBLIC_API_URL` (plus Android signing secrets for mobile releases).
 

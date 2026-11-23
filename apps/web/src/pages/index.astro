@@ -1,0 +1,70 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Glimkin: Offline-First RPG Habit Tracker"
+  description="Turn daily habits into quests with a 32x32 pixel hero, Gold economy, Streak Shields, and optional Google or GitHub cloud sync."
+  activeNav="home"
+  includeSchema={true}
+>
+  <section class="hero-card">
+    <div class="hero-header">
+      <img
+        src="/glimkin-icon.png"
+        alt="Glimkin Pixel Hero"
+        width="72"
+        height="72"
+        class="hero-icon"
+      />
+      <div>
+        <span class="badge">OFFLINE-FIRST QUEST TRACKER</span>
+        <h1>Turn everyday habits into daily quests.</h1>
+      </div>
+    </div>
+    <p>
+      Glimkin is an offline-first habit tracker with local SQLite as the single
+      source of truth. Build daily streaks, level up a 32x32 pixel hero, earn
+      Gold for gear and Streak Shields, and optionally back up your progress
+      across devices.
+    </p>
+    <div class="cta-row">
+      <a href="/privacy" class="btn btn-accent">Read Privacy Policy</a>
+      <a href="/terms" class="btn btn-secondary">Terms of Service</a>
+    </div>
+  </section>
+
+  <section class="grid" aria-label="Core features">
+    <article class="feature-tile">
+      <h2>Local-First &amp; Fast</h2>
+      <p>
+        Every habit check-in, countdown timer session, and streak update writes
+        directly to SQLite on your device. Works completely offline.
+      </p>
+    </article>
+    <article class="feature-tile">
+      <h2>32x32 Pixel Hero &amp; Shop</h2>
+      <p>
+        Pick Knight, Mage, or Ranger. Earn XP and Gold from completed quests,
+        perfect days, streak milestones, and Trophy Case achievements.
+      </p>
+    </article>
+    <article class="feature-tile">
+      <h2>Optional Cloud Sync</h2>
+      <p>
+        Sign in with Google or GitHub anytime to merge and synchronize your
+        habits, logs, settings, and inventory across devices.
+      </p>
+    </article>
+  </section>
+
+  <section class="card">
+    <h2>How Your Account Data Works</h2>
+    <p>
+      You can use Glimkin completely as a guest without creating an account.
+      When you choose to sign in with Google or GitHub, Glimkin requests only
+      your verified email address and provider account ID to link your cloud
+      save and synchronize your habit data securely.
+    </p>
+  </section>
+</BaseLayout>

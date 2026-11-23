@@ -1,0 +1,48 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  includeSchema?: boolean;
+}
+
+const { title, description, includeSchema = false } = Astro.props;
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site).toString();
+const ogImageUrl = new URL("/glimkin-icon.png", Astro.site).toString();
+
+const softwareSchema = includeSchema
+  ? JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: "Glimkin",
+      applicationCategory: "LifestyleApplication",
+      operatingSystem: "Android, iOS",
+      description,
+      url: canonicalUrl,
+    })
+  : null;
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonicalUrl} />
+<link rel="icon" type="image/png" href="/glimkin-icon.png" />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Glimkin" />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonicalUrl} />
+<meta property="og:image" content={ogImageUrl} />
+
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImageUrl} />
+
+{
+  softwareSchema && (
+    <script type="application/ld+json" set:html={softwareSchema} />
+  )
+}

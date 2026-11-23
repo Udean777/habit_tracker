@@ -1,14 +1,15 @@
-name: CI
+name: PR Checks
 
 on:
   pull_request:
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: pr-checks-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  check:
+  api:
+    name: Check Shared & API
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,6 +17,30 @@ jobs:
         with:
           bun-version: 1.3.11
       - run: bun install --frozen-lockfile
-      - run: bun run typecheck
-      - run: bun run lint
-      - run: bun run test
+      - run: bun run --filter @habit/shared typecheck && bun run --filter @habit/api typecheck
+      - run: bun run --filter @habit/shared test && bun run --filter @habit/api test
+
+  mobile:
+    name: Check Mobile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.11
+      - run: bun install --frozen-lockfile
+      - run: bun run --filter @habit/mobile typecheck
+      - run: bun run --filter @habit/mobile lint
+      - run: bun run --filter @habit/mobile test
+
+  web:
+    name: Check Web (Astro)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.11
+      - run: bun install --frozen-lockfile
+      - run: bun run --filter @habit/web typecheck
+      - run: bun run --filter @habit/web build

@@ -17,4 +17,15 @@ describe("GET /health and edge guards", () => {
     });
     expect(res.status).toBe(401);
   });
+
+  it("returns API metadata on GET / without touching DB", async () => {
+    const res = await app.request("/");
+    expect(res.status).toBe(200);
+    expect(res.headers.get("cache-control")).toBe("public, max-age=3600");
+    expect(await res.json()).toEqual({
+      service: "glimkin-api",
+      ok: true,
+      website: "https://glimkin.pages.dev",
+    });
+  });
 });

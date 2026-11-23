@@ -39,6 +39,15 @@ export const refreshInputSchema = z.object({
 });
 export type RefreshInput = z.infer<typeof refreshInputSchema>;
 
+export const oauthProviderSchema = z.enum(["google", "github"]);
+export type OAuthProvider = z.infer<typeof oauthProviderSchema>;
+
+export const oauthExchangeInputSchema = z.object({
+  ticket: z.string().min(1),
+  deviceId: z.string().min(1).max(128),
+});
+export type OAuthExchangeInput = z.infer<typeof oauthExchangeInputSchema>;
+
 export const authTokensSchema = z.object({
   accessToken: z.string(),
   refreshToken: z.string(),

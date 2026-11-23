@@ -1,0 +1,69 @@
+---
+import "../styles/global.css";
+import SeoHead from "../components/SeoHead.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  activeNav: "home" | "privacy" | "terms";
+  includeSchema?: boolean;
+}
+
+const { title, description, activeNav, includeSchema = false } = Astro.props;
+const supportEmail = "sajudinmaruf@gmail.com";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <SeoHead
+      title={title}
+      description={description}
+      includeSchema={includeSchema}
+    />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="container">
+      <header class="topbar">
+        <a href="/" class="brand">
+          <img
+            src="/glimkin-icon.png"
+            alt="Glimkin icon"
+            width="38"
+            height="38"
+          />
+          <span>Glimkin</span>
+        </a>
+        <nav class="nav" aria-label="Primary">
+          <a href="/" class={`nav-link${activeNav === "home" ? " active" : ""}`}>
+            Home
+          </a>
+          <a
+            href="/privacy"
+            class={`nav-link${activeNav === "privacy" ? " active" : ""}`}
+          >
+            Privacy Policy
+          </a>
+          <a
+            href="/terms"
+            class={`nav-link${activeNav === "terms" ? " active" : ""}`}
+          >
+            Terms of Service
+          </a>
+        </nav>
+      </header>
+
+      <main id="main">
+        <slot />
+      </main>
+
+      <footer class="footer">
+        <span>Glimkin Habit Tracker · Offline-first Android &amp; iOS app</span>
+        <span>
+          Contact: <a href={`mailto:${supportEmail}`}>{supportEmail}</a>
+        </span>
+      </footer>
+    </div>
+  </body>
+</html>

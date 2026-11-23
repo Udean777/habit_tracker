@@ -60,6 +60,14 @@ const app = new Hono<AppEnv>()
     c.header("Cache-Control", "public, max-age=30");
     return c.json({ ok: true });
   })
+  .get("/", (c) => {
+    c.header("Cache-Control", "public, max-age=3600");
+    return c.json({
+      service: "glimkin-api",
+      ok: true,
+      website: "https://glimkin.pages.dev",
+    });
+  })
   .route("/auth", authRoutes)
   .route("/sync", syncRoutes)
   .route("/account", accountRoutes);

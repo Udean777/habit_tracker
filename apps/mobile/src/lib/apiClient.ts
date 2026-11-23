@@ -23,7 +23,7 @@ export function resolveApiUrl(
   );
 }
 
-const API_URL = resolveApiUrl(
+export const API_URL = resolveApiUrl(
   process.env.EXPO_PUBLIC_API_URL,
   __DEV__,
   Platform.OS,

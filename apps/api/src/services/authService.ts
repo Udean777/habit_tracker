@@ -27,6 +27,37 @@ export type AuthSuccess = {
   readonly user: { readonly id: string; readonly email: string };
 };
 
+export async function issueSessionForUser(
+  userId: string,
+  email: string,
+  deviceId: string,
+  database: ApiDb = db,
+  jwtSecret: string = resolveJwtSecret(),
+): Promise<AuthSuccess> {
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + REFRESH_TTL_MS);
+  const rawRefresh = generateOpaqueToken();
+  const tokenHash = await sha256Hex(rawRefresh);
+
+  await database.insert(refreshTokens).values({
+    id: crypto.randomUUID(),
+    userId,
+    familyId: crypto.randomUUID(),
+    tokenHash,
+    deviceId,
+    expiresAt,
+    revokedAt: null,
+    createdAt: now,
+  });
+
+  const accessToken = await signAccessToken(userId, jwtSecret);
+  return {
+    accessToken,
+    refreshToken: rawRefresh,
+    user: { id: userId, email },
+  };
+}
+
 export async function registerUser(
   email: string,
   password: string,
@@ -111,7 +142,11 @@ export async function loginUser(
     .where(and(eq(users.email, normalizedEmail), isNull(users.deletedAt)));
   const user = rows[0];
 
-  if (!user || !(await verifyPassword(password, user.passwordHash))) {
+  if (
+    !user ||
+    !user.passwordHash ||
+    !(await verifyPassword(password, user.passwordHash))
+  ) {
     return {
       ok: false,
       status: 401,
@@ -120,31 +155,14 @@ export async function loginUser(
     };
   }
 
-  const now = new Date();
-  const expiresAt = new Date(now.getTime() + REFRESH_TTL_MS);
-  const rawRefresh = generateOpaqueToken();
-  const tokenHash = await sha256Hex(rawRefresh);
-
-  await database.insert(refreshTokens).values({
-    id: crypto.randomUUID(),
-    userId: user.id,
-    familyId: crypto.randomUUID(),
-    tokenHash,
+  const data = await issueSessionForUser(
+    user.id,
+    user.email,
     deviceId,
-    expiresAt,
-    revokedAt: null,
-    createdAt: now,
-  });
-
-  const accessToken = await signAccessToken(user.id, jwtSecret);
-  return {
-    ok: true,
-    data: {
-      accessToken,
-      refreshToken: rawRefresh,
-      user: { id: user.id, email: user.email },
-    },
-  };
+    database,
+    jwtSecret,
+  );
+  return { ok: true, data };
 }
 
 export async function rotateRefreshToken(

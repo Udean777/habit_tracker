@@ -1,3 +1,5 @@
+import type { OAuthProvider } from "@habit/shared";
+
 export type HyperdriveBinding = {
   readonly connectionString: string;
 };
@@ -7,6 +9,16 @@ export type AppBindings = {
   readonly DATABASE_URL?: string;
   readonly JWT_SECRET?: string;
   readonly NODE_ENV?: string;
+  readonly PUBLIC_API_URL?: string;
+  readonly GOOGLE_CLIENT_ID?: string;
+  readonly GOOGLE_CLIENT_SECRET?: string;
+  readonly GITHUB_CLIENT_ID?: string;
+  readonly GITHUB_CLIENT_SECRET?: string;
+};
+
+export type OAuthClientCredentials = {
+  readonly clientId: string;
+  readonly clientSecret: string;
 };
 
 const DEV_DATABASE_URL =
@@ -32,4 +44,23 @@ export function resolveJwtSecret(env?: AppBindings): string {
     throw new Error("JWT_SECRET must be configured in production");
   }
   return DEV_JWT_SECRET;
+}
+
+export function resolveOAuthCredentials(
+  provider: OAuthProvider,
+  env?: AppBindings,
+): OAuthClientCredentials | null {
+  if (provider === "google") {
+    const clientId = env?.GOOGLE_CLIENT_ID ?? process.env.GOOGLE_CLIENT_ID;
+    const clientSecret =
+      env?.GOOGLE_CLIENT_SECRET ?? process.env.GOOGLE_CLIENT_SECRET;
+    if (!clientId || !clientSecret) return null;
+    return { clientId, clientSecret };
+  }
+
+  const clientId = env?.GITHUB_CLIENT_ID ?? process.env.GITHUB_CLIENT_ID;
+  const clientSecret =
+    env?.GITHUB_CLIENT_SECRET ?? process.env.GITHUB_CLIENT_SECRET;
+  if (!clientId || !clientSecret) return null;
+  return { clientId, clientSecret };
 }

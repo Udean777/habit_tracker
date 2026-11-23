@@ -125,10 +125,14 @@ apps/api/src/
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/auth/register` | Create account, return tokens |
-| POST | `/auth/login` | Authenticate, return tokens |
+| GET | `/auth/oauth/:provider/start` | Redirect to Google or GitHub OAuth 2.0 with signed state JWT |
+| GET | `/auth/oauth/:provider/callback` | Exchange provider code, redirect to `glimkin://auth/callback?ticket=` |
+| POST | `/auth/oauth/exchange` | Exchange 60 s one-time OAuth ticket for access & refresh tokens |
+| POST | `/auth/register` | Create account (local dev / programmatic), return tokens |
+| POST | `/auth/login` | Authenticate (local dev / programmatic), return tokens |
 | POST | `/auth/refresh` | Rotate refresh token |
 | POST | `/auth/logout` | Revoke refresh token |
+| POST | `/sync/batch` | Combined push + pull in one HTTP roundtrip |
 | POST | `/sync/push` | Submit batch of client operations |
 | GET | `/sync/pull?cursor=` | Fetch changes since cursor |
 | GET | `/account/export` | Full data export |
@@ -153,6 +157,7 @@ Codes are an enum in `packages/shared` so the client can switch on them.
 
 Default decision (reversible, see PRD open question 4): custom JWT.
 
+- **Authentication Providers:** One-tap **Google** and **GitHub** OAuth 2.0 (`expo-web-browser` + `glimkin://auth/callback` deep-link with a 60 s signed ticket exchange). Accounts with the same verified email automatically link to the same `users` row via `oauth_accounts`.
 - **Access token:** 60 min, signed (HS256), contains `sub` and `jti`. Mobile decodes `exp` locally and refreshes proactively within 60 s of expiry to avoid wasted `401` requests.
 - **Refresh token:** opaque random string, 30 days, stored **hashed** server-side, **rotated on every use**; reuse of an old token revokes the whole token family.
 - **Mobile storage:** both tokens in `expo-secure-store`.
@@ -185,6 +190,7 @@ Default decision (reversible, see PRD open question 4): custom JWT.
 ### 8.1 Production Stack
 - **API:** Cloudflare Workers (`apps/api/wrangler.jsonc`, deployed to `https://glimkin-api.hono-backend.workers.dev`) connected to **Neon PostgreSQL** via **Cloudflare Hyperdrive** (`HYPERDRIVE` binding). Request-scoped `postgres-js` client (`prepare: false`).
 - **API Deployment (CI/CD):** `.github/workflows/deploy-api.yml` handles Neon migrations and `wrangler deploy` automatically on `push` to `main` when backend paths (`apps/api/**`, `packages/shared/**`, `bun.lock`, `package.json`) change, or manually via `workflow_dispatch` (`migrations: auto | always | skip`). Local development stays 100% local.
+- **Website & Legal Pages (`apps/web`):** Static Astro site (`output: "static"`, `@astrojs/sitemap`, dynamic `robots.txt.ts`, 0 KB JS by default) serving `/`, `/privacy`, and `/terms` on **Cloudflare Pages** (`https://glimkin.pages.dev`) via `.github/workflows/deploy-web.yml` (0 Workers request quota used).
 - **Mobile Releases:** GitHub Actions (`.github/workflows/release.yml`) builds signed Android AAB + ABI-split APKs via Gradle; `apps/mobile/eas.json` is kept in sync for EAS Build (`development`, `preview`, `production`).
 - **CI:** `.github/workflows/ci.yml` runs `typecheck`, `lint`, and `test` on pull requests.
 
