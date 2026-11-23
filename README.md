@@ -1,69 +1,48 @@
-# Glimkin
+<div align="center">
+  <img src="apps/mobile/assets/images/splash-icon.png" alt="Glimkin Logo" width="112" />
+  <h1>Glimkin</h1>
+  <p><strong>Offline-first RPG habit tracker powered by Expo React Native, Skia, and Hono.</strong></p>
+  <p>
+    Turn daily habits into quests — earn XP, build combos, and level up a procedural 16×16 pixel hero, with local SQLite as the single source of truth.
+  </p>
+</div>
 
-An offline-first mobile habit tracker built with Expo React Native, backed by a self-hosted Hono API. Local SQLite is the source of truth for the UI, so every habit check-off, reorder, and edit works without a network connection and syncs in the background when you sign in.
+---
 
-## What It Includes
+## Highlights
 
-- **Arcade Quest HUD & Pixel Avatar**: Earn XP for completed habits, build daily combos, and level up a procedural 16x16 Skia pixel avatar across three classes (Knight, Mage, Ranger).
-- **Offline-First Storage & Sync**: Reads and writes go to local SQLite (`expo-sqlite` + Drizzle ORM) first, queued into an outbox table for idempotent sync with the Hono + PostgreSQL backend.
-- **Interactive Today Board**: 7-day centered date strip (future dates locked), drag-and-drop habit reordering, and Check-off, Counter, or Timer habits.
-- **Stats & Monthly Consistency**: Full-month completion grid, current and best streaks, and 7/30/90-day completion rates.
-- **Configurable Schedule & Accessibility**: Custom day-start offset, backfill window, haptic feedback toggle, and Reduce Motion support.
+- **Arcade Quest HUD & Pixel Hero** — Earn XP for completed habits, build daily combos, and level up a procedural 16×16 Skia pixel avatar (**Knight**, **Mage**, or **Ranger**).
+- **Offline-First & Idempotent Sync** — Every read/write hits local SQLite (`expo-sqlite` + Drizzle ORM) first, queued in an outbox for background sync with Hono + PostgreSQL.
+- **Interactive Today Board** — 7-day date strip, drag-and-drop reordering, and Check-off, Counter, or Timer habits.
+- **Stats & Consistency** — Monthly completion grid, current/best streaks, and 7/30/90-day completion rates.
+- **Accessible & Tunable** — Custom day-start offset, backfill window, haptics toggle, quality tiers, and Reduce Motion support.
 
-## Project Structure
+## Stack & Structure
 
-```text
-.
-├── apps/
-│   ├── mobile/          # Expo React Native app (Expo Router, Skia, Reanimated, NativeWind)
-│   └── api/             # Hono API (Drizzle ORM, PostgreSQL, JWT auth)
-├── packages/
-│   └── shared/          # Shared Zod schemas, types, and pure streak/date logic
-└── docs/                # Product, architecture, database, sync, and animation specs
-```
+| Layer | Tech |
+|---|---|
+| **Mobile** (`apps/mobile`) | Expo (RN), TypeScript strict, Expo Router, NativeWind, Zustand, `expo-sqlite` + Drizzle, Reanimated, Gesture Handler, Skia |
+| **API** (`apps/api`) | Hono (Bun), Drizzle ORM, PostgreSQL, Zod, JWT rotating refresh |
+| **Shared** (`packages/shared`) | Zod schemas, shared types, pure streak/schedule/date logic |
 
-## Tech Stack
+## Quick Start
 
-- **Mobile**: Expo (React Native), TypeScript (strict), Expo Router, NativeWind, Zustand, `expo-sqlite` + Drizzle ORM, React Native Reanimated, Gesture Handler, `@shopify/react-native-skia`
-- **API**: Hono (Bun in dev), Drizzle ORM, PostgreSQL, Zod
-- **Shared**: Zod schemas and pure domain logic (`packages/shared`)
-
-## Getting Started
-
-### Prerequisites
-
-- [Bun](https://bun.sh/) installed
-- Android Studio / Xcode (for running the Expo dev client)
-- PostgreSQL (if running the sync API locally)
-
-### Install Dependencies
+**Prerequisites:** [Bun](https://bun.sh/), Android Studio / Xcode (for dev client), and PostgreSQL (optional, for sync API).
 
 ```bash
+# 1. Install dependencies
 bun install
-```
 
-### Run the Apps
-
-Start the mobile app from the repository root:
-
-```bash
+# 2. Start mobile dev client
 bun run dev:mobile
-```
 
-Or run directly inside `apps/mobile` for interactive Expo CLI shortcuts:
-
-```bash
-cd apps/mobile
-bunx expo start --dev-client --host lan
-```
-
-Start the Hono API:
-
-```bash
+# 3. Start Hono API (optional)
 bun run dev:api
 ```
 
-### Checks & Tests
+> **Tip:** Run `cd apps/mobile && bunx expo start --dev-client --host lan` for interactive Expo CLI shortcuts.
+
+## Checks & Tests
 
 ```bash
 bun run typecheck   # TypeScript check across all workspaces
@@ -71,13 +50,6 @@ bun run lint        # ESLint across workspaces
 bun run test        # Vitest (shared), Bun test (api), Jest (mobile)
 ```
 
-## Documentation
+## Docs
 
-Detailed specifications live in `docs/`:
-
-- [PRD](docs/PRD.md)
-- [Architecture](docs/ARCHITECTURE.md)
-- [Database Schemas](docs/DATABASE.md)
-- [Sync Protocol](docs/SYNC.md)
-- [Animation & Performance](docs/ANIMATION.md)
-- [Roadmap](docs/ROADMAP.md)
+[PRD](docs/PRD.md) · [Architecture](docs/ARCHITECTURE.md) · [Database](docs/DATABASE.md) · [Sync Protocol](docs/SYNC.md) · [Animation & Performance](docs/ANIMATION.md) · [Roadmap](docs/ROADMAP.md)
