@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import * as Haptics from "expo-haptics";
 import { Pressable, View } from "react-native";
 import { Canvas, Group, Rect, RoundedRect } from "@shopify/react-native-skia";
-import { colors, radii } from "@/theme/tokens";
+import { radii } from "@/theme/tokens";
+import { useTheme } from "@/theme/useTheme";
 import type { AvatarVisualState } from "../avatarMapper";
 
 const GRID_SIZE = 16;
@@ -59,6 +60,7 @@ export function PixelAvatar({
   reduceMotion,
   size = 64,
 }: PixelAvatarProps) {
+  const { colors } = useTheme();
   const [frameIdx, setFrameIdx] = useState(0);
 
   const inset = 5;

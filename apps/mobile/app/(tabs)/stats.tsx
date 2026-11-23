@@ -13,9 +13,11 @@ import {
 import { FluidHeatmap } from "@/features/stats/components/FluidHeatmap";
 import { mapAggregateLogsToHeatmapCells } from "@/features/world/mappers";
 import { useMotionPreferences } from "@/features/world/qualityTier";
-import { colors, elevation, radii } from "@/theme/tokens";
+import { elevation, radii } from "@/theme/tokens";
+import { useTheme } from "@/theme/useTheme";
 
 export default function StatsScreen() {
+  const { colors } = useTheme();
   const {
     loading,
     error,

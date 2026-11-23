@@ -11,7 +11,8 @@ import Flame from "lucide-react-native/icons/flame";
 import Trophy from "lucide-react-native/icons/trophy";
 import { Text } from "@/components/Text";
 import { useUiStore } from "@/stores/uiStore";
-import { colors, radii } from "@/theme/tokens";
+import { radii } from "@/theme/tokens";
+import { useTheme } from "@/theme/useTheme";
 import { mapQuestProgressToAvatar } from "../avatarMapper";
 import type { QuestProgress } from "../questStats";
 import { PixelAvatar } from "./PixelAvatar";
@@ -22,6 +23,7 @@ type QuestHudProps = {
 };
 
 export function QuestHud({ progress, reduceMotion }: QuestHudProps) {
+  const { colors } = useTheme();
   const avatarClass = useUiStore((s) => s.avatarClass);
   const avatarState = useMemo(
     () => mapQuestProgressToAvatar(progress, avatarClass),

@@ -26,7 +26,8 @@ import { HabitIcon } from "@/components/HabitIcon";
 import { Screen } from "@/components/Screen";
 import { Text } from "@/components/Text";
 import { useHabitsData } from "@/features/habits";
-import { colors, habitAccents, radii } from "@/theme/tokens";
+import { habitAccents, radii } from "@/theme/tokens";
+import { useTheme } from "@/theme/useTheme";
 
 const WEEKDAY_LABELS = ["M", "T", "W", "T", "F", "S", "S"] as const;
 const ICON_KEYS: readonly HabitIconKey[] = [
@@ -48,6 +49,7 @@ const COLOR_KEYS: readonly HabitColorKey[] = [
 ];
 
 export default function NewHabitScreen() {
+  const { colors } = useTheme();
   const { effectiveToday, onCreateHabit } = useHabitsData();
   const [submitError, setSubmitError] = useState<string | null>(null);
 

@@ -20,13 +20,15 @@ import { appDb } from "@/db/client";
 import { syncState } from "@/db/schema";
 import { apiClient, saveAuthTokens } from "@/lib/apiClient";
 import { useUiStore } from "@/stores/uiStore";
-import { colors, radii } from "@/theme/tokens";
+import { radii } from "@/theme/tokens";
+import { useTheme } from "@/theme/useTheme";
 import {
   enqueueAllLocalDataForSync,
   runSyncCycle,
 } from "@/sync/syncEngine";
 
 export default function LoginScreen() {
+  const { colors } = useTheme();
   const bumpDataVersion = useUiStore((s) => s.bumpDataVersion);
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");

@@ -31,7 +31,8 @@ import { useMotionPreferences } from "@/features/world/qualityTier";
 import { clearAuthTokens, getAuthTokens } from "@/lib/apiClient";
 import { useUiStore } from "@/stores/uiStore";
 import { runSyncCycle } from "@/sync/syncEngine";
-import { colors, radii } from "@/theme/tokens";
+import { radii } from "@/theme/tokens";
+import { useTheme } from "@/theme/useTheme";
 
 const AVATAR_CLASSES: readonly {
   readonly label: string;
@@ -66,6 +67,7 @@ function Section({
   readonly title: string;
   readonly children: ReactNode;
 }) {
+  const { colors } = useTheme();
   return (
     <Animated.View
       entering={FadeIn.duration(180).easing(Easing.out(Easing.cubic))}
@@ -113,6 +115,7 @@ function SettingRow<T extends string | number>({
   readonly onSelect: (value: T) => void;
   readonly isLast?: boolean;
 }) {
+  const { colors } = useTheme();
   return (
     <View
       style={{
@@ -205,6 +208,7 @@ function SettingRow<T extends string | number>({
 }
 
 export default function SettingsScreen() {
+  const { colors } = useTheme();
   const {
     activeHabits,
     logs,
@@ -428,7 +432,10 @@ export default function SettingsScreen() {
             options={THEME_MODES.map((m) => ({ label: m, value: m }))}
             expanded={expandedRow === "theme"}
             onToggleExpand={() => toggleRow("theme")}
-            onSelect={(theme) => void onUpdateSettings({ theme })}
+            onSelect={(theme) => {
+              useUiStore.getState().setThemeMode(theme);
+              void onUpdateSettings({ theme });
+            }}
           />
           <View
             style={{

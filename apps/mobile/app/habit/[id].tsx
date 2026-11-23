@@ -21,9 +21,11 @@ import { FluidHeatmap } from "@/features/stats/components/FluidHeatmap";
 import { mapLogsToHeatmapCells } from "@/features/world/mappers";
 import { useMotionPreferences } from "@/features/world/qualityTier";
 import { formatReadableDate } from "@/lib/dateFormat";
-import { colors, elevation, radii } from "@/theme/tokens";
+import { elevation, radii } from "@/theme/tokens";
+import { useTheme } from "@/theme/useTheme";
 
 export default function HabitDetailScreen() {
+  const { colors } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const {
     activeHabits,

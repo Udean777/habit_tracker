@@ -10,7 +10,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { appDb } from "@/db/client";
 import migrations from "@/db/migrations/migrations";
 import { listActiveHabits } from "@/features/habits";
-import { ensureSettingsAndSyncState } from "@/features/settings";
+import { ensureSettingsAndSyncState, getSettings } from "@/features/settings";
 import {
   configureNotificationHandler,
   handleNotificationResponse,
@@ -18,7 +18,7 @@ import {
   registerNotificationCategories,
 } from "@/lib/notifications";
 import { hydrateAvatarClass, useUiStore } from "@/stores/uiStore";
-import { colors } from "@/theme/tokens";
+import { useTheme } from "@/theme/useTheme";
 
 configureNotificationHandler();
 
@@ -28,12 +28,15 @@ export default function RootLayout() {
   const [seedError, setSeedError] = useState<string | null>(null);
 
   const bumpDataVersion = useUiStore((s) => s.bumpDataVersion);
+  const { isDark, colors: themeColors } = useTheme();
 
   useEffect(() => {
     if (!success) return;
     let cancelled = false;
     void ensureSettingsAndSyncState(appDb)
       .then(async () => {
+        const loaded = await getSettings(appDb);
+        useUiStore.getState().setThemeMode(loaded.theme);
         await hydrateAvatarClass();
         await registerNotificationCategories();
         const active = await listActiveHabits(appDb);
@@ -78,12 +81,12 @@ export default function RootLayout() {
   return (
     <ErrorBoundary>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <StatusBar style="dark" />
+        <StatusBar style={isDark ? "light" : "dark"} />
         <Stack
           screenOptions={{
             headerShown: false,
             animation: "ios_from_right",
-            contentStyle: { backgroundColor: colors.background },
+            contentStyle: { backgroundColor: themeColors.background },
           }}
         >
           <Stack.Screen name="(tabs)" options={{ animation: "fade" }} />

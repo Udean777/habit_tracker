@@ -9,12 +9,13 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import { Tabs } from "expo-router";
-import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import BarChart3 from "lucide-react-native/icons/bar-chart-3";
 import CalendarCheck2 from "lucide-react-native/icons/calendar-check-2";
 import Settings from "lucide-react-native/icons/settings";
 import { Text } from "@/components/Text";
-import { colors, radii } from "@/theme/tokens";
+import { radii } from "@/theme/tokens";
+import { useTheme } from "@/theme/useTheme";
+import { BottomTabBarProps } from "expo-router/build/react-navigation/bottom-tabs";
 
 const TAB_TIMING = {
   damping: 26,
@@ -30,6 +31,7 @@ type TabItemProps = {
 };
 
 function TabItem({ routeName, label, focused, onPress }: TabItemProps) {
+  const { colors } = useTheme();
   const progress = useSharedValue(focused ? 1 : 0);
   const pressScale = useSharedValue(1);
 
@@ -116,6 +118,7 @@ function FloatingPillTabBar({
   navigation,
 }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
 
   return (
     <View
@@ -138,16 +141,16 @@ function FloatingPillTabBar({
           paddingVertical: 6,
           paddingHorizontal: 8,
           shadowColor: colors.textPrimary,
-          shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: 0.12,
-          shadowRadius: 16,
-          elevation: 8,
+          shadowOffset: { width: 0, height: 3 },
+          shadowOpacity: 0.05,
+          shadowRadius: 6,
+          elevation: 2,
         }}
         className="flex-row items-center gap-1.5"
       >
         {state.routes.map((route, index) => {
-          const { options } = descriptors[route.key];
-          const label = options.title ?? route.name;
+          const descriptor = descriptors[route.key];
+          const label = descriptor?.options.title ?? route.name;
           const focused = state.index === index;
 
           return (
@@ -176,6 +179,7 @@ function FloatingPillTabBar({
 }
 
 export default function TabsLayout() {
+  const { colors } = useTheme();
   return (
     <Tabs
       screenOptions={{

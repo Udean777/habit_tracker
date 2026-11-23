@@ -29,7 +29,8 @@ import {
 } from "@/features/habits";
 import { useMotionPreferences } from "@/features/world/qualityTier";
 import { useUiStore } from "@/stores/uiStore";
-import { colors, elevation, habitAccents, radii } from "@/theme/tokens";
+import { elevation, habitAccents, radii } from "@/theme/tokens";
+import { useTheme } from "@/theme/useTheme";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 const MONTHS = [
@@ -58,6 +59,7 @@ function parseLocalDateParts(date: LocalDate) {
 }
 
 export default function TodayScreen() {
+  const { colors } = useTheme();
   const selectedDate = useUiStore((s) => s.selectedDate);
   const setSelectedDate = useUiStore((s) => s.setSelectedDate);
   const [showOffDays, setShowOffDays] = useState(false);
