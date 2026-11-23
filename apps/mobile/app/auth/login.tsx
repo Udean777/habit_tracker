@@ -108,7 +108,11 @@ export default function LoginScreen() {
         return;
       }
       triggerHaptic("success", settings.hapticsEnabled);
-      router.back();
+      if (router.canDismiss()) {
+        router.dismissAll();
+      } else {
+        router.replace("/(tabs)/settings");
+      }
     } catch {
       triggerHaptic("light", settings.hapticsEnabled);
       setError(
@@ -134,7 +138,11 @@ export default function LoginScreen() {
         return;
       }
       triggerHaptic("success", settings.hapticsEnabled);
-      router.back();
+      if (router.canDismiss()) {
+        router.dismissAll();
+      } else {
+        router.replace("/(tabs)/settings");
+      }
     } catch {
       triggerHaptic("light", settings.hapticsEnabled);
       setError(

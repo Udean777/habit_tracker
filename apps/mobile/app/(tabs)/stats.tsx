@@ -7,7 +7,7 @@ import { Card } from "@/components/Card";
 import { Screen } from "@/components/Screen";
 import { Text } from "@/components/Text";
 import { TrophyCaseSection, useGamification } from "@/features/gamification";
-import { QuestHud, useHabitsData } from "@/features/habits";
+import { QuestHud, QuestLoadingView, useHabitsData } from "@/features/habits";
 import {
   FEATURE_TOUR_STEPS,
   TourTarget,
@@ -62,9 +62,12 @@ export default function StatsScreen() {
 
   if (loading) {
     return (
-      <Screen className="items-center justify-center p-6">
-        <Text variant="body">Loading stats...</Text>
-      </Screen>
+      <QuestLoadingView
+        title="Crunching Guild Stats"
+        subtitle="Calculating streaks, Gold ledger, and Trophy Case..."
+        reduceMotion={motionPrefs.reduceMotion}
+        hapticsEnabled={settings.hapticsEnabled}
+      />
     );
   }
 
