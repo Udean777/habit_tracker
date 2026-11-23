@@ -54,11 +54,11 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          ./apps/api/node_modules/.bin/wrangler pages project create glimkin --production-branch main || true
+          bunx wrangler pages project create glimkin --production-branch main || true
 
       - name: Deploy to Cloudflare Pages
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          ./apps/api/node_modules/.bin/wrangler pages deploy apps/web/dist --project-name=glimkin --branch=main
+          bunx wrangler pages deploy apps/web/dist --project-name=glimkin --branch=main
