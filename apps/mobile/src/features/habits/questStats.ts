@@ -1,5 +1,6 @@
 import { isDayCompleted, isScheduledOnDay, type LocalDate } from "@habit/shared";
-import type { HabitLogRecord, HabitRecord } from "../repository";
+import type { HabitLogRecord } from "@/features/logs";
+import type { HabitRecord } from "./repository";
 
 const XP_PER_COMPLETION = 25;
 const XP_ALL_DONE_BONUS = 25;
