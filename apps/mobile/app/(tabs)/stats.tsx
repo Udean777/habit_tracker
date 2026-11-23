@@ -4,10 +4,15 @@ import { computeStreak, isDayCompleted, type LocalDate } from "@habit/shared";
 import { Button } from "@/components/Button";
 import { Screen } from "@/components/Screen";
 import { Text } from "@/components/Text";
-import { useHabitsData } from "@/features/habits";
+import {
+  QuestHud,
+  computeQuestProgress,
+  useHabitsData,
+} from "@/features/habits";
 import { FluidHeatmap } from "@/features/stats/components/FluidHeatmap";
 import { mapAggregateLogsToHeatmapCells } from "@/features/world/mappers";
 import { useMotionPreferences } from "@/features/world/qualityTier";
+import { colors, elevation, radii } from "@/theme/tokens";
 
 export default function StatsScreen() {
   const {
@@ -22,6 +27,10 @@ export default function StatsScreen() {
   } = useHabitsData();
 
   const motionPrefs = useMotionPreferences(settings);
+  const questProgress = useMemo(
+    () => computeQuestProgress(activeHabits, logs, effectiveToday),
+    [activeHabits, logs, effectiveToday],
+  );
   const aggregateCells = useMemo(
     () => mapAggregateLogsToHeatmapCells(activeHabits, logs, effectiveToday),
     [activeHabits, logs, effectiveToday],
@@ -95,27 +104,66 @@ export default function StatsScreen() {
         );
 
   return (
-    <Screen className="px-4 pt-3">
+    <Screen edges={["top", "left", "right"]} className="pt-2">
       <Text variant="title" className="pb-3">
         Stats
       </Text>
 
+      <QuestHud
+        progress={questProgress}
+        reduceMotion={motionPrefs.reduceMotion}
+      />
+
       <View className="mb-4 flex-row gap-3">
-        <View className="flex-1 rounded-xl border border-neutral-200 bg-neutral-50 p-3">
-          <Text variant="caption">Completed Today</Text>
-          <Text variant="title">
+        <View
+          style={[
+            {
+              borderRadius: radii.card,
+              borderWidth: 1,
+              borderColor: colors.primaryPressed,
+              backgroundColor: colors.primary,
+            },
+            elevation.card,
+          ]}
+          className="flex-1 p-4"
+        >
+          <Text className="text-sm text-white/90">Completed Today</Text>
+          <Text className="mt-1 text-2xl font-bold text-white" tabularNums>
             {completedTodayCount} / {activeHabits.length}
           </Text>
         </View>
-        <View className="flex-1 rounded-xl border border-neutral-200 bg-neutral-50 p-3">
-          <Text variant="caption">30d Avg Rate</Text>
-          <Text variant="title">{avg30d}%</Text>
+        <View
+          style={[
+            {
+              borderRadius: radii.card,
+              borderWidth: 1,
+              borderColor: colors.accent,
+              backgroundColor: colors.accentBg,
+            },
+            elevation.card,
+          ]}
+          className="flex-1 p-4"
+        >
+          <Text className="text-sm font-medium text-[#2A2140]">30d Avg Rate</Text>
+          <Text className="mt-1 text-2xl font-bold text-[#2A2140]" tabularNums>
+            {avg30d}%
+          </Text>
         </View>
       </View>
 
-      <View className="mb-4 rounded-xl border border-neutral-200 bg-neutral-50 p-3">
-        <Text variant="caption">
-          Offline Outbox Queue: {pendingOutbox} pending operations
+      <View
+        style={{
+          borderRadius: radii.card,
+          borderWidth: 1,
+          borderColor: colors.border,
+          backgroundColor: colors.surfaceMuted,
+        }}
+        className="mb-4 p-3"
+      >
+        <Text variant="caption" tabularNums>
+          {pendingOutbox > 0
+            ? `Sync status: ${pendingOutbox} updates waiting to upload`
+            : "Sync status: All updates saved"}
         </Text>
       </View>
 
@@ -126,7 +174,7 @@ export default function StatsScreen() {
       ) : (
         <ScrollView showsVerticalScrollIndicator={false}>
           <Text variant="heading" className="mb-2">
-            8-Week Consistency Field
+            This Month Consistency
           </Text>
           <FluidHeatmap
             cells={aggregateCells}
@@ -136,14 +184,23 @@ export default function StatsScreen() {
           {habitStats.map(({ habit, stats }) => (
             <View
               key={habit.id}
-              className="mb-3 rounded-xl border border-neutral-200 bg-white p-4"
+              style={[
+                {
+                  borderRadius: radii.card,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  backgroundColor: colors.surface,
+                },
+                elevation.card,
+              ]}
+              className="mb-3 p-4"
             >
               <Text variant="heading">{habit.name}</Text>
-              <Text variant="caption" className="mt-1">
+              <Text variant="caption" tabularNums className="mt-1">
                 Current streak: {stats.currentStreak}d | Best:{" "}
                 {stats.bestStreak}d
               </Text>
-              <Text variant="caption" className="mt-1">
+              <Text variant="caption" tabularNums className="mt-1">
                 7d: {Math.round(stats.rate7d * 100)}% | 30d:{" "}
                 {Math.round(stats.rate30d * 100)}% | 90d:{" "}
                 {Math.round(stats.rate90d * 100)}%

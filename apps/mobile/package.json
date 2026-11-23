@@ -5,6 +5,7 @@
   "dependencies": {
     "@habit/shared": "workspace:*",
     "@hookform/resolvers": "^7.0.8",
+    "@react-native-community/datetimepicker": "9.1.0",
     "@shopify/flash-list": "2.0.2",
     "@shopify/react-native-skia": "2.6.2",
     "drizzle-orm": "^0.45.4",
@@ -57,7 +58,7 @@
     "lightningcss": "1.30.1",
     "postcss": "8.5.33",
     "tailwindcss": "4.1.12",
-    "typescript": "^5.9.3"
+    "typescript": "~6.0.3"
   },
   "scripts": {
     "start": "expo start --dev-client --host lan",

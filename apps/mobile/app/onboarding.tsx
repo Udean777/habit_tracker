@@ -7,6 +7,7 @@ import { HabitIcon } from "@/components/HabitIcon";
 import { Screen } from "@/components/Screen";
 import { Text } from "@/components/Text";
 import { useHabitsData } from "@/features/habits";
+import { colors, radii } from "@/theme/tokens";
 
 type Preset = Omit<CreateHabitInput, "startDate">;
 
@@ -85,7 +86,7 @@ export default function OnboardingScreen() {
   }
 
   return (
-    <Screen className="justify-between px-4 py-6">
+    <Screen className="justify-between py-6">
       <View>
         <Text variant="title">Welcome to Your Garden</Text>
         <Text variant="caption" className="mt-1 mb-6">
@@ -101,16 +102,20 @@ export default function OnboardingScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={`Select ${preset.name}`}
                 onPress={() => togglePreset(preset.name)}
-                className={`min-h-[56px] flex-row items-center gap-3 rounded-xl border p-4 ${
-                  active
-                    ? "border-blue-600 bg-blue-50"
-                    : "border-neutral-200 bg-white"
-                }`}
+                style={{
+                  borderRadius: radii.card,
+                  borderWidth: active ? 2 : 1,
+                  borderColor: active ? colors.primary : colors.borderStrong,
+                  backgroundColor: active
+                    ? colors.surfaceMuted
+                    : colors.surface,
+                }}
+                className="min-h-[56px] flex-row items-center gap-3 p-4"
               >
                 <HabitIcon
                   icon={preset.icon}
                   size={20}
-                  color={active ? "#2563EB" : "#525252"}
+                  color={active ? colors.primary : colors.textSecondary}
                 />
                 <Text variant="heading" className="flex-1">
                   {preset.name}

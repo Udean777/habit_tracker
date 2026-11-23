@@ -39,7 +39,9 @@ export function StreakTicker({ streak, reduceMotion }: StreakTickerProps) {
 
   return (
     <Animated.View style={animatedStyle}>
-      <Text variant="caption">Streak: {streak}d</Text>
+      <Text variant="caption" tabularNums>
+        Streak: {streak}d
+      </Text>
     </Animated.View>
   );
 }

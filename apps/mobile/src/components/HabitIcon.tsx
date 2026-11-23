@@ -9,6 +9,7 @@ import Flame from "lucide-react-native/icons/flame";
 import Leaf from "lucide-react-native/icons/leaf";
 import Moon from "lucide-react-native/icons/moon";
 import type { HabitIconKey } from "@habit/shared";
+import { colors } from "@/theme/tokens";
 
 const ICON_MAP: Record<HabitIconKey, ComponentType<LucideProps>> = {
   check: CheckCircle2,
@@ -30,8 +31,8 @@ type HabitIconProps = {
 export function HabitIcon({
   icon,
   size = 18,
-  color = "#171717",
+  color = colors.textPrimary,
 }: HabitIconProps) {
   const IconComponent = ICON_MAP[icon] ?? CheckCircle2;
-  return <IconComponent size={size} color={color} strokeWidth={2} />;
+  return <IconComponent size={size} color={color} strokeWidth={2.25} />;
 }

@@ -1,25 +1,10 @@
 import { useState } from "react";
-import { Text, useWindowDimensions, View } from "react-native";
+import { Pressable, View } from "react-native";
 import * as Haptics from "expo-haptics";
-import {
-  BlurMask,
-  Canvas,
-  Circle,
-  Group,
-  RoundedRect,
-} from "@shopify/react-native-skia";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import {
-  runOnJS,
-  useDerivedValue,
-  useSharedValue,
-} from "react-native-reanimated";
+import { Text } from "@/components/Text";
 import type { HeatmapCell, QualityTier } from "@/features/world/mappers";
-import { worldColors } from "@/theme/tokens";
-
-const COLS = 8;
-const ROWS = 7;
-const CANVAS_HEIGHT = 220;
+import { formatReadableDate } from "@/lib/dateFormat";
+import { colors, elevation, radii } from "@/theme/tokens";
 
 type FluidHeatmapProps = {
   readonly cells: readonly HeatmapCell[];
@@ -29,126 +14,121 @@ type FluidHeatmapProps = {
 
 export function FluidHeatmap({
   cells,
-  tier,
   hapticsEnabled,
 }: FluidHeatmapProps) {
-  const { width } = useWindowDimensions();
-  const canvasWidth = Math.max(260, width - 32);
-  const cellW = canvasWidth / COLS;
-  const cellH = CANVAS_HEIGHT / ROWS;
-
   const [selectedCell, setSelectedCell] = useState<HeatmapCell | null>(null);
 
-  const lensX = useSharedValue(-100);
-  const lensY = useSharedValue(-100);
-  const lastIndex = useSharedValue(-1);
+  const lastDate = cells[cells.length - 1]?.date ?? "2026-01-01";
+  const [yearStr, monthStr] = lastDate.split("-");
+  const year = Number(yearStr);
+  const month = Number(monthStr);
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const monthPrefix = `${yearStr}-${monthStr}-`;
 
-  function selectCell(index: number) {
-    const cell = cells[index];
-    if (!cell) return;
+  const cellByDate = new Map(cells.map((c) => [c.date, c]));
+  const monthCells: HeatmapCell[] = Array.from(
+    { length: daysInMonth },
+    (_, idx) => {
+      const day = String(idx + 1).padStart(2, "0");
+      const date = `${monthPrefix}${day}` as HeatmapCell["date"];
+      return cellByDate.get(date) ?? { index: idx, date, completion: 0 };
+    },
+  );
+
+  function handleSelect(cell: HeatmapCell) {
     setSelectedCell(cell);
     if (hapticsEnabled) {
-      void Haptics.selectionAsync();
+      void Haptics.selectionAsync().catch(() => {});
     }
   }
 
-  const scrubGesture = Gesture.Pan()
-    .minDistance(0)
-    .onBegin((e) => {
-      lensX.value = e.x;
-      lensY.value = e.y;
-    })
-    .onUpdate((e) => {
-      lensX.value = Math.max(0, Math.min(canvasWidth, e.x));
-      lensY.value = Math.max(0, Math.min(CANVAS_HEIGHT, e.y));
-
-      const col = Math.min(COLS - 1, Math.max(0, Math.floor(e.x / cellW)));
-      const row = Math.min(ROWS - 1, Math.max(0, Math.floor(e.y / cellH)));
-      const idx = row * COLS + col;
-      if (idx !== lastIndex.value) {
-        lastIndex.value = idx;
-        runOnJS(selectCell)(idx);
-      }
-    })
-    .onFinalize(() => {
-      lastIndex.value = -1;
-    });
-
-  const lensOpacity = useDerivedValue(() => (lensX.value >= 0 ? 0.9 : 0));
-
   return (
-    <View className="mb-4">
-      <GestureDetector gesture={scrubGesture}>
-        <Canvas
-          style={{
-            width: canvasWidth,
-            height: CANVAS_HEIGHT,
-            backgroundColor: worldColors.nightSurface,
-            borderRadius: 16,
-          }}
-        >
-          <Group>
-            {cells.map((cell, idx) => {
-              const col = idx % COLS;
-              const row = Math.floor(idx / COLS);
-              const cx = col * cellW + cellW / 2;
-              const cy = row * cellH + cellH / 2;
+    <View
+      style={[
+        {
+          borderRadius: radii.card,
+          borderWidth: 2,
+          borderBottomWidth: 4,
+          borderColor: colors.border,
+          backgroundColor: colors.surface,
+        },
+        elevation.card,
+      ]}
+      className="mb-4 p-4"
+    >
+      <View className="flex-row flex-wrap gap-1.5">
+        {monthCells.map((cell) => {
+          const isSelected = selectedCell?.date === cell.date;
+          const completion = Number.isFinite(cell.completion)
+            ? cell.completion
+            : 0;
+          const cellBg =
+            completion >= 1
+              ? colors.primary
+              : completion > 0
+                ? colors.accent
+                : colors.background;
+          const cellBorder = isSelected
+            ? colors.textPrimary
+            : completion >= 1
+              ? colors.primaryPressed
+              : completion > 0
+                ? colors.accent
+                : colors.border;
 
-              if (tier === "low") {
-                return (
-                  <RoundedRect
-                    key={cell.date}
-                    x={col * cellW + 4}
-                    y={row * cellH + 4}
-                    width={cellW - 8}
-                    height={cellH - 8}
-                    r={6}
-                    color={worldColors.glowEmerald}
-                    opacity={0.12 + cell.completion * 0.88}
-                  />
-                );
-              }
+          return (
+            <Pressable
+              key={cell.date}
+              accessibilityRole="button"
+              accessibilityLabel={`${cell.date}: ${Math.round(completion * 100)}% completed`}
+              onPress={() => handleSelect(cell)}
+              style={{
+                width: 18,
+                height: 18,
+                borderRadius: 4,
+                backgroundColor: cellBg,
+                borderWidth: isSelected ? 2 : 1,
+                borderColor: cellBorder,
+              }}
+            />
+          );
+        })}
+      </View>
 
-              const r = 8 + cell.completion * 14;
-              return (
-                <Circle
-                  key={cell.date}
-                  cx={cx}
-                  cy={cy}
-                  r={r}
-                  color={
-                    cell.completion >= 0.75
-                      ? worldColors.glowEmerald
-                      : cell.completion > 0
-                        ? worldColors.glowCyan
-                        : worldColors.dimmed
-                  }
-                  opacity={cell.completion > 0 ? 0.3 + cell.completion * 0.65 : 0.14}
-                >
-                  <BlurMask blur={tier === "high" ? 13 : 8} style="normal" />
-                </Circle>
-              );
-            })}
-          </Group>
-
-          <Circle
-            cx={lensX}
-            cy={lensY}
-            r={18}
-            color={worldColors.glowAmber}
-            style="stroke"
-            strokeWidth={2}
-            opacity={lensOpacity}
-          />
-        </Canvas>
-      </GestureDetector>
-
-      <View className="mt-2 rounded-lg bg-neutral-100 px-3 py-2">
-        <Text className="text-xs font-medium text-neutral-700">
+      <View className="mt-3 flex-row items-center justify-between">
+        <Text variant="caption" tabularNums>
           {selectedCell
-            ? `${selectedCell.date}: ${Math.round(selectedCell.completion * 100)}% completed`
-            : "Scrub across the field to inspect any of the last 56 days"}
+            ? `${formatReadableDate(selectedCell.date, true)}: ${Math.round((Number.isFinite(selectedCell.completion) ? selectedCell.completion : 0) * 100)}% completed`
+            : "Tap any day to inspect"}
         </Text>
+        <View className="flex-row items-center gap-2">
+          <View
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: 3,
+              backgroundColor: colors.background,
+              borderWidth: 1,
+              borderColor: colors.border,
+            }}
+          />
+          <View
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: 3,
+              backgroundColor: colors.accent,
+            }}
+          />
+          <View
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: 3,
+              backgroundColor: colors.primary,
+            }}
+          />
+        </View>
       </View>
     </View>
   );

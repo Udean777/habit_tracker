@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, TextInput, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
+import ArrowLeft from "lucide-react-native/icons/arrow-left";
 import {
   addDays,
   computeStreak,
@@ -14,6 +15,8 @@ import { useHabitsData } from "@/features/habits";
 import { FluidHeatmap } from "@/features/stats/components/FluidHeatmap";
 import { mapLogsToHeatmapCells } from "@/features/world/mappers";
 import { useMotionPreferences } from "@/features/world/qualityTier";
+import { formatReadableDate } from "@/lib/dateFormat";
+import { colors, elevation, radii } from "@/theme/tokens";
 
 export default function HabitDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -106,30 +109,52 @@ export default function HabitDetailScreen() {
   }
 
   return (
-    <Screen className="px-4 pt-3">
-      <View className="flex-row items-center justify-between pb-3">
-        <Button label="Back" variant="secondary" onPress={() => router.back()} />
-        <View className="flex-row gap-2">
+    <Screen className="pt-2">
+      <View className="flex-row items-center gap-3 pb-3">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+          onPress={() => router.back()}
+          style={{
+            borderRadius: radii.button,
+            borderWidth: 1,
+            borderBottomWidth: 3,
+            borderColor: colors.border,
+            backgroundColor: colors.surfaceMuted,
+          }}
+          className="min-h-[44px] min-w-[44px] items-center justify-center"
+        >
+          <ArrowLeft size={20} color={colors.textPrimary} strokeWidth={2.5} />
+        </Pressable>
+        <Text variant="title" className="flex-1" numberOfLines={1}>
+          {habit.name}
+        </Text>
+        {editingName === null ? (
           <Button
-            label="Archive"
+            label="Rename"
             variant="secondary"
-            onPress={() => void handleArchive()}
+            onPress={() => setEditingName(habit.name)}
           />
-          <Button
-            label="Delete"
-            variant="secondary"
-            onPress={() => void handleDelete()}
-          />
-        </View>
+        ) : null}
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
         {editingName !== null ? (
           <View className="mb-4 gap-2">
             <TextInput
               value={editingName}
               onChangeText={setEditingName}
-              className="min-h-[44px] rounded-lg border border-neutral-300 px-3 text-base text-neutral-900"
+              style={{
+                borderRadius: radii.button,
+                borderWidth: 1,
+                borderColor: colors.borderStrong,
+                backgroundColor: colors.surface,
+                color: colors.textPrimary,
+              }}
+              className="min-h-[44px] px-3 text-base"
             />
             <View className="flex-row gap-2">
               <Button label="Save Name" onPress={() => void saveNameEdit()} />
@@ -140,32 +165,69 @@ export default function HabitDetailScreen() {
               />
             </View>
           </View>
-        ) : (
-          <View className="mb-4 flex-row items-center justify-between">
-            <Text variant="title" className="flex-1">
-              {habit.name}
-            </Text>
-            <Button
-              label="Rename"
-              variant="secondary"
-              onPress={() => setEditingName(habit.name)}
-            />
-          </View>
-        )}
+        ) : null}
 
-        <View className="mb-4 rounded-xl border border-neutral-200 bg-neutral-50 p-4">
-          <Text variant="heading">
-            Current Streak: {stats.currentStreak}d (Best: {stats.bestStreak}d)
-          </Text>
-          <Text variant="caption" className="mt-1">
-            Completion Rate | 7d: {Math.round(stats.rate7d * 100)}% | 30d:{" "}
-            {Math.round(stats.rate30d * 100)}% | 90d:{" "}
+        <View className="mb-4 flex-row gap-3">
+          <View
+            style={[
+              {
+                borderRadius: radii.card,
+                borderWidth: 2,
+                borderBottomWidth: 4,
+                borderColor: colors.primaryPressed,
+                backgroundColor: colors.primary,
+              },
+              elevation.card,
+            ]}
+            className="flex-1 p-4"
+          >
+            <Text className="text-xs font-semibold text-white/90">
+              Current Streak
+            </Text>
+            <Text className="mt-1 text-2xl font-bold text-white" tabularNums>
+              {stats.currentStreak}d
+            </Text>
+          </View>
+          <View
+            style={[
+              {
+                borderRadius: radii.card,
+                borderWidth: 2,
+                borderBottomWidth: 4,
+                borderColor: colors.accent,
+                backgroundColor: colors.accentBg,
+              },
+              elevation.card,
+            ]}
+            className="flex-1 p-4"
+          >
+            <Text className="text-xs font-semibold text-[#2A2140]">
+              Best Streak
+            </Text>
+            <Text className="mt-1 text-2xl font-bold text-[#2A2140]" tabularNums>
+              {stats.bestStreak}d
+            </Text>
+          </View>
+        </View>
+
+        <View
+          style={{
+            borderRadius: radii.card,
+            borderWidth: 1,
+            borderColor: colors.border,
+            backgroundColor: colors.surface,
+          }}
+          className="mb-4 p-3"
+        >
+          <Text variant="caption" tabularNums>
+            Completion Rate: 7d {Math.round(stats.rate7d * 100)}% | 30d{" "}
+            {Math.round(stats.rate30d * 100)}% | 90d{" "}
             {Math.round(stats.rate90d * 100)}%
           </Text>
         </View>
 
         <Text variant="heading" className="mb-2">
-          56-Day Fluid Heatmap
+          This Month Consistency
         </Text>
         <FluidHeatmap
           cells={mapLogsToHeatmapCells(
@@ -179,22 +241,33 @@ export default function HabitDetailScreen() {
         />
 
         <Text variant="heading" className="mb-2">
-          Backfill History ({settings.backfillWindowDays}d window)
+          Past {settings.backfillWindowDays} Days
         </Text>
-        <View className="gap-2 pb-8">
+        <View className="gap-2 pb-6">
           {backfillDays.map((date) => {
             const val = logMap.get(date) ?? 0;
             const done = isDayCompleted(val, habit.type, habit.targetValue);
             return (
               <View
                 key={date}
-                className="flex-row items-center justify-between rounded-lg border border-neutral-200 p-3"
+                style={{
+                  borderRadius: radii.button,
+                  borderWidth: 1,
+                  borderColor: done ? colors.primary : colors.border,
+                  backgroundColor: done ? colors.surfaceMuted : colors.surface,
+                }}
+                className="flex-row items-center justify-between p-3"
               >
                 <View>
-                  <Text variant="body">{date}</Text>
-                  <Text variant="caption">
-                    Value: {val}
-                    {habit.targetValue ? ` / ${habit.targetValue}` : ""}
+                  <Text variant="body" className="font-semibold">
+                    {formatReadableDate(date, true)}
+                  </Text>
+                  <Text variant="caption" tabularNums>
+                    {habit.type === "boolean"
+                      ? done
+                        ? "Completed"
+                        : "Not completed"
+                      : `${val}${habit.targetValue ? ` / ${habit.targetValue}` : ""}`}
                   </Text>
                 </View>
 
@@ -205,13 +278,20 @@ export default function HabitDetailScreen() {
                     onPress={() =>
                       void onLogValue(habit.id, date, done ? 0 : 1)
                     }
-                    className={`min-h-[44px] min-w-[72px] items-center justify-center rounded-lg px-3 ${
-                      done ? "bg-emerald-600" : "bg-neutral-200"
-                    }`}
+                    style={{
+                      borderRadius: radii.button,
+                      borderWidth: 1,
+                      borderBottomWidth: 3,
+                      borderColor: done
+                        ? colors.primaryPressed
+                        : colors.borderStrong,
+                      backgroundColor: done ? colors.primary : colors.surface,
+                    }}
+                    className="min-h-[44px] min-w-[76px] items-center justify-center px-3"
                   >
                     <Text
                       className={`font-semibold ${
-                        done ? "text-white" : "text-neutral-900"
+                        done ? "text-white" : "text-[#2A2140]"
                       }`}
                     >
                       {done ? "Done" : "Mark"}
@@ -229,9 +309,15 @@ export default function HabitDetailScreen() {
                           Math.max(0, val - (habit.type === "duration" ? 5 : 1)),
                         )
                       }
-                      className="min-h-[44px] min-w-[44px] items-center justify-center rounded-lg bg-neutral-200"
+                      style={{
+                        borderRadius: radii.button,
+                        borderWidth: 1,
+                        borderColor: colors.borderStrong,
+                        backgroundColor: colors.surface,
+                      }}
+                      className="min-h-[44px] min-w-[44px] items-center justify-center"
                     >
-                      <Text className="text-lg font-bold text-neutral-900">
+                      <Text className="text-lg font-bold text-[#2A2140]">
                         -
                       </Text>
                     </Pressable>
@@ -245,7 +331,14 @@ export default function HabitDetailScreen() {
                           val + (habit.type === "duration" ? 5 : 1),
                         )
                       }
-                      className="min-h-[44px] min-w-[44px] items-center justify-center rounded-lg bg-blue-600"
+                      style={{
+                        borderRadius: radii.button,
+                        borderWidth: 1,
+                        borderBottomWidth: 3,
+                        borderColor: colors.primaryPressed,
+                        backgroundColor: colors.primary,
+                      }}
+                      className="min-h-[44px] min-w-[44px] items-center justify-center"
                     >
                       <Text className="text-lg font-bold text-white">+</Text>
                     </Pressable>
@@ -254,6 +347,37 @@ export default function HabitDetailScreen() {
               </View>
             );
           })}
+        </View>
+
+        <View
+          style={{
+            borderRadius: radii.card,
+            borderWidth: 1,
+            borderColor: colors.border,
+            backgroundColor: colors.surface,
+          }}
+          className="mb-4 p-4"
+        >
+          <Text variant="heading" className="mb-1">
+            Manage Quest
+          </Text>
+          <Text variant="caption" className="mb-3">
+            Archive to pause without losing history, or delete permanently.
+          </Text>
+          <View className="flex-row gap-2">
+            <Button
+              label="Archive"
+              variant="secondary"
+              className="flex-1"
+              onPress={() => void handleArchive()}
+            />
+            <Button
+              label="Delete"
+              variant="danger"
+              className="flex-1"
+              onPress={() => void handleDelete()}
+            />
+          </View>
         </View>
       </ScrollView>
     </Screen>

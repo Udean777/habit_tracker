@@ -175,6 +175,29 @@ export function useHabitsData() {
     bumpDataVersion();
   }
 
+  async function onReorderHabit(habitId: string, targetIndex: number) {
+    const ids = state.activeHabits.map((h) => h.id);
+    const idx = ids.indexOf(habitId);
+    if (
+      idx < 0 ||
+      targetIndex < 0 ||
+      targetIndex >= ids.length ||
+      idx === targetIndex
+    ) {
+      return;
+    }
+    const nextHabits = [...state.activeHabits];
+    const [movedHabit] = nextHabits.splice(idx, 1);
+    if (!movedHabit) return;
+    nextHabits.splice(targetIndex, 0, movedHabit);
+
+    // Update UI order synchronously so the list doesn't flash back before SQLite finishes.
+    setState((prev) => ({ ...prev, activeHabits: nextHabits }));
+
+    await reorderHabits(nextHabits.map((h) => h.id));
+    await maybeHaptic("light");
+  }
+
   async function onArchiveHabit(id: string) {
     await archiveHabit(id);
     await syncNotifications();
@@ -214,6 +237,7 @@ export function useHabitsData() {
     onUpdateHabit,
     onLogValue,
     onMoveHabit,
+    onReorderHabit,
     onArchiveHabit,
     onUnarchiveHabit,
     onDeleteHabit,

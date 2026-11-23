@@ -1,11 +1,3 @@
-jest.mock("expo-crypto", () => ({
-  getRandomBytes: (size: number) => {
-    const out = new Uint8Array(size);
-    for (let i = 0; i < size; i++) out[i] = (i * 37 + 11) % 256;
-    return out;
-  },
-}));
-
 import type { HabitRecord } from "../habits/repository";
 import { createId } from "../../lib/id";
 import {
@@ -13,6 +5,14 @@ import {
   mapLogsToHeatmapCells,
   mapTimeOfDayPalette,
 } from "./mappers";
+
+jest.mock("expo-crypto", () => ({
+  getRandomBytes: (size: number) => {
+    const out = new Uint8Array(size);
+    for (let i = 0; i < size; i++) out[i] = (i * 37 + 11) % 256;
+    return out;
+  },
+}));
 
 describe("world visual mappers", () => {
   it("generates valid UUIDv7-formatted client IDs", () => {

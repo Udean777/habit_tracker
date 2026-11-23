@@ -1,21 +1,27 @@
 import { useState } from "react";
-import { Pressable, ScrollView, TextInput, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  TextInput,
+  View,
+} from "react-native";
 import { router } from "expo-router";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   createHabitInputSchema,
   type CreateHabitInput,
   type HabitColorKey,
   type HabitIconKey,
-  type HabitType,
-  type ScheduleType,
 } from "@habit/shared";
 import { Button } from "@/components/Button";
 import { HabitIcon } from "@/components/HabitIcon";
 import { Screen } from "@/components/Screen";
 import { Text } from "@/components/Text";
 import { useHabitsData } from "@/features/habits";
+import { colors, habitAccents, radii } from "@/theme/tokens";
 
 const WEEKDAY_LABELS = ["M", "T", "W", "T", "F", "S", "S"] as const;
 const ICON_KEYS: readonly HabitIconKey[] = [
@@ -43,7 +49,6 @@ export default function NewHabitScreen() {
   const {
     control,
     handleSubmit,
-    watch,
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<CreateHabitInput>({
@@ -62,21 +67,21 @@ export default function NewHabitScreen() {
     },
   });
 
-  const habitType = watch("type");
-  const scheduleType = watch("scheduleType");
-  const scheduleDays = watch("scheduleDays") ?? 127;
-  const scheduleTimes = watch("scheduleTimes") ?? 3;
-  const selectedColor = watch("color");
-  const selectedIcon = watch("icon");
+  const habitType = useWatch({ control, name: "type" });
+  const scheduleType = useWatch({ control, name: "scheduleType" });
+  const scheduleDays = useWatch({ control, name: "scheduleDays" }) ?? 127;
+  const scheduleTimes = useWatch({ control, name: "scheduleTimes" }) ?? 3;
+  const selectedColor = useWatch({ control, name: "color" });
+  const selectedIcon = useWatch({ control, name: "icon" });
 
   async function onSubmit(data: CreateHabitInput) {
     try {
       setSubmitError(null);
       await onCreateHabit(data);
       router.back();
-    } catch (err) {
+    } catch {
       setSubmitError(
-        err instanceof Error ? err.message : "Failed to save habit",
+        "Could not save your quest. Please check your inputs and try again.",
       );
     }
   }
@@ -88,116 +93,168 @@ export default function NewHabitScreen() {
   }
 
   return (
-    <Screen className="px-4 pt-3">
+    <Screen className="pt-3">
       <View className="flex-row items-center justify-between pb-4">
-        <Text variant="title">New Habit</Text>
+        <Text variant="title">New Quest</Text>
         <Button label="Cancel" variant="secondary" onPress={() => router.back()} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <Text variant="heading" className="mb-1">
-          Name
-        </Text>
-        <Controller
-          control={control}
-          name="name"
-          render={({ field: { onChange, value } }) => (
-            <TextInput
-              value={value}
-              onChangeText={onChange}
-              placeholder="e.g. Morning Walk"
-              className="mb-1 min-h-[44px] rounded-lg border border-neutral-300 px-3 text-base text-neutral-900"
-            />
-          )}
-        />
-        {errors.name ? (
-          <Text variant="caption" className="mb-3 text-red-600">
-            {errors.name.message}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 32 }}
+        >
+          <Text variant="heading" className="mb-1.5">
+            Quest Name
           </Text>
-        ) : (
-          <View className="mb-3" />
-        )}
-
-        <Text variant="heading" className="mb-2">
-          Type
-        </Text>
-        <View className="mb-4 flex-row gap-2">
-          {(["boolean", "count", "duration"] as readonly HabitType[]).map(
-            (t) => (
-              <Pressable
-                key={t}
-                accessibilityRole="button"
-                accessibilityLabel={`Habit type ${t}`}
-                onPress={() => {
-                  setValue("type", t);
-                  setValue("targetValue", t === "boolean" ? null : 10);
+          <Controller
+            control={control}
+            name="name"
+            render={({ field: { onChange, value } }) => (
+              <TextInput
+                value={value}
+                onChangeText={onChange}
+                placeholder="e.g. Morning Walk"
+                placeholderTextColor={colors.textSecondary}
+                style={{
+                  borderRadius: radii.button,
+                  borderWidth: 1,
+                  borderColor: colors.borderStrong,
+                  backgroundColor: colors.surface,
+                  color: colors.textPrimary,
                 }}
-                className={`min-h-[44px] flex-1 items-center justify-center rounded-lg ${
-                  habitType === t ? "bg-blue-600" : "bg-neutral-200"
-                }`}
-              >
-                <Text
-                  className={`capitalize font-medium ${
-                    habitType === t ? "text-white" : "text-neutral-900"
-                  }`}
-                >
-                  {t}
-                </Text>
-              </Pressable>
-            ),
-          )}
-        </View>
-
-        {habitType !== "boolean" ? (
-          <View className="mb-4">
-            <Text variant="heading" className="mb-1">
-              Target ({habitType === "duration" ? "minutes" : "count"})
+                className="mb-1 min-h-[44px] px-3 text-base"
+              />
+            )}
+          />
+          {errors.name ? (
+            <Text variant="caption" className="mb-3" style={{ color: colors.danger }}>
+              {errors.name.message}
             </Text>
-            <Controller
-              control={control}
-              name="targetValue"
-              render={({ field: { onChange, value } }) => (
-                <TextInput
-                  value={value ? String(value) : ""}
-                  keyboardType="number-pad"
-                  onChangeText={(txt) => {
-                    const num = Number.parseInt(txt, 10);
-                    onChange(Number.isFinite(num) && num > 0 ? num : null);
-                  }}
-                  placeholder="10"
-                  className="min-h-[44px] rounded-lg border border-neutral-300 px-3 text-base text-neutral-900"
-                />
-              )}
-            />
-          </View>
-        ) : null}
-
-        <Text variant="heading" className="mb-2">
-          Schedule
-        </Text>
-        <View className="mb-3 flex-row gap-2">
-          {(["daily", "weekdays", "times_per_week"] as readonly ScheduleType[]).map(
-            (st) => (
-              <Pressable
-                key={st}
-                accessibilityRole="button"
-                accessibilityLabel={`Schedule ${st}`}
-                onPress={() => setValue("scheduleType", st)}
-                className={`min-h-[44px] flex-1 items-center justify-center rounded-lg px-2 ${
-                  scheduleType === st ? "bg-blue-600" : "bg-neutral-200"
-                }`}
-              >
-                <Text
-                  className={`text-xs font-medium ${
-                    scheduleType === st ? "text-white" : "text-neutral-900"
-                  }`}
-                >
-                  {st === "times_per_week" ? "N / week" : st}
-                </Text>
-              </Pressable>
-            ),
+          ) : (
+            <View className="mb-3" />
           )}
-        </View>
+
+          <Text variant="heading" className="mb-2">
+            Type
+          </Text>
+          <View className="mb-4 flex-row gap-2">
+            {(
+              [
+                { value: "boolean", label: "Check-off" },
+                { value: "count", label: "Counter" },
+                { value: "duration", label: "Timer" },
+              ] as const
+            ).map(({ value: t, label }) => {
+              const active = habitType === t;
+              return (
+                <Pressable
+                  key={t}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Quest type ${label}`}
+                  onPress={() => {
+                    setValue("type", t);
+                    setValue("targetValue", t === "boolean" ? null : 10);
+                  }}
+                  style={{
+                    borderRadius: radii.button,
+                    borderWidth: 1,
+                    borderBottomWidth: active ? 3 : 1,
+                    borderColor: active
+                      ? colors.primaryPressed
+                      : colors.borderStrong,
+                    backgroundColor: active ? colors.primary : colors.surface,
+                  }}
+                  className="min-h-[44px] flex-1 items-center justify-center"
+                >
+                  <Text
+                    className={`font-semibold ${
+                      active ? "text-white" : "text-[#2A2140]"
+                    }`}
+                  >
+                    {label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          {habitType !== "boolean" ? (
+            <View className="mb-4">
+              <Text variant="heading" className="mb-1.5">
+                Target ({habitType === "duration" ? "minutes" : "count"})
+              </Text>
+              <Controller
+                control={control}
+                name="targetValue"
+                render={({ field: { onChange, value } }) => (
+                  <TextInput
+                    value={value ? String(value) : ""}
+                    keyboardType="number-pad"
+                    onChangeText={(txt) => {
+                      const num = Number.parseInt(txt, 10);
+                      onChange(Number.isFinite(num) && num > 0 ? num : null);
+                    }}
+                    placeholder="10"
+                    placeholderTextColor={colors.textSecondary}
+                    style={{
+                      borderRadius: radii.button,
+                      borderWidth: 1,
+                      borderColor: colors.borderStrong,
+                      backgroundColor: colors.surface,
+                      color: colors.textPrimary,
+                    }}
+                    className="min-h-[44px] px-3 text-base"
+                  />
+                )}
+              />
+            </View>
+          ) : null}
+
+          <Text variant="heading" className="mb-2">
+            Schedule
+          </Text>
+          <View className="mb-3 flex-row gap-2">
+            {(
+              [
+                { value: "daily", label: "Every day" },
+                { value: "weekdays", label: "Specific days" },
+                { value: "times_per_week", label: "Times / week" },
+              ] as const
+            ).map(({ value: st, label }) => {
+              const active = scheduleType === st;
+              return (
+                <Pressable
+                  key={st}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Schedule ${label}`}
+                  onPress={() => setValue("scheduleType", st)}
+                  style={{
+                    borderRadius: radii.button,
+                    borderWidth: 1,
+                    borderBottomWidth: active ? 3 : 1,
+                    borderColor: active
+                      ? colors.primaryPressed
+                      : colors.borderStrong,
+                    backgroundColor: active ? colors.primary : colors.surface,
+                  }}
+                  className="min-h-[44px] flex-1 items-center justify-center px-2"
+                >
+                  <Text
+                    className={`text-xs font-semibold ${
+                      active ? "text-white" : "text-[#2A2140]"
+                    }`}
+                  >
+                    {label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
 
         {scheduleType === "weekdays" ? (
           <View className="mb-4 flex-row gap-1">
@@ -209,13 +266,20 @@ export default function NewHabitScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={`Toggle day ${idx + 1}`}
                   onPress={() => toggleWeekday(idx)}
-                  className={`min-h-[44px] flex-1 items-center justify-center rounded-lg ${
-                    active ? "bg-blue-600" : "bg-neutral-200"
-                  }`}
+                  style={{
+                    borderRadius: radii.button,
+                    borderWidth: 1,
+                    borderBottomWidth: active ? 3 : 1,
+                    borderColor: active
+                      ? colors.primaryPressed
+                      : colors.borderStrong,
+                    backgroundColor: active ? colors.primary : colors.surface,
+                  }}
+                  className="min-h-[44px] flex-1 items-center justify-center"
                 >
                   <Text
                     className={`font-semibold ${
-                      active ? "text-white" : "text-neutral-900"
+                      active ? "text-white" : "text-[#2A2140]"
                     }`}
                   >
                     {label}
@@ -234,13 +298,22 @@ export default function NewHabitScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={`${n} times per week`}
                 onPress={() => setValue("scheduleTimes", n)}
-                className={`min-h-[44px] flex-1 items-center justify-center rounded-lg ${
-                  scheduleTimes === n ? "bg-blue-600" : "bg-neutral-200"
-                }`}
+                style={{
+                  borderRadius: radii.button,
+                  borderWidth: 1,
+                  borderBottomWidth: scheduleTimes === n ? 3 : 1,
+                  borderColor:
+                    scheduleTimes === n
+                      ? colors.primaryPressed
+                      : colors.borderStrong,
+                  backgroundColor:
+                    scheduleTimes === n ? colors.primary : colors.surface,
+                }}
+                className="min-h-[44px] flex-1 items-center justify-center"
               >
                 <Text
                   className={`font-semibold ${
-                    scheduleTimes === n ? "text-white" : "text-neutral-900"
+                    scheduleTimes === n ? "text-white" : "text-[#2A2140]"
                   }`}
                 >
                   {n}
@@ -256,20 +329,26 @@ export default function NewHabitScreen() {
         <View className="mb-4 flex-row flex-wrap gap-2">
           {ICON_KEYS.map((iconKey) => {
             const active = selectedIcon === iconKey;
+            const activeBg = habitAccents[selectedColor];
             return (
               <Pressable
                 key={iconKey}
                 accessibilityRole="button"
                 accessibilityLabel={`Icon ${iconKey}`}
                 onPress={() => setValue("icon", iconKey)}
-                className={`min-h-[44px] min-w-[44px] items-center justify-center rounded-lg px-3 ${
-                  active ? "bg-neutral-900" : "bg-neutral-200"
-                }`}
+                style={{
+                  borderRadius: radii.button,
+                  borderWidth: 1,
+                  borderBottomWidth: active ? 3 : 1,
+                  borderColor: active ? colors.textPrimary : colors.borderStrong,
+                  backgroundColor: active ? activeBg : colors.surface,
+                }}
+                className="min-h-[44px] min-w-[44px] items-center justify-center px-3"
               >
                 <HabitIcon
                   icon={iconKey}
                   size={20}
-                  color={active ? "#FFFFFF" : "#171717"}
+                  color={active ? "#FFFFFF" : colors.textPrimary}
                 />
               </Pressable>
             );
@@ -279,26 +358,28 @@ export default function NewHabitScreen() {
         <Text variant="heading" className="mb-2">
           Color
         </Text>
-        <View className="mb-6 flex-row gap-2">
-          {COLOR_KEYS.map((colorKey) => (
-            <Pressable
-              key={colorKey}
-              accessibilityRole="button"
-              accessibilityLabel={`Color ${colorKey}`}
-              onPress={() => setValue("color", colorKey)}
-              className={`min-h-[44px] flex-1 items-center justify-center rounded-lg ${
-                selectedColor === colorKey ? "bg-neutral-900" : "bg-neutral-200"
-              }`}
-            >
-              <Text
-                className={`capitalize text-xs font-medium ${
-                  selectedColor === colorKey ? "text-white" : "text-neutral-900"
-                }`}
-              >
-                {colorKey}
-              </Text>
-            </Pressable>
-          ))}
+        <View className="mb-6 flex-row gap-3">
+          {COLOR_KEYS.map((colorKey) => {
+            const active = selectedColor === colorKey;
+            return (
+              <Pressable
+                key={colorKey}
+                accessibilityRole="button"
+                accessibilityLabel={`Color ${colorKey}`}
+                accessibilityState={{ selected: active }}
+                onPress={() => setValue("color", colorKey)}
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: radii.pill,
+                  backgroundColor: habitAccents[colorKey],
+                  borderWidth: active ? 3 : 1,
+                  borderColor: active ? colors.textPrimary : colors.border,
+                }}
+                className="items-center justify-center"
+              />
+            );
+          })}
         </View>
 
         {submitError ? (
@@ -314,6 +395,7 @@ export default function NewHabitScreen() {
         />
         <View className="h-8" />
       </ScrollView>
+      </KeyboardAvoidingView>
     </Screen>
   );
 }

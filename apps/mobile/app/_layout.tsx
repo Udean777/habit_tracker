@@ -2,6 +2,7 @@ import "../global.css";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import * as Notifications from "expo-notifications";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
@@ -37,10 +38,10 @@ export default function RootLayout() {
         await reconcileNotifications(active);
         if (!cancelled) setSeeded(true);
       })
-      .catch((err) => {
+      .catch(() => {
         if (!cancelled) {
           setSeedError(
-            err instanceof Error ? err.message : "Database setup failed",
+            "We could not load your local data. Please restart the app.",
           );
         }
       });
@@ -75,6 +76,7 @@ export default function RootLayout() {
   return (
     <ErrorBoundary>
       <GestureHandlerRootView style={{ flex: 1 }}>
+        <StatusBar style="dark" />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="habit/new" options={{ presentation: "modal" }} />

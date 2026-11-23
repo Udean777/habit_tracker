@@ -1,14 +1,13 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import * as Haptics from "expo-haptics";
 import { Pressable, ScrollView, View } from "react-native";
 import { router } from "expo-router";
-import ChevronDown from "lucide-react-native/icons/chevron-down";
-import ChevronUp from "lucide-react-native/icons/chevron-up";
+import Check from "lucide-react-native/icons/check";
 import {
   addDays,
   computeStreak,
   isDayCompleted,
   isScheduledOnDay,
-  type HabitColorKey,
   type LocalDate,
 } from "@habit/shared";
 import { Button } from "@/components/Button";
@@ -16,23 +15,47 @@ import { HabitIcon } from "@/components/HabitIcon";
 import { Screen } from "@/components/Screen";
 import { StreakTicker } from "@/components/StreakTicker";
 import { Text } from "@/components/Text";
-import { useHabitsData, type HabitRecord } from "@/features/habits";
-import { LivingWorldCanvas } from "@/features/world/components/LivingWorldCanvas";
-import { mapHabitsToWorldOrganisms } from "@/features/world/mappers";
+import {
+  DraggableQuestList,
+  QuestHud,
+  computeQuestProgress,
+  useHabitsData,
+  type HabitRecord,
+} from "@/features/habits";
 import { useMotionPreferences } from "@/features/world/qualityTier";
 import { useUiStore } from "@/stores/uiStore";
+import { colors, elevation, habitAccents, radii } from "@/theme/tokens";
 
-const COLOR_HEX: Record<HabitColorKey, string> = {
-  primary: "#2563EB",
-  emerald: "#059669",
-  violet: "#7C3AED",
-  amber: "#D97706",
-  cyan: "#0891B2",
-};
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+] as const;
+
+function parseLocalDateParts(date: LocalDate) {
+  const [y, m, d] = date.split("-").map(Number);
+  const dt = new Date(Date.UTC(y ?? 2026, (m ?? 1) - 1, d ?? 1));
+  return {
+    weekday: WEEKDAYS[dt.getUTCDay()] ?? "",
+    dayNum: String(d ?? 1),
+    month: MONTHS[(m ?? 1) - 1] ?? "",
+  };
+}
 
 export default function TodayScreen() {
   const selectedDate = useUiStore((s) => s.selectedDate);
   const setSelectedDate = useUiStore((s) => s.setSelectedDate);
+  const [showOffDays, setShowOffDays] = useState(false);
 
   const {
     loading,
@@ -42,21 +65,23 @@ export default function TodayScreen() {
     settings,
     effectiveToday,
     onLogValue,
-    onMoveHabit,
+    onReorderHabit,
     refresh,
   } = useHabitsData();
 
   const motionPrefs = useMotionPreferences(settings);
 
-  const organisms = useMemo(
-    () => mapHabitsToWorldOrganisms(activeHabits, logs, selectedDate),
+  const questProgress = useMemo(
+    () => computeQuestProgress(activeHabits, logs, selectedDate),
     [activeHabits, logs, selectedDate],
   );
 
   const dateStrip = useMemo(() => {
-    const count = Math.min(settings.backfillWindowDays + 1, 15);
-    return Array.from({ length: count }, (_, idx) =>
-      addDays(effectiveToday, -(count - 1 - idx)),
+    const pastCount = Math.min(settings.backfillWindowDays, 3);
+    const futureCount = 3;
+    const total = pastCount + 1 + futureCount;
+    return Array.from({ length: total }, (_, idx) =>
+      addDays(effectiveToday, idx - pastCount),
     );
   }, [effectiveToday, settings.backfillWindowDays]);
 
@@ -99,7 +124,7 @@ export default function TodayScreen() {
     );
   }
 
-  function renderHabitRow(habit: HabitRecord, index: number) {
+  function renderHabitRow(habit: HabitRecord) {
     const currentValue = logsByHabitId.get(habit.id) ?? 0;
     const isDone = isDayCompleted(currentValue, habit.type, habit.targetValue);
     const schedule = {
@@ -127,12 +152,18 @@ export default function TodayScreen() {
 
     return (
       <View
-        key={habit.id}
-        className={`mb-3 rounded-xl border p-4 ${
-          scheduled
-            ? "border-neutral-200 bg-white"
-            : "border-neutral-100 bg-neutral-50"
-        }`}
+        style={[
+          {
+            borderRadius: radii.card,
+            borderWidth: 2,
+            borderBottomWidth: 4,
+            borderColor: isDone ? colors.primary : colors.border,
+            backgroundColor: isDone ? colors.surfaceMuted : colors.surface,
+            opacity: isDone ? 0.9 : 1,
+          },
+          !isDone && scheduled ? elevation.card : undefined,
+        ]}
+        className="mb-3 p-4"
       >
         <View className="flex-row items-center justify-between gap-2">
           <Pressable
@@ -141,52 +172,99 @@ export default function TodayScreen() {
             onPress={() => router.push(`/habit/${habit.id}`)}
             className="min-h-[44px] flex-1 justify-center"
           >
-            <View className="flex-row items-center gap-2">
-              <HabitIcon
-                icon={habit.icon}
-                size={18}
-                color={COLOR_HEX[habit.color]}
-              />
-              <Text variant="heading" numberOfLines={1}>
-                {habit.name}
-              </Text>
-            </View>
-            <View className="mt-1 flex-row items-center gap-1">
-              <Text variant="caption">
-                {progressLabel} |
-              </Text>
-              <StreakTicker
-                streak={streak.currentStreak}
-                reduceMotion={motionPrefs.reduceMotion}
-              />
-              {!scheduled ? <Text variant="caption">(off day)</Text> : null}
+            <View className="flex-row items-center gap-3">
+              <View
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: radii.button,
+                  backgroundColor: habitAccents[habit.color],
+                }}
+                className="items-center justify-center"
+              >
+                <HabitIcon icon={habit.icon} size={20} color="#FFFFFF" />
+              </View>
+              <View className="flex-1">
+                <Text variant="heading" numberOfLines={1}>
+                  {habit.name}
+                </Text>
+                <View className="mt-0.5 flex-row flex-wrap items-center gap-1.5">
+                  <View
+                    style={{
+                      borderRadius: radii.badge,
+                      backgroundColor: isDone
+                        ? colors.primary
+                        : colors.accentBg,
+                    }}
+                    className="px-1.5 py-0.5"
+                  >
+                    <Text
+                      className={`text-[10px] font-extrabold ${
+                        isDone ? "text-white" : "text-[#2A2140]"
+                      }`}
+                    >
+                      {isDone ? "CLAIMED +25 XP" : "+25 XP"}
+                    </Text>
+                  </View>
+                  <Text variant="caption" tabularNums>
+                    {progressLabel}
+                  </Text>
+                  <StreakTicker
+                    streak={streak.currentStreak}
+                    reduceMotion={motionPrefs.reduceMotion}
+                  />
+                  {!scheduled ? <Text variant="caption">(off day)</Text> : null}
+                </View>
+              </View>
             </View>
           </Pressable>
 
           <View className="flex-row items-center gap-1">
             {habit.type === "boolean" ? (
               <Pressable
-                accessibilityRole="button"
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: isDone }}
                 accessibilityLabel={
-                  isDone ? `Undo ${habit.name}` : `Complete ${habit.name}`
+                  isDone ? `Uncheck ${habit.name}` : `Complete ${habit.name}`
                 }
-                onPress={() =>
-                  void onLogValue(habit.id, selectedDate, isDone ? 0 : 1)
-                }
-                className={`min-h-[44px] min-w-[44px] items-center justify-center rounded-lg px-3 ${
-                  isDone ? "bg-emerald-600" : "bg-neutral-200"
-                }`}
+                onPress={() => {
+                  if (!isDone && settings.hapticsEnabled) {
+                    void Haptics.impactAsync(
+                      Haptics.ImpactFeedbackStyle.Medium,
+                    ).catch(() => {});
+                  }
+                  void onLogValue(habit.id, selectedDate, isDone ? 0 : 1);
+                }}
+                style={{
+                  borderRadius: radii.button,
+                  backgroundColor: isDone ? colors.primary : colors.surface,
+                  borderWidth: 2,
+                  borderBottomWidth: 4,
+                  borderColor: isDone
+                    ? colors.primaryPressed
+                    : colors.borderStrong,
+                }}
+                className="min-h-[44px] min-w-[44px] items-center justify-center"
               >
-                <Text
-                  className={`font-semibold ${
-                    isDone ? "text-white" : "text-neutral-900"
-                  }`}
-                >
-                  {isDone ? "Done" : "Check"}
-                </Text>
+                {isDone ? (
+                  <Check size={22} color="#FFFFFF" strokeWidth={3} />
+                ) : null}
               </Pressable>
+            ) : isDone ? (
+              <View
+                style={{
+                  borderRadius: radii.button,
+                  backgroundColor: colors.primary,
+                  borderWidth: 2,
+                  borderBottomWidth: 4,
+                  borderColor: colors.primaryPressed,
+                }}
+                className="min-h-[44px] min-w-[44px] items-center justify-center"
+              >
+                <Check size={22} color="#FFFFFF" strokeWidth={3} />
+              </View>
             ) : (
-              <View className="flex-row items-center gap-1">
+              <View className="flex-row items-center gap-1.5">
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={`Decrease ${habit.name}`}
@@ -197,9 +275,15 @@ export default function TodayScreen() {
                       Math.max(0, currentValue - (habit.type === "duration" ? 5 : 1)),
                     )
                   }
-                  className="min-h-[44px] min-w-[44px] items-center justify-center rounded-lg bg-neutral-200"
+                  style={{
+                    borderRadius: radii.button,
+                    borderWidth: 1,
+                    borderColor: colors.borderStrong,
+                    backgroundColor: colors.surface,
+                  }}
+                  className="min-h-[44px] min-w-[44px] items-center justify-center"
                 >
-                  <Text className="text-lg font-bold text-neutral-900">-</Text>
+                  <Text className="text-lg font-bold text-[#2A2140]">-</Text>
                 </Pressable>
                 <Pressable
                   accessibilityRole="button"
@@ -211,9 +295,14 @@ export default function TodayScreen() {
                       currentValue + (habit.type === "duration" ? 5 : 1),
                     )
                   }
-                  className={`min-h-[44px] min-w-[44px] items-center justify-center rounded-lg ${
-                    isDone ? "bg-emerald-600" : "bg-blue-600"
-                  }`}
+                  style={{
+                    borderRadius: radii.button,
+                    borderWidth: 1,
+                    borderBottomWidth: 3,
+                    borderColor: colors.primaryPressed,
+                    backgroundColor: colors.primary,
+                  }}
+                  className="min-h-[44px] min-w-[44px] items-center justify-center"
                 >
                   <Text className="text-lg font-bold text-white">+</Text>
                 </Pressable>
@@ -221,46 +310,66 @@ export default function TodayScreen() {
             )}
           </View>
         </View>
-
-        <View className="mt-2 flex-row justify-end gap-2">
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`Move ${habit.name} up`}
-            disabled={index === 0}
-            onPress={() => void onMoveHabit(habit.id, "up")}
-            className={`min-h-[44px] min-w-[44px] items-center justify-center rounded-md px-2 ${
-              index === 0 ? "opacity-30" : "bg-neutral-100"
-            }`}
-          >
-            <ChevronUp size={18} color="#525252" strokeWidth={2} />
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`Move ${habit.name} down`}
-            disabled={index === activeHabits.length - 1}
-            onPress={() => void onMoveHabit(habit.id, "down")}
-            className={`min-h-[44px] min-w-[44px] items-center justify-center rounded-md px-2 ${
-              index === activeHabits.length - 1
-                ? "opacity-30"
-                : "bg-neutral-100"
-            }`}
-          >
-            <ChevronDown size={18} color="#525252" strokeWidth={2} />
-          </Pressable>
-        </View>
       </View>
     );
   }
 
+  const scheduledHabits = activeHabits.filter((h) =>
+    isScheduledOnDay(
+      {
+        type: h.scheduleType,
+        daysBitmask: h.scheduleDays,
+        timesPerWeek: h.scheduleTimes,
+      },
+      selectedDate,
+    ),
+  );
+  const offDayHabits = activeHabits.filter(
+    (h) =>
+      !isScheduledOnDay(
+        {
+          type: h.scheduleType,
+          daysBitmask: h.scheduleDays,
+          timesPerWeek: h.scheduleTimes,
+        },
+        selectedDate,
+      ),
+  );
+
+  function isDateFullyCompleted(date: LocalDate): boolean {
+    if (activeHabits.length === 0) return false;
+    let scheduledCount = 0;
+    for (const h of activeHabits) {
+      const scheduled = isScheduledOnDay(
+        {
+          type: h.scheduleType,
+          daysBitmask: h.scheduleDays,
+          timesPerWeek: h.scheduleTimes,
+        },
+        date,
+      );
+      if (!scheduled) continue;
+      scheduledCount += 1;
+      const val =
+        logs.find((l) => l.habitId === h.id && l.logDate === date)?.value ?? 0;
+      if (!isDayCompleted(val, h.type, h.targetValue)) return false;
+    }
+    return scheduledCount > 0;
+  }
+
   return (
-    <Screen className="px-4 pt-3">
+    <Screen edges={["top", "left", "right"]} className="pt-2">
       <View className="flex-row items-center justify-between pb-3">
         <View>
           <Text variant="title">Today</Text>
-          <Text variant="caption">
-            {selectedDate === effectiveToday
-              ? `${selectedDate} (Today)`
-              : `${selectedDate} (Backfill)`}
+          <Text variant="caption" tabularNums>
+            {(() => {
+              const { weekday, dayNum, month } =
+                parseLocalDateParts(selectedDate);
+              const prefix =
+                selectedDate === effectiveToday ? "Today" : "Past day";
+              return `${prefix} · ${weekday}, ${dayNum} ${month}`;
+            })()}
           </Text>
         </View>
         <Button
@@ -269,48 +378,70 @@ export default function TodayScreen() {
         />
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={{ flexGrow: 0 }}
-      >
-        <View className="mb-3 flex-row gap-2 py-1">
-          {dateStrip.map((date) => {
-            const isSelected = date === selectedDate;
-            const dayNum = date.slice(8, 10);
-            return (
-              <Pressable
-                key={date}
-                accessibilityRole="button"
-                accessibilityLabel={`Select date ${date}`}
-                onPress={() => setSelectedDate(date)}
-                className={`min-h-[44px] min-w-[48px] items-center justify-center rounded-lg px-2 ${
-                  isSelected ? "bg-blue-600" : "bg-neutral-100"
+      <View className="mb-3 flex-row justify-between gap-1.5 py-1">
+        {dateStrip.map((date) => {
+          const isSelected = date === selectedDate;
+          const isFuture = date > effectiveToday;
+          const { weekday, dayNum } = parseLocalDateParts(date);
+          const allDone = !isFuture && isDateFullyCompleted(date);
+          return (
+            <Pressable
+              key={date}
+              disabled={isFuture}
+              accessibilityRole="button"
+              accessibilityLabel={`Select date ${date}`}
+              accessibilityState={{ disabled: isFuture, selected: isSelected }}
+              onPress={() => {
+                if (!isFuture) setSelectedDate(date);
+              }}
+              style={{
+                borderRadius: radii.pill,
+                backgroundColor: isSelected ? colors.primary : colors.surface,
+                borderWidth: 1,
+                borderColor: isSelected
+                  ? colors.primaryPressed
+                  : colors.border,
+                borderBottomWidth: isSelected ? 3 : 1,
+                opacity: isFuture ? 0.4 : 1,
+              }}
+              className="min-h-[52px] flex-1 items-center justify-center py-1"
+            >
+              <Text
+                className={`text-[10px] font-semibold uppercase ${
+                  isSelected ? "text-white/80" : "text-[#6B6285]"
                 }`}
               >
-                <Text
-                  className={`text-sm font-semibold ${
-                    isSelected ? "text-white" : "text-neutral-800"
-                  }`}
-                >
-                  {dayNum}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </ScrollView>
+                {weekday}
+              </Text>
+              <Text
+                tabularNums
+                className={`text-sm font-bold ${
+                  isSelected ? "text-white" : "text-[#2A2140]"
+                }`}
+              >
+                {dayNum}
+              </Text>
+              {allDone ? (
+                <View
+                  style={{
+                    width: 5,
+                    height: 5,
+                    borderRadius: radii.pill,
+                    backgroundColor: isSelected ? "#FFFFFF" : colors.accent,
+                    marginTop: 2,
+                  }}
+                />
+              ) : null}
+            </Pressable>
+          );
+        })}
+      </View>
 
       {activeHabits.length === 0 ? (
         <View className="flex-1">
-          <LivingWorldCanvas
-            organisms={organisms}
-            tier={motionPrefs.tier}
+          <QuestHud
+            progress={questProgress}
             reduceMotion={motionPrefs.reduceMotion}
-            particleBudget={motionPrefs.particleBudget}
-            hapticsEnabled={settings.hapticsEnabled}
-            onCompleteOrganism={() => {}}
-            onPressOrganism={() => {}}
           />
           <View className="flex-1 items-center justify-center gap-3 px-6">
             <Text variant="heading">No habits yet</Text>
@@ -324,36 +455,61 @@ export default function TodayScreen() {
           </View>
         </View>
       ) : (
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <LivingWorldCanvas
-            organisms={organisms}
-            tier={motionPrefs.tier}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 24 }}
+        >
+          <QuestHud
+            progress={questProgress}
             reduceMotion={motionPrefs.reduceMotion}
-            particleBudget={motionPrefs.particleBudget}
-            hapticsEnabled={settings.hapticsEnabled}
-            onCompleteOrganism={(habitId) => {
-              const targetHabit = activeHabits.find((h) => h.id === habitId);
-              if (!targetHabit) return;
-              const current = logsByHabitId.get(habitId) ?? 0;
-              const done = isDayCompleted(
-                current,
-                targetHabit.type,
-                targetHabit.targetValue,
-              );
-              const nextVal =
-                targetHabit.type === "boolean"
-                  ? done
-                    ? 0
-                    : 1
-                  : done
-                    ? 0
-                    : (targetHabit.targetValue ?? 1);
-              void onLogValue(habitId, selectedDate, nextVal);
-            }}
-            onPressOrganism={(habitId) => router.push(`/habit/${habitId}`)}
           />
-          {activeHabits.map((habit, index) => renderHabitRow(habit, index))}
-          <View className="h-6" />
+          <DraggableQuestList
+            items={scheduledHabits}
+            reduceMotion={motionPrefs.reduceMotion}
+            onReorder={(id, targetSlot) => {
+              const targetHabit = scheduledHabits[targetSlot];
+              if (!targetHabit) return;
+              const targetIdx = activeHabits.findIndex(
+                (h) => h.id === targetHabit.id,
+              );
+              if (targetIdx >= 0) {
+                void onReorderHabit(id, targetIdx);
+              }
+            }}
+            renderItem={(item) => renderHabitRow(item)}
+          />
+          {offDayHabits.length > 0 ? (
+            <View className="mt-2 pb-6">
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={
+                  showOffDays
+                    ? "Hide off-day habits"
+                    : "Show off-day habits"
+                }
+                onPress={() => setShowOffDays((prev) => !prev)}
+                style={{
+                  borderRadius: radii.button,
+                  backgroundColor: colors.surfaceMuted,
+                }}
+                className="mb-2 min-h-[44px] flex-row items-center justify-between px-3"
+              >
+                <Text variant="caption" className="font-semibold">
+                  Off-day habits ({offDayHabits.length})
+                </Text>
+                <Text variant="caption" className="font-semibold">
+                  {showOffDays ? "Hide" : "Show"}
+                </Text>
+              </Pressable>
+              {showOffDays
+                ? offDayHabits.map((habit) => (
+                    <View key={habit.id}>{renderHabitRow(habit)}</View>
+                  ))
+                : null}
+            </View>
+          ) : (
+            <View className="h-6" />
+          )}
         </ScrollView>
       )}
     </Screen>
