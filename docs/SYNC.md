@@ -31,14 +31,18 @@ Coalescing: if an outbox entry for the same `(entity, entity_id)` is still pendi
 
 ## 4. Sync Engine
 
-Triggers: app foreground, connectivity regained, after a local write (debounced ~2 s), periodic timer while foregrounded, and a background task (best-effort).
+Triggers: app foreground (`AppState` → `active`), after a local write via debounced `nudgeSync()` (8 s window, flushed immediately on `AppState` → `background`/`inactive`), and explicit manual "Sync Now".
 
-Cycle (single-flight; never run two at once):
+Quota-aware cycle (single-flight; never run two at once):
 
-1. **Push:** read up to N (for example 100) outbox entries oldest-first → `POST /sync/push`.
-2. On success, delete the acknowledged entries. On partial success, delete only acknowledged `op_id`s.
-3. **Pull:** `GET /sync/pull?cursor=<last_pull_cursor>&limit=500`, apply changes in a transaction, update the cursor. Repeat while `has_more`.
-4. Update `last_synced_at` and the UI status.
+1. **Backoff & Cooldown Guard (`mode: "auto"`):**
+   - If in exponential backoff after a failure (`30 s → 60 s → 2 m → 5 m` cap ±20% jitter), skip until `nextAllowedAutoSyncAt`.
+   - If the outbox is empty **and** the last pull was < 5 minutes ago (`PULL_COOLDOWN_MS`), return immediately with **0 network requests**.
+2. **Proactive Token Refresh:** decode the JWT `exp` locally before sending a sync request; if expiring within 60 s, refresh first to avoid a wasted `401` Worker invocation.
+3. **Push-only vs Combined Batch:**
+   - If outbox is non-empty and last pull was < 5 minutes ago (`mode: "auto"`), send `POST /sync/push` only (**1 request**).
+   - Otherwise (first sync, manual "Sync Now", or pull cooldown elapsed), send **`POST /sync/batch`** to push pending ops (up to 100) and pull remote changes (up to 500) in **1 HTTP roundtrip**. Continue paginating via `GET /sync/pull` only if `hasMore` is true.
+4. Delete acknowledged outbox entries, increment `attempts` on rejected ops (quarantine at 5 attempts), and apply pulled changes in a single local transaction.
 
 Failure handling:
 - Network error: keep entries, retry with exponential backoff + jitter (cap ~5 min).
@@ -82,6 +86,13 @@ Server behavior per op (inside one transaction per op or batch):
 3. Apply conflict resolution (section 6).
 4. Assign `server_seq` from the global sequence **only if the row actually changed**.
 5. Insert into `processed_ops`; add to `acked`.
+
+### `POST /sync/batch`
+
+Preferred single-roundtrip endpoint combining push + pull in one Cloudflare Worker request (keeps `/sync/push` and `/sync/pull` available for push-only fast paths and pagination).
+
+Request: `{ "deviceId": "string", "ops": [...], "cursor": 0, "limit": 500 }`
+Response: `{ "acked": [...], "rejected": [...], "serverTime": "...", "changes": [...], "nextCursor": 1042, "hasMore": false }`
 
 ### `GET /sync/pull`
 

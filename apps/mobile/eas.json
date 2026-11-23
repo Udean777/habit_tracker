@@ -10,7 +10,8 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "NODE_ENV": "production"
+        "NODE_ENV": "production",
+        "EXPO_PUBLIC_API_URL": "https://glimkin-api.hono-backend.workers.dev"
       },
       "android": {
         "buildType": "apk"
@@ -19,7 +20,8 @@
     "production": {
       "autoIncrement": true,
       "env": {
-        "NODE_ENV": "production"
+        "NODE_ENV": "production",
+        "EXPO_PUBLIC_API_URL": "https://glimkin-api.hono-backend.workers.dev"
       },
       "android": {
         "buildType": "app-bundle"

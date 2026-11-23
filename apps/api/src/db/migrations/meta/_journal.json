@@ -15,6 +15,13 @@
       "when": 1795433787459,
       "tag": "0001_fixed_bloodstorm",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795438000000,
+      "tag": "0002_sync_server_seq",
+      "breakpoints": true
     }
   ]
 }

@@ -5,6 +5,8 @@ import {
   refreshInputSchema,
   registerInputSchema,
 } from "@habit/shared";
+import { resolveJwtSecret } from "../env";
+import type { AppEnv } from "../middleware/auth";
 import { rateLimitAuth } from "../middleware/rateLimit";
 import {
   loginUser,
@@ -13,11 +15,17 @@ import {
   rotateRefreshToken,
 } from "../services/authService";
 
-export const authRoutes = new Hono()
+export const authRoutes = new Hono<AppEnv>()
   .use("*", rateLimitAuth)
   .post("/register", zValidator("json", registerInputSchema), async (c) => {
     const { email, password, deviceId } = c.req.valid("json");
-    const result = await registerUser(email, password, deviceId);
+    const result = await registerUser(
+      email,
+      password,
+      deviceId,
+      c.get("getDb")(),
+      resolveJwtSecret(c.env),
+    );
     if (!result.ok) {
       return c.json(
         { error: { code: result.code, message: result.message } },
@@ -28,7 +36,13 @@ export const authRoutes = new Hono()
   })
   .post("/login", zValidator("json", loginInputSchema), async (c) => {
     const { email, password, deviceId } = c.req.valid("json");
-    const result = await loginUser(email, password, deviceId);
+    const result = await loginUser(
+      email,
+      password,
+      deviceId,
+      c.get("getDb")(),
+      resolveJwtSecret(c.env),
+    );
     if (!result.ok) {
       return c.json(
         { error: { code: result.code, message: result.message } },
@@ -39,7 +53,12 @@ export const authRoutes = new Hono()
   })
   .post("/refresh", zValidator("json", refreshInputSchema), async (c) => {
     const { refreshToken, deviceId } = c.req.valid("json");
-    const result = await rotateRefreshToken(refreshToken, deviceId);
+    const result = await rotateRefreshToken(
+      refreshToken,
+      deviceId,
+      c.get("getDb")(),
+      resolveJwtSecret(c.env),
+    );
     if (!result.ok) {
       return c.json(
         { error: { code: result.code, message: result.message } },
@@ -50,6 +69,6 @@ export const authRoutes = new Hono()
   })
   .post("/logout", zValidator("json", refreshInputSchema), async (c) => {
     const { refreshToken } = c.req.valid("json");
-    await revokeRefreshToken(refreshToken);
+    await revokeRefreshToken(refreshToken, c.get("getDb")());
     return c.json({ ok: true });
   });

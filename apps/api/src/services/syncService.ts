@@ -1,10 +1,10 @@
-import { and, asc, eq, gt } from "drizzle-orm";
+import { and, asc, eq, gt, sql } from "drizzle-orm";
 import type {
   SyncOp,
   SyncPullChange,
   SyncRejectedOp,
 } from "@habit/shared";
-import { db } from "../db/client";
+import { db, type ApiDb } from "../db/client";
 import {
   habitLogs,
   habits,
@@ -21,25 +21,42 @@ import {
   applySettingsPushOp,
   applyStreakFreezePushOp,
   applyUserInventoryPushOp,
+  type DbTx,
 } from "./syncEntityAppliers";
 
-let lastSeq = Date.now();
-function nextServerSeq(): number {
-  const now = Date.now();
-  lastSeq = now > lastSeq ? now : lastSeq + 1;
-  return lastSeq;
+const MAX_FUTURE_SKEW_MS = 24 * 60 * 60 * 1000;
+
+async function nextServerSeq(tx: DbTx): Promise<number> {
+  const rows = await tx.execute(sql`SELECT nextval('sync_server_seq') AS seq`);
+  const first = rows[0] as { seq?: string | number } | undefined;
+  const parsed = Number(first?.seq);
+  if (Number.isFinite(parsed) && parsed > 0) {
+    return parsed;
+  }
+  return Date.now();
 }
 
 export async function processSyncPush(
   userId: string,
   deviceId: string,
   ops: readonly SyncOp[],
-  database = db,
+  database: ApiDb = db,
+  nowMs: number = Date.now(),
 ) {
   const acked: string[] = [];
   const rejected: SyncRejectedOp[] = [];
 
   for (const op of ops) {
+    const opTimeMs = Date.parse(op.updatedAt);
+    if (Number.isNaN(opTimeMs) || opTimeMs > nowMs + MAX_FUTURE_SKEW_MS) {
+      rejected.push({
+        opId: op.opId,
+        code: "VALIDATION_ERROR",
+        message: "Invalid or future-skewed updatedAt timestamp",
+      });
+      continue;
+    }
+
     try {
       await database.transaction(async (tx) => {
         const already = await tx
@@ -56,7 +73,7 @@ export async function processSyncPush(
           return;
         }
 
-        const seq = nextServerSeq();
+        const seq = await nextServerSeq(tx);
         if (op.entity === "habit") {
           await applyHabitPushOp(tx, userId, deviceId, op, seq);
         } else if (op.entity === "habit_log") {
@@ -74,7 +91,7 @@ export async function processSyncPush(
         await tx.insert(processedOps).values({
           userId,
           opId: op.opId,
-          processedAt: new Date(),
+          processedAt: new Date(nowMs),
         });
         acked.push(op.opId);
       });
@@ -87,14 +104,14 @@ export async function processSyncPush(
     }
   }
 
-  return { acked, rejected, serverTime: new Date().toISOString() };
+  return { acked, rejected, serverTime: new Date(nowMs).toISOString() };
 }
 
 export async function pullUserChanges(
   userId: string,
   cursor: number,
   limit: number,
-  database = db,
+  database: ApiDb = db,
 ) {
   const [
     habitRows,
