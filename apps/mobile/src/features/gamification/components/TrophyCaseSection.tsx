@@ -71,9 +71,19 @@ export function TrophyCaseSection({ achievements }: TrophyCaseSectionProps) {
                     <Lock size={14} color={colors.textSecondary} strokeWidth={2.5} />
                   )}
                 </View>
-                <Text variant="caption" tabularNums className="font-bold">
-                  {item.current}/{item.target}
-                </Text>
+                <View className="flex-row items-center gap-1.5">
+                  <Badge
+                    label={`+${item.rewardGold}G`}
+                    variant={item.unlocked ? "accent" : "muted"}
+                    pill
+                    tabularNums
+                    className="px-2 py-0.5"
+                    textClassName="text-[10px] font-extrabold"
+                  />
+                  <Text variant="caption" tabularNums className="font-bold">
+                    {item.current}/{item.target}
+                  </Text>
+                </View>
               </View>
 
               <Text variant="heading" numberOfLines={1} className="mt-2 text-sm">

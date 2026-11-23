@@ -1,6 +1,8 @@
 import { Modal, View } from "react-native";
 import Animated, { Easing, FadeIn, ZoomIn } from "react-native-reanimated";
+import Coins from "lucide-react-native/icons/coins";
 import Sparkles from "lucide-react-native/icons/sparkles";
+import { GOLD_PER_LEVEL_UP } from "@habit/shared";
 import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
@@ -76,7 +78,22 @@ export function LevelUpModal({
               <Text variant="title" className="text-center">
                 {avatarState.classTitle}
               </Text>
-              <Text variant="caption" className="mt-1 text-center">
+              <View className="mt-2">
+                <Badge
+                  label={`+${GOLD_PER_LEVEL_UP}G Level-Up Bounty`}
+                  variant="accent"
+                  pill
+                  tabularNums
+                  icon={
+                    <Coins
+                      size={13}
+                      color={colors.accentText}
+                      strokeWidth={2.5}
+                    />
+                  }
+                />
+              </View>
+              <Text variant="caption" className="mt-2 text-center">
                 Your consistency forged a stronger hero. Visit the Hero Shop to
                 spend your Gold on new gear!
               </Text>

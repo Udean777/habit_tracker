@@ -12,7 +12,7 @@ import {
   type LocalDate,
   type ShopItemCategory,
 } from "@habit/shared";
-import type { HabitRecord } from "@/features/habits/repository";
+import { computeQuestProgress, type HabitRecord } from "@/features/habits";
 import type { HabitLogRecord } from "@/features/logs";
 import { triggerHaptic } from "@/lib/haptics";
 import { useUiStore } from "@/stores/uiStore";
@@ -96,9 +96,19 @@ export function useGamification(
     [habits],
   );
 
+  const heroLevel = useMemo(
+    () => computeQuestProgress(habits, logs, effectiveToday).level,
+    [habits, logs, effectiveToday],
+  );
+
   const goldEconomy = useMemo(
-    () => computeGoldEconomy(habitInputs, logs, dbState.inventory),
-    [habitInputs, logs, dbState.inventory],
+    () =>
+      computeGoldEconomy(habitInputs, logs, dbState.inventory, {
+        freezes: dbState.freezes,
+        today: effectiveToday,
+        level: heroLevel,
+      }),
+    [habitInputs, logs, dbState.inventory, dbState.freezes, effectiveToday, heroLevel],
   );
 
   const shieldStats = useMemo(

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, View } from "react-native";
 import {
   Canvas,
@@ -21,8 +21,8 @@ import { radii } from "@/theme/tokens";
 import { useTheme } from "@/theme/useTheme";
 import type { AvatarVisualState } from "../avatarMapper";
 
-const GRID_SIZE = 16;
-const FRAME_DURATION_MS = 420;
+const IDLE_FRAME_DURATION_MS = 460;
+const ACTION_FRAME_DURATION_MS = 220;
 
 type PixelRect = {
   readonly key: string;
@@ -69,10 +69,10 @@ function parseFrameToRects(
 }
 
 const SPARKLE_OFFSETS = [
-  { x: 2, y: 3 },
-  { x: 13, y: 2 },
-  { x: 2, y: 11 },
-  { x: 13, y: 10 },
+  { x: 3, y: 5 },
+  { x: 27, y: 4 },
+  { x: 4, y: 21 },
+  { x: 26, y: 20 },
 ] as const;
 
 type SpriteFrameGroupProps = {
@@ -119,14 +119,14 @@ function SpriteFrameGroup({
 
       {SPARKLE_OFFSETS.slice(0, sparkleCount).map((sp, idx) => {
         const shift =
-          !reduceMotion && (frameIndex + idx) % 2 === 0 ? -0.5 : 0;
+          !reduceMotion && (frameIndex + idx) % 2 === 0 ? -1 : 0;
         return (
           <Rect
             key={`sp-${idx}`}
             x={inset + sp.x * pixelSize}
             y={inset + (sp.y + shift) * pixelSize}
-            width={pixelSize * 0.85}
-            height={pixelSize * 0.85}
+            width={pixelSize * 1.35}
+            height={pixelSize * 1.35}
             color={accentColor}
           />
         );
@@ -145,23 +145,69 @@ type PixelAvatarProps = {
 export function PixelAvatar({
   state,
   reduceMotion,
+  triggerKey,
   size = 64,
 }: PixelAvatarProps) {
   const { colors } = useTheme();
-  const frameCount = Math.max(1, state.frames.length);
+  const [playingAction, setPlayingAction] = useState(false);
+  const prevTriggerRef = useRef<number | undefined>(triggerKey);
+  const actionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const activeFrames =
+    playingAction && !reduceMotion && state.actionFrames.length > 0
+      ? state.actionFrames
+      : state.frames;
+  const frameCount = Math.max(1, activeFrames.length);
+  const frameDurationMs = playingAction
+    ? ACTION_FRAME_DURATION_MS
+    : IDLE_FRAME_DURATION_MS;
+
   const phase = useSharedValue(0);
 
-  const inset = 5;
+  const inset = 2;
   const spriteArea = size - inset * 2;
-  const pixelSize = spriteArea / GRID_SIZE;
+  const pixelSize = spriteArea / Math.max(1, state.gridSize);
 
-  const idleFrameRects = useMemo(
+  const renderedFrameRects = useMemo(
     () =>
-      state.frames.map((f) =>
+      activeFrames.map((f) =>
         parseFrameToRects(f, state.palette, pixelSize, inset, inset),
       ),
-    [state.frames, state.palette, pixelSize],
+    [activeFrames, state.palette, pixelSize],
   );
+
+  function startActionCelebration() {
+    if (reduceMotion || state.actionFrames.length === 0) return;
+    if (actionTimerRef.current) {
+      clearTimeout(actionTimerRef.current);
+    }
+    setPlayingAction(true);
+    const totalMs = state.actionFrames.length * ACTION_FRAME_DURATION_MS;
+    actionTimerRef.current = setTimeout(() => {
+      setPlayingAction(false);
+      actionTimerRef.current = null;
+    }, totalMs);
+  }
+
+  useEffect(() => {
+    if (
+      triggerKey !== undefined &&
+      prevTriggerRef.current !== undefined &&
+      triggerKey > prevTriggerRef.current
+    ) {
+      startActionCelebration();
+    }
+    prevTriggerRef.current = triggerKey;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [triggerKey]);
+
+  useEffect(() => {
+    return () => {
+      if (actionTimerRef.current) {
+        clearTimeout(actionTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (reduceMotion || frameCount <= 1) {
@@ -170,39 +216,36 @@ export function PixelAvatar({
       return;
     }
     phase.set(0);
-    phase.set(
-      withRepeat(
-        withTiming(frameCount, {
-          duration: frameCount * FRAME_DURATION_MS,
+    if (playingAction) {
+      phase.set(
+        withTiming(frameCount - 0.01, {
+          duration: frameCount * frameDurationMs,
           easing: Easing.linear,
         }),
-        -1,
-        false,
-      ),
-    );
+      );
+    } else {
+      phase.set(
+        withRepeat(
+          withTiming(frameCount, {
+            duration: frameCount * frameDurationMs,
+            easing: Easing.linear,
+          }),
+          -1,
+          false,
+        ),
+      );
+    }
     return () => cancelAnimation(phase);
-  }, [reduceMotion, frameCount, phase]);
+  }, [reduceMotion, frameCount, frameDurationMs, playingAction, phase]);
 
   function handlePress() {
     triggerHaptic("light");
-    if (reduceMotion || frameCount <= 1) return;
-    const nextStart = (Math.floor(phase.get()) + 1) % frameCount;
-    phase.set(nextStart);
-    phase.set(
-      withRepeat(
-        withTiming(nextStart + frameCount, {
-          duration: frameCount * FRAME_DURATION_MS,
-          easing: Easing.linear,
-        }),
-        -1,
-        false,
-      ),
-    );
+    startActionCelebration();
   }
 
-  const shadowWidth = pixelSize * 7;
+  const shadowWidth = pixelSize * 14;
   const shadowX = (size - shadowWidth) / 2;
-  const shadowY = size - inset - pixelSize * 0.7;
+  const shadowY = inset + (state.gridSize - 3.2) * pixelSize;
 
   return (
     <Pressable
@@ -231,7 +274,7 @@ export function PixelAvatar({
               <Circle
                 cx={size / 2}
                 cy={size / 2}
-                r={size * 0.42}
+                r={size * 0.44}
                 color={state.auraRingColor}
               />
             ) : null}
@@ -240,20 +283,20 @@ export function PixelAvatar({
               x={shadowX}
               y={shadowY}
               width={shadowWidth}
-              height={pixelSize * 0.9}
-              r={pixelSize * 0.45}
-              color="rgba(42, 33, 64, 0.16)"
+              height={pixelSize * 1.8}
+              r={pixelSize * 0.9}
+              color="rgba(42, 33, 64, 0.22)"
             />
 
-            {idleFrameRects.map((rects, idx) => (
+            {renderedFrameRects.map((rects, idx) => (
               <SpriteFrameGroup
-                key={idx}
+                key={`${playingAction ? "act" : "idle"}-${idx}`}
                 frameIndex={idx}
                 frameCount={frameCount}
                 rects={rects}
                 pixelSize={pixelSize}
                 inset={inset}
-                sparkleCount={state.sparkleCount}
+                sparkleCount={playingAction ? 4 : state.sparkleCount}
                 accentColor={state.auraSparkColor ?? colors.accent}
                 reduceMotion={reduceMotion}
                 phase={phase}

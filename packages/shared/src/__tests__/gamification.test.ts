@@ -153,5 +153,33 @@ describe("gamification domain", () => {
     expect(byId.get("streak_7")?.unlocked).toBe(true);
     expect(byId.get("streak_30")?.unlocked).toBe(false);
     expect(byId.get("collector")?.unlocked).toBe(true);
+    expect(byId.get("streak_7")?.rewardGold).toBe(75);
+  });
+
+  it("includes streak milestones, achievements, and level-up bounties in gold breakdown", () => {
+    const logs: GamificationLogInput[] = Array.from({ length: 7 }, (_, i) => ({
+      habitId: "h1",
+      logDate: `2026-11-0${i + 1}`,
+      value: 1,
+    }));
+
+    const economy = computeGoldEconomy([dailyHabit], logs, [], {
+      freezes: [],
+      today: "2026-11-07",
+      level: 3,
+    });
+
+    // 7 quests (70) + 7 perfect days (105) + 7d streak milestone (30)
+    // + achievements: first_quest (25) + perfect_day (30) + streak_7 (75) = 130
+    // + level-up (level 3 => 2 level-ups * 25 = 50)
+    expect(economy.breakdown).toEqual({
+      questsGold: 70,
+      perfectDaysGold: 105,
+      streakMilestonesGold: 30,
+      achievementsGold: 130,
+      levelUpGold: 50,
+    });
+    expect(economy.earnedGold).toBe(385);
+    expect(economy.availableGold).toBe(385);
   });
 });

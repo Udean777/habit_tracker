@@ -1,9 +1,14 @@
 import { useMemo, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { router } from "expo-router";
+import ChevronDown from "lucide-react-native/icons/chevron-down";
+import ChevronRight from "lucide-react-native/icons/chevron-right";
 import Coins from "lucide-react-native/icons/coins";
 import Shield from "lucide-react-native/icons/shield";
 import {
+  GOLD_ALL_DONE_BONUS,
+  GOLD_PER_COMPLETION,
+  GOLD_PER_LEVEL_UP,
   SHOP_CATALOG,
   type ShopItem,
   type ShopItemCategory,
@@ -55,6 +60,7 @@ export default function HeroShopScreen() {
 
   const [activeCategory, setActiveCategory] =
     useState<ShopItemCategory>("palette");
+  const [showEarnGuide, setShowEarnGuide] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 
   const questProgress = useMemo(
@@ -171,11 +177,83 @@ export default function HeroShopScreen() {
                 }
               />
             </View>
-            <Text tone="onPrimary" className="text-xs">
-              +10G per quest · +15G all-done daily bonus
+            <Text tone="onPrimary" className="text-xs font-semibold">
+              Earned: {goldEconomy.earnedGold}G · Spent: {goldEconomy.spentGold}G
             </Text>
           </View>
         </View>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Toggle how to earn gold breakdown"
+          accessibilityState={{ expanded: showEarnGuide }}
+          onPress={() => setShowEarnGuide((prev) => !prev)}
+          style={{
+            backgroundColor: colors.primaryPressed,
+            borderRadius: radii.button,
+          }}
+          className="mt-3 min-h-[44px] flex-row items-center justify-between px-3 py-2"
+        >
+          <Text tone="onPrimary" className="text-xs font-extrabold">
+            How to Earn Gold
+          </Text>
+          {showEarnGuide ? (
+            <ChevronDown size={15} color={colors.primaryText} strokeWidth={2.5} />
+          ) : (
+            <ChevronRight size={15} color={colors.primaryText} strokeWidth={2.5} />
+          )}
+        </Pressable>
+
+        {showEarnGuide ? (
+          <View
+            style={{
+              backgroundColor: colors.primaryPressed,
+              borderRadius: radii.button,
+            }}
+            className="mt-2 gap-1.5 p-3"
+          >
+            <View className="flex-row items-center justify-between">
+              <Text tone="onPrimary" className="text-xs">
+                Quests (+{GOLD_PER_COMPLETION}G each)
+              </Text>
+              <Text tone="onPrimary" tabularNums className="text-xs font-bold">
+                +{goldEconomy.breakdown.questsGold}G
+              </Text>
+            </View>
+            <View className="flex-row items-center justify-between">
+              <Text tone="onPrimary" className="text-xs">
+                Perfect Days (+{GOLD_ALL_DONE_BONUS}G bonus)
+              </Text>
+              <Text tone="onPrimary" tabularNums className="text-xs font-bold">
+                +{goldEconomy.breakdown.perfectDaysGold}G
+              </Text>
+            </View>
+            <View className="flex-row items-center justify-between">
+              <Text tone="onPrimary" className="text-xs">
+                Streak Milestones (7/14/30/100d)
+              </Text>
+              <Text tone="onPrimary" tabularNums className="text-xs font-bold">
+                +{goldEconomy.breakdown.streakMilestonesGold}G
+              </Text>
+            </View>
+            <View className="flex-row items-center justify-between">
+              <Text tone="onPrimary" className="text-xs">
+                Trophy Case Achievements
+              </Text>
+              <Text tone="onPrimary" tabularNums className="text-xs font-bold">
+                +{goldEconomy.breakdown.achievementsGold}G
+              </Text>
+            </View>
+            <View className="flex-row items-center justify-between">
+              <Text tone="onPrimary" className="text-xs">
+                Hero Level-Ups (+{GOLD_PER_LEVEL_UP}G/lvl)
+              </Text>
+              <Text tone="onPrimary" tabularNums className="text-xs font-bold">
+                +{goldEconomy.breakdown.levelUpGold}G
+              </Text>
+            </View>
+          </View>
+        ) : null}
       </Card>
 
       <View className="mb-3 flex-row gap-2">

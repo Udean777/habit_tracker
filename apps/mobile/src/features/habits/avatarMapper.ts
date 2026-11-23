@@ -1,12 +1,12 @@
 import type { AvatarClass, HeroLoadout } from "@habit/shared";
 import type { QuestProgress } from "./questStats";
 import {
+  AVATAR_GRID_SIZE,
   CLASS_FRAMES,
   CLASS_TITLES,
   COSMETIC_AURA_COLORS,
   COSMETIC_FRAME_COLORS,
   KNIGHT_IDLE_0,
-  KNIGHT_IDLE_1,
   buildPalette,
 } from "./avatarSprites";
 
@@ -20,6 +20,7 @@ export type AvatarGearTier =
 export type AvatarMood = "idle" | "active" | "victory";
 
 export type AvatarVisualState = {
+  readonly gridSize: number;
   readonly avatarClass: AvatarClass;
   readonly gearTier: AvatarGearTier;
   readonly classTitle: string;
@@ -75,6 +76,7 @@ export function mapQuestProgressToAvatar(
   const classSet = CLASS_FRAMES[resolvedClass];
 
   return {
+    gridSize: AVATAR_GRID_SIZE,
     avatarClass: resolvedClass,
     gearTier,
     classTitle,
@@ -86,7 +88,7 @@ export function mapQuestProgressToAvatar(
     frames: classSet.idle,
     actionFrames: classSet.action,
     primaryFrame: classSet.idle[0] ?? KNIGHT_IDLE_0,
-    altFrame: classSet.idle[1] ?? KNIGHT_IDLE_1,
+    altFrame: classSet.idle[1] ?? KNIGHT_IDLE_0,
     palette: buildPalette(resolvedClass, gearTier, loadout?.equippedPaletteId),
   };
 }
