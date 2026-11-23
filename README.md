@@ -3,7 +3,7 @@
   <h1>Glimkin</h1>
   <p><strong>Offline-first RPG habit tracker powered by Expo React Native, Skia, and Hono.</strong></p>
   <p>
-    Turn daily habits into quests — earn XP, build combos, and level up a procedural 16×16 pixel hero, with local SQLite as the single source of truth.
+    Turn daily habits into quests — earn XP & Gold, unlock hero gear, guard your streaks, and level up a procedural 32×32 pixel hero, with local SQLite as the single source of truth.
   </p>
 </div>
 
@@ -11,11 +11,12 @@
 
 ## Highlights
 
-- **Arcade Quest HUD & Pixel Hero** — Earn XP for completed habits, build daily combos, and level up a procedural 16×16 Skia pixel avatar (**Knight**, **Mage**, or **Ranger**).
-- **Offline-First & Idempotent Sync** — Every read/write hits local SQLite (`expo-sqlite` + Drizzle ORM) first, queued in an outbox for background sync with Hono + PostgreSQL.
-- **Interactive Today Board** — 7-day date strip, drag-and-drop reordering, and Check-off, Counter, or Timer habits.
-- **Stats & Consistency** — Monthly completion grid, current/best streaks, and 7/30/90-day completion rates.
-- **Accessible & Tunable** — Custom day-start offset, backfill window, haptics toggle, quality tiers, and Reduce Motion support.
+- **Arcade Quest HUD & 32×32 Pixel Hero** — Earn XP and build daily combos to level up a procedural 32×32 16-bit Skia pixel avatar (**Knight**, **Mage**, or **Ranger**) across 5 gear tiers with celebration action animations.
+- **Gold Economy, Hero Shop & Trophy Case** — Earn Gold from 5 deterministic offline-safe sources (quests, perfect days, streak milestones, achievements, and level-ups), spend it on unlockable palettes, auras, frames, and **Streak Shields**, and track achievements in the Trophy Case.
+- **Offline-First & Idempotent Sync** — Every read/write hits local SQLite (`expo-sqlite` + Drizzle ORM) first, queued in an outbox for conflict-free background sync with Hono + PostgreSQL (`habits`, `habit_logs`, `streak_freezes`, `settings`, `hero_profile`, `user_inventory`).
+- **Interactive Today Board & Live Timer** — 7-day date strip, drag-and-drop reordering, Check-off and Counter habits, plus a dedicated live **Countdown Timer** (`Start / Pause / Reset` + auto-complete) for duration quests.
+- **Guided Onboarding & Feature Spotlight Tour** — Hands-on 4-step interactive onboarding and a 6-step cross-tab spotlight coach-mark tour (replayable anytime from Settings).
+- **Accessible & Tunable** — WCAG AA Light & Dark themes, custom day-start offset, backfill window, haptics toggle, quality tiers, and Reduce Motion support.
 
 ## Stack & Structure
 
@@ -23,7 +24,7 @@
 |---|---|
 | **Mobile** (`apps/mobile`) | Expo (RN), TypeScript strict, Expo Router, NativeWind, Zustand, `expo-sqlite` + Drizzle, Reanimated, Gesture Handler, Skia |
 | **API** (`apps/api`) | Hono (Bun), Drizzle ORM, PostgreSQL, Zod, JWT rotating refresh |
-| **Shared** (`packages/shared`) | Zod schemas, shared types, pure streak/schedule/date logic |
+| **Shared** (`packages/shared`) | Zod schemas, shared types, pure streak/schedule/date & gamification economy logic |
 
 ## Quick Start
 

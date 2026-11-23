@@ -26,7 +26,7 @@ Skia is driven by Reanimated shared values directly so no JS-thread round trip h
 
 ### 3.1 Arcade Quest HUD & Pixel Avatar (home)
 
-**Concept:** Arcade Quest HUD with a procedural 16x16 Skia pixel avatar across three classes (**Knight**, **Mage**, **Ranger**).
+**Concept:** Arcade Quest HUD with a procedural 32x32 Skia pixel avatar across three classes (**Knight**, **Mage**, **Ranger**), 5 gear tiers, 3-tone hue-shifted shading, cosmetic palettes/auras/frames, and action celebration playback on quest completion or tap.
 
 State mapping:
 
@@ -134,7 +134,7 @@ Measurement: React Native perf monitor for JS/UI fps, Android Studio profiler / 
 
 Time-box: about 3–5 days.
 
-1. Build a minimal Skia scene with the procedural 16x16 pixel avatar + ambient particles.
+1. Build a minimal Skia scene with the procedural 32x32 pixel avatar + ambient particles.
 2. Prototype hold-to-complete with the burst effect and haptics.
 3. Test on the reference mid-range Android device and record fps with the budgets above.
 4. Prototype the heatmap blob field with 90 days of fake data.
@@ -152,5 +152,5 @@ Exit criteria: the main scene holds ≥ 55 fps on the reference device on the Me
 ## 9. Testing
 
 - Manual device checklist per release: all tiers, reduced-motion on/off, haptics on/off, low battery mode, rotation lock behavior.
-- Snapshot test the **state mapping** functions (habit stats → visual parameters) as pure functions in `src/features/world`.
+- Snapshot/unit test the **state mapping** functions (habit stats → visual parameters) as pure functions in `src/features/habits/avatarMapper.test.ts` (including strict 32×32 frame and palette validation).
 - Keep animation logic parameterized so these pure mappers are unit-testable without rendering Skia.
