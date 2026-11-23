@@ -19,14 +19,15 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       />
       <div>
         <span class="badge">OFFLINE-FIRST QUEST TRACKER</span>
-        <h1>Turn everyday habits into daily quests.</h1>
+        <h1>Glimkin: Turn everyday habits into daily quests.</h1>
       </div>
     </div>
     <p>
-      Glimkin is an offline-first habit tracker with local SQLite as the single
-      source of truth. Build daily streaks, level up a 32x32 pixel hero, earn
-      Gold for gear and Streak Shields, and optionally back up your progress
-      across devices.
+      <strong>Glimkin</strong> is a personal offline-first habit tracker app for
+      Android and iOS with local SQLite as the single source of truth. Build
+      daily streaks, level up a 32x32 pixel hero, earn Gold for gear and Streak
+      Shields, and optionally back up your progress across devices. No account
+      is required to view this page or use the app offline.
     </p>
     <div class="cta-row">
       <a href="/privacy" class="btn btn-accent">Read Privacy Policy</a>
@@ -59,12 +60,19 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   </section>
 
   <section class="card">
-    <h2>How Your Account Data Works</h2>
+    <h2>How Glimkin Uses Google Sign-In &amp; Cloud Data</h2>
     <p>
-      You can use Glimkin completely as a guest without creating an account.
-      When you choose to sign in with Google or GitHub, Glimkin requests only
-      your verified email address and provider account ID to link your cloud
-      save and synchronize your habit data securely.
+      You can use <strong>Glimkin</strong> completely offline as a guest without
+      creating an account. When you voluntarily choose to sign in with Google or
+      GitHub for cloud backup, Glimkin requests only basic identity scopes (
+      <code>openid</code>, <code>email</code>, and <code>profile</code>) to
+      obtain your verified email address and unique provider account ID.
+    </p>
+    <p>
+      Glimkin does not access your Gmail, Drive, Contacts, or Calendar, does not
+      generate or process images from Google APIs, and never sells your data.
+      Review our <a href="/privacy">Privacy Policy</a> and{" "}
+      <a href="/terms">Terms of Service</a> for full details.
     </p>
   </section>
 </BaseLayout>
