@@ -1,6 +1,11 @@
 import { useMemo, useState } from "react";
 import * as Haptics from "expo-haptics";
 import { Pressable, ScrollView, View } from "react-native";
+import Animated, {
+  Easing,
+  FadeIn,
+  LinearTransition,
+} from "react-native-reanimated";
 import { router } from "expo-router";
 import Check from "lucide-react-native/icons/check";
 import {
@@ -457,29 +462,52 @@ export default function TodayScreen() {
       ) : (
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 24 }}
+          contentContainerStyle={{ paddingBottom: 104 }}
         >
-          <QuestHud
-            progress={questProgress}
-            reduceMotion={motionPrefs.reduceMotion}
-          />
-          <DraggableQuestList
-            items={scheduledHabits}
-            reduceMotion={motionPrefs.reduceMotion}
-            onReorder={(id, targetSlot) => {
-              const targetHabit = scheduledHabits[targetSlot];
-              if (!targetHabit) return;
-              const targetIdx = activeHabits.findIndex(
-                (h) => h.id === targetHabit.id,
-              );
-              if (targetIdx >= 0) {
-                void onReorderHabit(id, targetIdx);
-              }
-            }}
-            renderItem={(item) => renderHabitRow(item)}
-          />
+          <Animated.View
+            entering={
+              motionPrefs.reduceMotion
+                ? undefined
+                : FadeIn.duration(180).easing(Easing.out(Easing.cubic))
+            }
+          >
+            <QuestHud
+              progress={questProgress}
+              reduceMotion={motionPrefs.reduceMotion}
+            />
+          </Animated.View>
+          <Animated.View
+            entering={
+              motionPrefs.reduceMotion
+                ? undefined
+                : FadeIn.delay(40).duration(180).easing(Easing.out(Easing.cubic))
+            }
+          >
+            <DraggableQuestList
+              items={scheduledHabits}
+              reduceMotion={motionPrefs.reduceMotion}
+              onReorder={(id, targetSlot) => {
+                const targetHabit = scheduledHabits[targetSlot];
+                if (!targetHabit) return;
+                const targetIdx = activeHabits.findIndex(
+                  (h) => h.id === targetHabit.id,
+                );
+                if (targetIdx >= 0) {
+                  void onReorderHabit(id, targetIdx);
+                }
+              }}
+              renderItem={(item) => renderHabitRow(item)}
+            />
+          </Animated.View>
           {offDayHabits.length > 0 ? (
-            <View className="mt-2 pb-6">
+            <Animated.View
+              layout={
+                motionPrefs.reduceMotion
+                  ? undefined
+                  : LinearTransition.duration(180).easing(Easing.out(Easing.cubic))
+              }
+              className="mt-2 pb-6"
+            >
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={
@@ -503,10 +531,19 @@ export default function TodayScreen() {
               </Pressable>
               {showOffDays
                 ? offDayHabits.map((habit) => (
-                    <View key={habit.id}>{renderHabitRow(habit)}</View>
+                    <Animated.View
+                      key={habit.id}
+                      entering={
+                        motionPrefs.reduceMotion
+                          ? undefined
+                          : FadeIn.duration(160).easing(Easing.out(Easing.cubic))
+                      }
+                    >
+                      {renderHabitRow(habit)}
+                    </Animated.View>
                   ))
                 : null}
-            </View>
+            </Animated.View>
           ) : (
             <View className="h-6" />
           )}

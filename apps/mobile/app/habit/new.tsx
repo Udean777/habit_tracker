@@ -7,6 +7,11 @@ import {
   TextInput,
   View,
 } from "react-native";
+import Animated, {
+  Easing,
+  FadeIn,
+  LinearTransition,
+} from "react-native-reanimated";
 import { router } from "expo-router";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -184,7 +189,10 @@ export default function NewHabitScreen() {
           </View>
 
           {habitType !== "boolean" ? (
-            <View className="mb-4">
+            <Animated.View
+              entering={FadeIn.duration(160).easing(Easing.out(Easing.cubic))}
+              className="mb-4"
+            >
               <Text variant="heading" className="mb-1.5">
                 Target ({habitType === "duration" ? "minutes" : "count"})
               </Text>
@@ -212,12 +220,15 @@ export default function NewHabitScreen() {
                   />
                 )}
               />
-            </View>
+            </Animated.View>
           ) : null}
 
-          <Text variant="heading" className="mb-2">
-            Schedule
-          </Text>
+          <Animated.View
+            layout={LinearTransition.duration(180).easing(Easing.out(Easing.cubic))}
+          >
+            <Text variant="heading" className="mb-2">
+              Schedule
+            </Text>
           <View className="mb-3 flex-row gap-2">
             {(
               [
@@ -389,11 +400,12 @@ export default function NewHabitScreen() {
         ) : null}
 
         <Button
-          label={isSubmitting ? "Saving..." : "Create Habit"}
+          label={isSubmitting ? "Saving..." : "Create Quest"}
           disabled={isSubmitting}
           onPress={handleSubmit(onSubmit)}
         />
         <View className="h-8" />
+        </Animated.View>
       </ScrollView>
       </KeyboardAvoidingView>
     </Screen>

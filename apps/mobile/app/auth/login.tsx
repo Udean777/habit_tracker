@@ -6,6 +6,11 @@ import {
   TextInput,
   View,
 } from "react-native";
+import Animated, {
+  Easing,
+  FadeIn,
+  LinearTransition,
+} from "react-native-reanimated";
 import { router } from "expo-router";
 import { eq } from "drizzle-orm";
 import { Button } from "@/components/Button";
@@ -89,6 +94,10 @@ export default function LoginScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 32 }}
         >
+          <Animated.View
+            entering={FadeIn.duration(180).easing(Easing.out(Easing.cubic))}
+            layout={LinearTransition.duration(180).easing(Easing.out(Easing.cubic))}
+          >
           <View className="flex-row items-center justify-between pb-6">
             <Text variant="title">
               {mode === "login" ? "Sign In" : "Create Account"}
@@ -140,7 +149,8 @@ export default function LoginScreen() {
           />
 
           {error ? (
-            <View
+            <Animated.View
+              entering={FadeIn.duration(150).easing(Easing.out(Easing.cubic))}
               accessibilityRole="alert"
               style={{
                 borderRadius: radii.badge,
@@ -153,7 +163,7 @@ export default function LoginScreen() {
               <Text variant="caption" style={{ color: colors.danger }}>
                 Error: {error}
               </Text>
-            </View>
+            </Animated.View>
           ) : null}
 
           <Button
@@ -180,6 +190,7 @@ export default function LoginScreen() {
               setMode((m) => (m === "login" ? "register" : "login"))
             }
           />
+          </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>
     </Screen>

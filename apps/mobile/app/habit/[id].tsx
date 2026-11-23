@@ -1,5 +1,10 @@
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, TextInput, View } from "react-native";
+import Animated, {
+  Easing,
+  FadeIn,
+  LinearTransition,
+} from "react-native-reanimated";
 import { router, useLocalSearchParams } from "expo-router";
 import ArrowLeft from "lucide-react-native/icons/arrow-left";
 import {
@@ -143,7 +148,14 @@ export default function HabitDetailScreen() {
         contentContainerStyle={{ paddingBottom: 32 }}
       >
         {editingName !== null ? (
-          <View className="mb-4 gap-2">
+          <Animated.View
+            entering={
+              motionPrefs.reduceMotion
+                ? undefined
+                : FadeIn.duration(160).easing(Easing.out(Easing.cubic))
+            }
+            className="mb-4 gap-2"
+          >
             <TextInput
               value={editingName}
               onChangeText={setEditingName}
@@ -164,8 +176,21 @@ export default function HabitDetailScreen() {
                 onPress={() => setEditingName(null)}
               />
             </View>
-          </View>
+          </Animated.View>
         ) : null}
+
+        <Animated.View
+          layout={
+            motionPrefs.reduceMotion
+              ? undefined
+              : LinearTransition.duration(180).easing(Easing.out(Easing.cubic))
+          }
+          entering={
+            motionPrefs.reduceMotion
+              ? undefined
+              : FadeIn.duration(180).easing(Easing.out(Easing.cubic))
+          }
+        >
 
         <View className="mb-4 flex-row gap-3">
           <View
@@ -379,6 +404,7 @@ export default function HabitDetailScreen() {
             />
           </View>
         </View>
+        </Animated.View>
       </ScrollView>
     </Screen>
   );

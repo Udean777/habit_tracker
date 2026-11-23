@@ -1,5 +1,11 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Platform, Pressable, ScrollView, Switch, View } from "react-native";
+import Animated, {
+  Easing,
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+} from "react-native-reanimated";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { router } from "expo-router";
 import Check from "lucide-react-native/icons/check";
@@ -9,11 +15,28 @@ import type { QualityTierMode, ReduceMotionMode, ThemeMode } from "@habit/shared
 import { Button } from "@/components/Button";
 import { Screen } from "@/components/Screen";
 import { Text } from "@/components/Text";
-import { useHabitsData } from "@/features/habits";
+import {
+  PixelAvatar,
+  computeQuestProgress,
+  mapQuestProgressToAvatar,
+  useHabitsData,
+  type AvatarClass,
+} from "@/features/habits";
 import { exportAllLocalData } from "@/features/settings";
+import { useMotionPreferences } from "@/features/world/qualityTier";
 import { clearAuthTokens, getAuthTokens } from "@/lib/apiClient";
+import { useUiStore } from "@/stores/uiStore";
 import { runSyncCycle } from "@/sync/syncEngine";
 import { colors, radii } from "@/theme/tokens";
+
+const AVATAR_CLASSES: readonly {
+  readonly label: string;
+  readonly value: AvatarClass;
+}[] = [
+  { label: "Knight", value: "knight" },
+  { label: "Mage", value: "mage" },
+  { label: "Ranger", value: "ranger" },
+];
 
 const THEME_MODES: readonly ThemeMode[] = ["system", "light", "dark"];
 const MOTION_MODES: readonly ReduceMotionMode[] = ["system", "on", "off"];
@@ -40,22 +63,28 @@ function Section({
   readonly children: ReactNode;
 }) {
   return (
-    <View className="mb-6">
+    <Animated.View
+      entering={FadeIn.duration(180).easing(Easing.out(Easing.cubic))}
+      layout={LinearTransition.duration(180).easing(Easing.out(Easing.cubic))}
+      className="mb-6"
+    >
       <Text className="mb-2 px-1 text-xs font-bold uppercase tracking-wider text-[#6B6285]">
         {title}
       </Text>
-      <View
+      <Animated.View
+        layout={LinearTransition.duration(180).easing(Easing.out(Easing.cubic))}
         style={{
           borderRadius: radii.card,
-          borderWidth: 1,
+          borderWidth: 2,
+          borderBottomWidth: 4,
           borderColor: colors.border,
           backgroundColor: colors.surface,
           overflow: "hidden",
         }}
       >
         {children}
-      </View>
-    </View>
+      </Animated.View>
+    </Animated.View>
   );
 }
 
@@ -123,7 +152,9 @@ function SettingRow<T extends string | number>({
       </Pressable>
 
       {expanded ? (
-        <View
+        <Animated.View
+          entering={FadeIn.duration(150).easing(Easing.out(Easing.cubic))}
+          exiting={FadeOut.duration(110)}
           style={{ backgroundColor: colors.background }}
           className="gap-1.5 px-4 pb-3 pt-1"
         >
@@ -163,7 +194,7 @@ function SettingRow<T extends string | number>({
               </Pressable>
             );
           })}
-        </View>
+        </Animated.View>
       ) : null}
     </View>
   );
@@ -171,6 +202,9 @@ function SettingRow<T extends string | number>({
 
 export default function SettingsScreen() {
   const {
+    activeHabits,
+    logs,
+    effectiveToday,
     settings,
     archivedHabits,
     pendingOutbox,
@@ -178,6 +212,18 @@ export default function SettingsScreen() {
     onUnarchiveHabit,
     refresh,
   } = useHabitsData();
+  const avatarClass = useUiStore((s) => s.avatarClass);
+  const setAvatarClass = useUiStore((s) => s.setAvatarClass);
+  const motionPrefs = useMotionPreferences(settings);
+
+  const questProgress = useMemo(
+    () => computeQuestProgress(activeHabits, logs, effectiveToday),
+    [activeHabits, logs, effectiveToday],
+  );
+  const avatarState = useMemo(
+    () => mapQuestProgressToAvatar(questProgress, avatarClass),
+    [questProgress, avatarClass],
+  );
   const [exportedJson, setExportedJson] = useState<string | null>(null);
   const [accountEmail, setAccountEmail] = useState<string | null>(null);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
@@ -245,21 +291,94 @@ export default function SettingsScreen() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 32 }}
+        contentContainerStyle={{ paddingBottom: 104 }}
       >
-        <Section title="Account & Sync">
+        <Section title="Hero Profile & Account">
           <View className="p-4">
-            <Text variant="body" className="font-semibold">
-              {accountEmail
-                ? accountEmail
-                : "Guest Mode (Local Only)"}
-            </Text>
-            <Text variant="caption" className="mt-0.5">
-              {syncMessage ??
-                (accountEmail
-                  ? "Your quests sync automatically."
-                  : "Sign in to back up and sync across devices.")}
-            </Text>
+            <View className="flex-row items-center gap-3.5">
+              <PixelAvatar
+                state={avatarState}
+                reduceMotion={motionPrefs.reduceMotion}
+                size={68}
+              />
+              <View className="flex-1">
+                <View className="flex-row items-center gap-2">
+                  <View
+                    style={{
+                      borderRadius: radii.badge,
+                      backgroundColor: colors.accentBg,
+                    }}
+                    className="px-2 py-0.5"
+                  >
+                    <Text
+                      tabularNums
+                      className="text-xs font-extrabold text-[#2A2140]"
+                    >
+                      LVL {questProgress.level}
+                    </Text>
+                  </View>
+                  <Text
+                    tabularNums
+                    className="text-xs font-bold text-[#6B4DF5]"
+                  >
+                    {questProgress.totalXp} Total XP
+                  </Text>
+                </View>
+                <Text variant="heading" className="mt-1">
+                  {avatarState.classTitle}
+                </Text>
+                <Text variant="caption" className="mt-0.5" numberOfLines={1}>
+                  {accountEmail ? accountEmail : "Guest Adventurer (Local)"}
+                </Text>
+              </View>
+            </View>
+
+            <View className="mt-4">
+              <Text className="mb-1.5 text-xs font-bold uppercase tracking-wider text-[#6B6285]">
+                Character Class
+              </Text>
+              <View className="flex-row gap-2">
+                {AVATAR_CLASSES.map((cls) => {
+                  const active = avatarClass === cls.value;
+                  return (
+                    <Pressable
+                      key={cls.value}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: active }}
+                      accessibilityLabel={`Select ${cls.label} class`}
+                      onPress={() => setAvatarClass(cls.value)}
+                      style={{
+                        borderRadius: radii.button,
+                        borderWidth: 1,
+                        borderBottomWidth: active ? 3 : 1,
+                        borderColor: active
+                          ? colors.primaryPressed
+                          : colors.borderStrong,
+                        backgroundColor: active
+                          ? colors.primary
+                          : colors.surface,
+                      }}
+                      className="min-h-[40px] flex-1 items-center justify-center"
+                    >
+                      <Text
+                        className={`text-xs font-bold ${
+                          active ? "text-white" : "text-[#2A2140]"
+                        }`}
+                      >
+                        {cls.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+
+            {syncMessage ? (
+              <Text variant="caption" className="mt-3">
+                {syncMessage}
+              </Text>
+            ) : null}
+
             <View className="mt-3 flex-row gap-2">
               {accountEmail ? (
                 <>

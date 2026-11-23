@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { ScrollView, View } from "react-native";
+import Animated, { Easing, FadeIn } from "react-native-reanimated";
 import { computeStreak, isDayCompleted, type LocalDate } from "@habit/shared";
 import { Button } from "@/components/Button";
 import { Screen } from "@/components/Screen";
@@ -109,12 +110,27 @@ export default function StatsScreen() {
         Stats
       </Text>
 
-      <QuestHud
-        progress={questProgress}
-        reduceMotion={motionPrefs.reduceMotion}
-      />
+      <Animated.View
+        entering={
+          motionPrefs.reduceMotion
+            ? undefined
+            : FadeIn.duration(180).easing(Easing.out(Easing.cubic))
+        }
+      >
+        <QuestHud
+          progress={questProgress}
+          reduceMotion={motionPrefs.reduceMotion}
+        />
+      </Animated.View>
 
-      <View className="mb-4 flex-row gap-3">
+      <Animated.View
+        entering={
+          motionPrefs.reduceMotion
+            ? undefined
+            : FadeIn.delay(35).duration(180).easing(Easing.out(Easing.cubic))
+        }
+        className="mb-4 flex-row gap-3"
+      >
         <View
           style={[
             {
@@ -149,7 +165,7 @@ export default function StatsScreen() {
             {avg30d}%
           </Text>
         </View>
-      </View>
+      </Animated.View>
 
       <View
         style={{
@@ -172,7 +188,10 @@ export default function StatsScreen() {
           <Text variant="caption">No active habits to analyze yet.</Text>
         </View>
       ) : (
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 104 }}
+        >
           <Text variant="heading" className="mb-2">
             This Month Consistency
           </Text>
@@ -181,13 +200,21 @@ export default function StatsScreen() {
             tier={motionPrefs.tier}
             hapticsEnabled={settings.hapticsEnabled}
           />
-          {habitStats.map(({ habit, stats }) => (
-            <View
+          {habitStats.map(({ habit, stats }, idx) => (
+            <Animated.View
               key={habit.id}
+              entering={
+                motionPrefs.reduceMotion
+                  ? undefined
+                  : FadeIn.delay(Math.min(70 + idx * 30, 220))
+                      .duration(180)
+                      .easing(Easing.out(Easing.cubic))
+              }
               style={[
                 {
                   borderRadius: radii.card,
-                  borderWidth: 1,
+                  borderWidth: 2,
+                  borderBottomWidth: 4,
                   borderColor: colors.border,
                   backgroundColor: colors.surface,
                 },
@@ -205,7 +232,7 @@ export default function StatsScreen() {
                 {Math.round(stats.rate30d * 100)}% | 90d:{" "}
                 {Math.round(stats.rate90d * 100)}%
               </Text>
-            </View>
+            </Animated.View>
           ))}
           <View className="h-6" />
         </ScrollView>

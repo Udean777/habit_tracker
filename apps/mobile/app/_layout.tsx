@@ -17,7 +17,8 @@ import {
   reconcileNotifications,
   registerNotificationCategories,
 } from "@/lib/notifications";
-import { useUiStore } from "@/stores/uiStore";
+import { hydrateAvatarClass, useUiStore } from "@/stores/uiStore";
+import { colors } from "@/theme/tokens";
 
 configureNotificationHandler();
 
@@ -33,6 +34,7 @@ export default function RootLayout() {
     let cancelled = false;
     void ensureSettingsAndSyncState(appDb)
       .then(async () => {
+        await hydrateAvatarClass();
         await registerNotificationCategories();
         const active = await listActiveHabits(appDb);
         await reconcileNotifications(active);
@@ -77,9 +79,32 @@ export default function RootLayout() {
     <ErrorBoundary>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <StatusBar style="dark" />
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="habit/new" options={{ presentation: "modal" }} />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            animation: "ios_from_right",
+            contentStyle: { backgroundColor: colors.background },
+          }}
+        >
+          <Stack.Screen name="(tabs)" options={{ animation: "fade" }} />
+          <Stack.Screen
+            name="habit/new"
+            options={{
+              presentation: "modal",
+              animation: "slide_from_bottom",
+            }}
+          />
+          <Stack.Screen
+            name="habit/[id]"
+            options={{ animation: "ios_from_right" }}
+          />
+          <Stack.Screen
+            name="auth/login"
+            options={{
+              presentation: "modal",
+              animation: "slide_from_bottom",
+            }}
+          />
         </Stack>
       </GestureHandlerRootView>
     </ErrorBoundary>
