@@ -8,6 +8,7 @@
   "scripts": {
     "dev:api": "bun run --filter @habit/api dev",
     "dev:mobile": "bun run --filter @habit/mobile start",
+    "dev:web": "bun run --filter @habit/web dev",
     "typecheck": "bun run --filter '*' typecheck",
     "lint": "bun run --filter '*' lint",
     "test": "bun run --filter '*' test",

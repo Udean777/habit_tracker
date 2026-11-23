@@ -16,7 +16,7 @@ import { computeQuestProgress, type HabitRecord } from "@/features/habits";
 import type { HabitLogRecord } from "@/features/logs";
 import { triggerHaptic } from "@/lib/haptics";
 import { useUiStore } from "@/stores/uiStore";
-import { runSyncCycle } from "@/sync/syncEngine";
+import { nudgeSync } from "@/sync/syncEngine";
 import {
   applyStreakFreeze,
   getHeroProfile,
@@ -169,7 +169,7 @@ export function useGamification(
       const updated = await updateHeroProfile({ avatarClass });
       setDbState((prev) => ({ ...prev, heroProfile: updated }));
       bumpDataVersion();
-      void runSyncCycle();
+      nudgeSync();
     },
     [hapticsEnabled, setAvatarClassUi, bumpDataVersion],
   );
@@ -186,7 +186,7 @@ export function useGamification(
       const updated = await updateHeroProfile(patch);
       setDbState((prev) => ({ ...prev, heroProfile: updated }));
       bumpDataVersion();
-      void runSyncCycle();
+      nudgeSync();
     },
     [hapticsEnabled, bumpDataVersion],
   );
@@ -197,7 +197,7 @@ export function useGamification(
       if (result.ok) {
         triggerHaptic("success", hapticsEnabled);
         bumpDataVersion();
-        void runSyncCycle();
+        nudgeSync();
       } else {
         triggerHaptic("light", hapticsEnabled);
       }
@@ -212,7 +212,7 @@ export function useGamification(
       triggerHaptic("success", hapticsEnabled);
       await applyStreakFreeze(habitId, missedDate, "manual");
       bumpDataVersion();
-      void runSyncCycle();
+      nudgeSync();
     },
     [shieldStats.availableShields, hapticsEnabled, bumpDataVersion],
   );

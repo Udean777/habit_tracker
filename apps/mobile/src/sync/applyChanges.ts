@@ -5,6 +5,7 @@ import {
   habitLogs,
   habits,
   heroProfile,
+  settings,
   streakFreezes,
   syncState,
   userInventory,
@@ -90,6 +91,22 @@ function mapUserInventoryChange(entityId: string, d: Record<string, unknown>) {
   };
 }
 
+function mapSettingsChange(d: Record<string, unknown>) {
+  const nowIso = new Date().toISOString();
+  return {
+    id: "singleton",
+    theme: String(d.theme ?? "system"),
+    hapticsEnabled: d.hapticsEnabled === false || d.hapticsEnabled === 0 ? 0 : 1,
+    reduceMotion: String(d.reduceMotion ?? "system"),
+    qualityTier: String(d.qualityTier ?? "auto"),
+    dayStartOffsetMin:
+      typeof d.dayStartOffsetMin === "number" ? d.dayStartOffsetMin : 0,
+    backfillWindowDays:
+      typeof d.backfillWindowDays === "number" ? d.backfillWindowDays : 14,
+    updatedAt: String(d.updatedAt ?? nowIso),
+  };
+}
+
 export async function applyPulledChanges(
   tx: DbTx,
   changes: readonly SyncPullChange[],
@@ -114,6 +131,12 @@ export async function applyPulledChanges(
         .insert(streakFreezes)
         .values(row)
         .onConflictDoUpdate({ target: streakFreezes.id, set: row });
+    } else if (change.entity === "settings") {
+      const row = mapSettingsChange(change.data);
+      await tx
+        .insert(settings)
+        .values(row)
+        .onConflictDoUpdate({ target: settings.id, set: row });
     } else if (change.entity === "hero_profile") {
       const row = mapHeroProfileChange(change.data);
       await tx

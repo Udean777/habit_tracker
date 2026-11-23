@@ -1,53 +1,64 @@
 import { createMiddleware } from "hono/factory";
 import { sign, verify } from "hono/jwt";
+import { resolveJwtSecret, type AppBindings } from "../env";
+import type { ApiDb } from "../db/client";
 
-const JWT_SECRET =
-  process.env.JWT_SECRET ?? "dev-only-habit-tracker-secret-change-me";
+const ACCESS_TOKEN_TTL_SEC = 60 * 60;
 
-export type AuthVariables = {
+export type AppVariables = {
+  getDb: () => ApiDb;
   userId: string;
 };
 
-export async function signAccessToken(userId: string): Promise<string> {
+export type AuthVariables = AppVariables;
+
+export type AppEnv = {
+  Bindings: AppBindings;
+  Variables: AppVariables;
+};
+
+export async function signAccessToken(
+  userId: string,
+  jwtSecret: string = resolveJwtSecret(),
+): Promise<string> {
   const nowSec = Math.floor(Date.now() / 1000);
   return sign(
     {
       sub: userId,
       jti: crypto.randomUUID(),
       iat: nowSec,
-      exp: nowSec + 15 * 60,
+      exp: nowSec + ACCESS_TOKEN_TTL_SEC,
     },
-    JWT_SECRET,
+    jwtSecret,
   );
 }
 
-export const requireAuth = createMiddleware<{ Variables: AuthVariables }>(
-  async (c, next) => {
-    const header = c.req.header("Authorization");
-    if (!header?.startsWith("Bearer ")) {
-      return c.json(
-        { error: { code: "UNAUTHORIZED", message: "Missing bearer token" } },
-        401,
-      );
-    }
+export const requireAuth = createMiddleware<AppEnv>(async (c, next) => {
+  const header = c.req.header("Authorization");
+  if (!header?.startsWith("Bearer ")) {
+    return c.json(
+      { error: { code: "UNAUTHORIZED", message: "Missing bearer token" } },
+      401,
+    );
+  }
 
-    const token = header.slice("Bearer ".length).trim();
-    try {
-      const payload = await verify(token, JWT_SECRET, "HS256");
-      const sub = payload.sub;
-      if (typeof sub !== "string" || sub.length === 0) {
-        return c.json(
-          { error: { code: "UNAUTHORIZED", message: "Invalid token subject" } },
-          401,
-        );
-      }
-      c.set("userId", sub);
-      await next();
-    } catch {
+  const token = header.slice("Bearer ".length).trim();
+  try {
+    const secret = resolveJwtSecret(c.env);
+    const payload = await verify(token, secret, "HS256");
+    const sub = payload.sub;
+    if (typeof sub !== "string" || sub.length === 0) {
       return c.json(
-        { error: { code: "UNAUTHORIZED", message: "Invalid or expired token" } },
+        { error: { code: "UNAUTHORIZED", message: "Invalid token subject" } },
         401,
       );
     }
-  },
-);
+    c.set("userId", sub);
+    await next();
+  } catch {
+    return c.json(
+      { error: { code: "UNAUTHORIZED", message: "Invalid or expired token" } },
+      401,
+    );
+  }
+});

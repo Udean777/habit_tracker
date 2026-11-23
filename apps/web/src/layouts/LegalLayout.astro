@@ -1,0 +1,33 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+
+interface Frontmatter {
+  title: string;
+  description: string;
+  effectiveDate: string;
+  activeNav: "privacy" | "terms";
+}
+
+interface Props {
+  frontmatter: Frontmatter;
+}
+
+const { frontmatter } = Astro.props;
+const supportEmail = "sajudinmaruf@gmail.com";
+---
+
+<BaseLayout
+  title={`${frontmatter.title} · Glimkin`}
+  description={frontmatter.description}
+  activeNav={frontmatter.activeNav}
+>
+  <h1 class="doc-title">{frontmatter.title}</h1>
+  <p class="meta">
+    Effective date: {frontmatter.effectiveDate} · Contact:{" "}
+    <a href={`mailto:${supportEmail}`}>{supportEmail}</a>
+  </p>
+
+  <article class="card legal-body">
+    <slot />
+  </article>
+</BaseLayout>

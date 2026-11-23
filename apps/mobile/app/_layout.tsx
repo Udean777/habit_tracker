@@ -1,6 +1,6 @@
 import "../global.css";
 import { useEffect, useRef, useState } from "react";
-import { View } from "react-native";
+import { AppState, View } from "react-native";
 import { router, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -22,6 +22,7 @@ import {
   registerNotificationCategories,
 } from "@/lib/notifications";
 import { hydrateAvatarClass, useUiStore } from "@/stores/uiStore";
+import { flushPendingSync, runSyncCycle } from "@/sync/syncEngine";
 import { useTheme } from "@/theme/useTheme";
 
 // Keep the native splash screen visible until migrations and initial local data are ready.
@@ -86,6 +87,20 @@ export default function RootLayout() {
     );
     return () => sub.remove();
   }, [bumpDataVersion]);
+
+  useEffect(() => {
+    if (!seeded) return;
+    void runSyncCycle(appDb, { mode: "auto" });
+
+    const sub = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "active") {
+        void runSyncCycle(appDb, { mode: "auto" });
+      } else if (nextState === "background" || nextState === "inactive") {
+        flushPendingSync(appDb);
+      }
+    });
+    return () => sub.remove();
+  }, [seeded]);
 
   function handleRootLayout() {
     if (splashHiddenRef.current) return;

@@ -1,6 +1,8 @@
 import { and, eq, isNull } from "drizzle-orm";
-import { db } from "../db/client";
+import { db, type ApiDb } from "../db/client";
 import { refreshTokens, users } from "../db/schema";
+import { resolveJwtSecret } from "../env";
+import { hashPassword, verifyPassword } from "../lib/password";
 import { signAccessToken } from "../middleware/auth";
 
 const REFRESH_TTL_MS = 30 * 86_400_000;
@@ -25,11 +27,43 @@ export type AuthSuccess = {
   readonly user: { readonly id: string; readonly email: string };
 };
 
+export async function issueSessionForUser(
+  userId: string,
+  email: string,
+  deviceId: string,
+  database: ApiDb = db,
+  jwtSecret: string = resolveJwtSecret(),
+): Promise<AuthSuccess> {
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + REFRESH_TTL_MS);
+  const rawRefresh = generateOpaqueToken();
+  const tokenHash = await sha256Hex(rawRefresh);
+
+  await database.insert(refreshTokens).values({
+    id: crypto.randomUUID(),
+    userId,
+    familyId: crypto.randomUUID(),
+    tokenHash,
+    deviceId,
+    expiresAt,
+    revokedAt: null,
+    createdAt: now,
+  });
+
+  const accessToken = await signAccessToken(userId, jwtSecret);
+  return {
+    accessToken,
+    refreshToken: rawRefresh,
+    user: { id: userId, email },
+  };
+}
+
 export async function registerUser(
   email: string,
   password: string,
   deviceId: string,
-  database = db,
+  database: ApiDb = db,
+  jwtSecret: string = resolveJwtSecret(),
 ): Promise<
   | { readonly ok: true; readonly data: AuthSuccess }
   | { readonly ok: false; readonly status: 409; readonly code: "CONFLICT"; readonly message: string }
@@ -53,9 +87,7 @@ export async function registerUser(
   const familyId = crypto.randomUUID();
   const now = new Date();
   const expiresAt = new Date(now.getTime() + REFRESH_TTL_MS);
-  const passwordHash = await Bun.password.hash(password, {
-    algorithm: "argon2id",
-  });
+  const passwordHash = await hashPassword(password);
 
   const rawRefresh = generateOpaqueToken();
   const tokenHash = await sha256Hex(rawRefresh);
@@ -82,7 +114,7 @@ export async function registerUser(
     });
   });
 
-  const accessToken = await signAccessToken(userId);
+  const accessToken = await signAccessToken(userId, jwtSecret);
   return {
     ok: true,
     data: {
@@ -97,7 +129,8 @@ export async function loginUser(
   email: string,
   password: string,
   deviceId: string,
-  database = db,
+  database: ApiDb = db,
+  jwtSecret: string = resolveJwtSecret(),
 ): Promise<
   | { readonly ok: true; readonly data: AuthSuccess }
   | { readonly ok: false; readonly status: 401; readonly code: "UNAUTHORIZED"; readonly message: string }
@@ -109,7 +142,11 @@ export async function loginUser(
     .where(and(eq(users.email, normalizedEmail), isNull(users.deletedAt)));
   const user = rows[0];
 
-  if (!user || !(await Bun.password.verify(password, user.passwordHash))) {
+  if (
+    !user ||
+    !user.passwordHash ||
+    !(await verifyPassword(password, user.passwordHash))
+  ) {
     return {
       ok: false,
       status: 401,
@@ -118,37 +155,21 @@ export async function loginUser(
     };
   }
 
-  const now = new Date();
-  const expiresAt = new Date(now.getTime() + REFRESH_TTL_MS);
-  const rawRefresh = generateOpaqueToken();
-  const tokenHash = await sha256Hex(rawRefresh);
-
-  await database.insert(refreshTokens).values({
-    id: crypto.randomUUID(),
-    userId: user.id,
-    familyId: crypto.randomUUID(),
-    tokenHash,
+  const data = await issueSessionForUser(
+    user.id,
+    user.email,
     deviceId,
-    expiresAt,
-    revokedAt: null,
-    createdAt: now,
-  });
-
-  const accessToken = await signAccessToken(user.id);
-  return {
-    ok: true,
-    data: {
-      accessToken,
-      refreshToken: rawRefresh,
-      user: { id: user.id, email: user.email },
-    },
-  };
+    database,
+    jwtSecret,
+  );
+  return { ok: true, data };
 }
 
 export async function rotateRefreshToken(
   refreshToken: string,
   deviceId: string,
-  database = db,
+  database: ApiDb = db,
+  jwtSecret: string = resolveJwtSecret(),
 ): Promise<
   | { readonly ok: true; readonly data: AuthSuccess }
   | { readonly ok: false; readonly status: 401; readonly code: "UNAUTHORIZED"; readonly message: string }
@@ -229,7 +250,7 @@ export async function rotateRefreshToken(
     };
   }
 
-  const accessToken = await signAccessToken(user.id);
+  const accessToken = await signAccessToken(user.id, jwtSecret);
   return {
     ok: true,
     data: {
@@ -242,7 +263,7 @@ export async function rotateRefreshToken(
 
 export async function revokeRefreshToken(
   refreshToken: string,
-  database = db,
+  database: ApiDb = db,
 ): Promise<void> {
   const tokenHash = await sha256Hex(refreshToken);
   await database

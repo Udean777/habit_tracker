@@ -121,10 +121,22 @@ Pending operations to push. See `docs/SYNC.md`.
 | Column | Type | Notes |
 |---|---|---|
 | id | uuid PK | |
-| email | citext unique not null | |
-| password_hash | text not null | Argon2id |
+| email | text unique not null | |
+| password_hash | text nullable | Web Crypto PBKDF2-SHA256 (null for OAuth-only users) |
 | created_at, updated_at | timestamptz | |
 | deleted_at | timestamptz | |
+
+### `oauth_accounts`
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid PK | |
+| user_id | uuid not null FK → users.id (cascade) | |
+| provider | text not null | `google` \| `github` |
+| provider_account_id | text not null | Provider's unique user ID |
+| email | text not null | Verified email from provider |
+| created_at | timestamptz not null | |
+
+Constraint: `UNIQUE(provider, provider_account_id)`. Index: `(user_id)`.
 
 ### `refresh_tokens`
 | Column | Type | Notes |
