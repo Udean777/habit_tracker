@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { Badge } from "@/components/Badge";
 import { Screen } from "@/components/Screen";
@@ -17,6 +17,11 @@ import {
   HeroProfileCard,
   ScheduleSettingsSection,
 } from "@/features/settings";
+import {
+  FEATURE_TOUR_STEPS,
+  TourTarget,
+  useTourStore,
+} from "@/features/tour";
 import { useMotionPreferences } from "@/lib/motion";
 
 export default function SettingsScreen() {
@@ -55,10 +60,22 @@ export default function SettingsScreen() {
   );
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const scrollRef = useRef<ScrollView | null>(null);
+  const tourOpen = useTourStore((s) => s.isOpen);
+  const tourStepIndex = useTourStore((s) => s.stepIndex);
 
   useEffect(() => {
     void loadAccountEmail();
   }, [loadAccountEmail]);
+
+  useEffect(() => {
+    if (
+      tourOpen &&
+      FEATURE_TOUR_STEPS[tourStepIndex]?.id === "settings_hero"
+    ) {
+      scrollRef.current?.scrollTo({ y: 0, animated: false });
+    }
+  }, [tourOpen, tourStepIndex]);
 
   function toggleRow(key: string) {
     setExpandedRow((prev) => (prev === key ? null : key));
@@ -97,20 +114,23 @@ export default function SettingsScreen() {
       </View>
 
       <ScrollView
+        ref={scrollRef}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 104 }}
       >
-        <HeroProfileCard
-          avatarState={avatarState}
-          questProgress={questProgress}
-          avatarClass={heroProfile.avatarClass}
-          reduceMotion={motionPrefs.reduceMotion}
-          accountEmail={accountEmail}
-          syncMessage={syncMessage}
-          onSelectAvatarClass={(cls) => void selectAvatarClass(cls)}
-          onSyncNow={() => void handleSyncNow()}
-          onSignOut={() => void handleSignOut()}
-        />
+        <TourTarget id="settings_hero">
+          <HeroProfileCard
+            avatarState={avatarState}
+            questProgress={questProgress}
+            avatarClass={heroProfile.avatarClass}
+            reduceMotion={motionPrefs.reduceMotion}
+            accountEmail={accountEmail}
+            syncMessage={syncMessage}
+            onSelectAvatarClass={(cls) => void selectAvatarClass(cls)}
+            onSyncNow={() => void handleSyncNow()}
+            onSignOut={() => void handleSignOut()}
+          />
+        </TourTarget>
 
         <ExperienceSettingsSection
           settings={settings}

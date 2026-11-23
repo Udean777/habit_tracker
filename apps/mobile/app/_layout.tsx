@@ -14,6 +14,7 @@ import migrations from "@/db/migrations/migrations";
 import { listActiveHabits } from "@/features/habits";
 import { hasCompletedOnboarding } from "@/features/onboarding";
 import { ensureSettingsAndSyncState, getSettings } from "@/features/settings";
+import { FeatureTourOverlay } from "@/features/tour";
 import {
   configureNotificationHandler,
   handleNotificationResponse,
@@ -150,6 +151,7 @@ export default function RootLayout() {
             }}
           />
         </Stack>
+        <FeatureTourOverlay />
       </GestureHandlerRootView>
     </ErrorBoundary>
   );

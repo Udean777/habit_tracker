@@ -11,6 +11,7 @@ import {
   type ThemeMode,
 } from "@habit/shared";
 import { Text } from "@/components/Text";
+import { useTourStore } from "@/features/tour";
 import { useUiStore } from "@/stores/uiStore";
 import { useTheme } from "@/theme/useTheme";
 import { Section, SettingRow } from "./SettingsPrimitives";
@@ -93,6 +94,26 @@ export function ExperienceSettingsSection({
         onToggleExpand={() => onToggleRow("quality")}
         onSelect={(qualityTier) => void onUpdateSettings({ qualityTier })}
       />
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Start feature spotlight tour"
+        onPress={() => useTourStore.getState().startTour(0)}
+        style={{
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        }}
+        className="min-h-[56px] flex-row items-center justify-between px-4 py-3"
+      >
+        <View className="flex-1 pr-3">
+          <Text variant="body" className="font-semibold">
+            Feature Spotlight Tour
+          </Text>
+          <Text variant="caption" className="mt-0.5">
+            Guided spotlight walkthrough across Today, Stats & Settings
+          </Text>
+        </View>
+        <ChevronRight size={16} color={colors.textSecondary} />
+      </Pressable>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Replay app onboarding tour"

@@ -12,6 +12,12 @@ import {
   useGamification,
 } from "@/features/gamification";
 import {
+  FEATURE_TOUR_STEPS,
+  hasCompletedTour,
+  TourTarget,
+  useTourStore,
+} from "@/features/tour";
+import {
   DateStrip,
   DraggableQuestList,
   HabitQuestRow,
@@ -74,7 +80,16 @@ export default function TodayScreen() {
   );
 
   const prevLevelRef = useRef<number | null>(null);
+  const scrollRef = useRef<ScrollView | null>(null);
   const [levelUpVisible, setLevelUpVisible] = useState(false);
+  const tourOpen = useTourStore((s) => s.isOpen);
+  const tourStepIndex = useTourStore((s) => s.stepIndex);
+
+  useEffect(() => {
+    if (tourOpen && FEATURE_TOUR_STEPS[tourStepIndex]?.route === "/(tabs)") {
+      scrollRef.current?.scrollTo({ y: 0, animated: false });
+    }
+  }, [tourOpen, tourStepIndex]);
 
   useEffect(() => {
     if (loading) return;
@@ -86,6 +101,21 @@ export default function TodayScreen() {
     }
     prevLevelRef.current = questProgress.level;
   }, [loading, questProgress.level]);
+
+  useEffect(() => {
+    if (loading || activeHabits.length === 0) return;
+    let cancelled = false;
+    void hasCompletedTour().then((done) => {
+      if (!cancelled && !done) {
+        setTimeout(() => {
+          if (!cancelled) useTourStore.getState().startTour(0);
+        }, 450);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [loading, activeHabits.length]);
 
   const {
     dateStrip,
@@ -153,19 +183,23 @@ export default function TodayScreen() {
             {`${datePrefix} · ${formatReadableDate(selectedDate)}`}
           </Text>
         </View>
-        <Button
-          label="+ New Habit"
-          onPress={() => router.push("/habit/new")}
-        />
+        <TourTarget id="new_habit_btn">
+          <Button
+            label="+ New Habit"
+            onPress={() => router.push("/habit/new")}
+          />
+        </TourTarget>
       </View>
 
-      <DateStrip
-        dates={dateStrip}
-        selectedDate={selectedDate}
-        effectiveToday={effectiveToday}
-        isDateFullyCompleted={isDateFullyCompleted}
-        onSelectDate={setSelectedDate}
-      />
+      <TourTarget id="date_strip">
+        <DateStrip
+          dates={dateStrip}
+          selectedDate={selectedDate}
+          effectiveToday={effectiveToday}
+          isDateFullyCompleted={isDateFullyCompleted}
+          onSelectDate={setSelectedDate}
+        />
+      </TourTarget>
 
       {activeHabits.length === 0 ? (
         <View className="flex-1">
@@ -190,6 +224,7 @@ export default function TodayScreen() {
         </View>
       ) : (
         <ScrollView
+          ref={scrollRef}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 104 }}
         >
@@ -200,14 +235,16 @@ export default function TodayScreen() {
                 : FadeIn.duration(180).easing(Easing.out(Easing.cubic))
             }
           >
-            <QuestHud
-              progress={questProgress}
-              reduceMotion={motionPrefs.reduceMotion}
-              loadout={heroProfile}
-              goldBalance={goldEconomy.availableGold}
-              availableShields={shieldStats.availableShields}
-              onPressShop={() => router.push("/shop")}
-            />
+            <TourTarget id="quest_hud">
+              <QuestHud
+                progress={questProgress}
+                reduceMotion={motionPrefs.reduceMotion}
+                loadout={heroProfile}
+                goldBalance={goldEconomy.availableGold}
+                availableShields={shieldStats.availableShields}
+                onPressShop={() => router.push("/shop")}
+              />
+            </TourTarget>
             {topMiss && topMissHabit ? (
               <StreakShieldBanner
                 miss={topMiss}
@@ -241,7 +278,13 @@ export default function TodayScreen() {
                   void onReorderHabit(id, targetIdx);
                 }
               }}
-              renderItem={(item) => renderHabitRow(item)}
+              renderItem={(item) =>
+                item.id === scheduledHabits[0]?.id ? (
+                  <TourTarget id="first_quest">{renderHabitRow(item)}</TourTarget>
+                ) : (
+                  renderHabitRow(item)
+                )
+              }
             />
           </Animated.View>
           <OffDayQuestsSection
