@@ -1,25 +1,30 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ScrollView, View } from "react-native";
+import { Badge } from "@/components/Badge";
 import { Screen } from "@/components/Screen";
 import { Text } from "@/components/Text";
 import { useAuthActions } from "@/features/auth";
+import { useGamification } from "@/features/gamification";
 import {
   computeQuestProgress,
   mapQuestProgressToAvatar,
   useHabitsData,
 } from "@/features/habits";
-import { ArchivedQuestsSection } from "@/features/settings/components/ArchivedQuestsSection";
-import { BackupSection } from "@/features/settings/components/BackupSection";
-import { ExperienceSettingsSection } from "@/features/settings/components/ExperienceSettingsSection";
-import { HeroProfileCard } from "@/features/settings/components/HeroProfileCard";
-import { ScheduleSettingsSection } from "@/features/settings/components/ScheduleSettingsSection";
-import { useMotionPreferences } from "@/features/world/qualityTier";
-import { useUiStore } from "@/stores/uiStore";
-import { radii } from "@/theme/tokens";
-import { useTheme } from "@/theme/useTheme";
+import {
+  ArchivedQuestsSection,
+  BackupSection,
+  ExperienceSettingsSection,
+  HeroProfileCard,
+  ScheduleSettingsSection,
+} from "@/features/settings";
+import {
+  FEATURE_TOUR_STEPS,
+  TourTarget,
+  useTourStore,
+} from "@/features/tour";
+import { useMotionPreferences } from "@/lib/motion";
 
 export default function SettingsScreen() {
-  const { colors } = useTheme();
   const {
     activeHabits,
     logs,
@@ -32,8 +37,12 @@ export default function SettingsScreen() {
     refresh,
   } = useHabitsData();
   const { accountEmail, loadAccountEmail, signOut, syncNow } = useAuthActions();
-  const avatarClass = useUiStore((s) => s.avatarClass);
-  const setAvatarClass = useUiStore((s) => s.setAvatarClass);
+  const { heroProfile, selectAvatarClass } = useGamification(
+    activeHabits,
+    logs,
+    effectiveToday,
+    settings.hapticsEnabled,
+  );
   const motionPrefs = useMotionPreferences(settings);
 
   const questProgress = useMemo(
@@ -41,15 +50,32 @@ export default function SettingsScreen() {
     [activeHabits, logs, effectiveToday],
   );
   const avatarState = useMemo(
-    () => mapQuestProgressToAvatar(questProgress, avatarClass),
-    [questProgress, avatarClass],
+    () =>
+      mapQuestProgressToAvatar(
+        questProgress,
+        heroProfile.avatarClass,
+        heroProfile,
+      ),
+    [questProgress, heroProfile],
   );
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const scrollRef = useRef<ScrollView | null>(null);
+  const tourOpen = useTourStore((s) => s.isOpen);
+  const tourStepIndex = useTourStore((s) => s.stepIndex);
 
   useEffect(() => {
     void loadAccountEmail();
   }, [loadAccountEmail]);
+
+  useEffect(() => {
+    if (
+      tourOpen &&
+      FEATURE_TOUR_STEPS[tourStepIndex]?.id === "settings_hero"
+    ) {
+      scrollRef.current?.scrollTo({ y: 0, animated: false });
+    }
+  }, [tourOpen, tourStepIndex]);
 
   function toggleRow(key: string) {
     setExpandedRow((prev) => (prev === key ? null : key));
@@ -59,7 +85,9 @@ export default function SettingsScreen() {
     setSyncMessage("Syncing...");
     const result = await syncNow();
     if (result.kind === "synced") {
-      setSyncMessage(`Synced (${result.pushed} pushed, ${result.pulled} pulled)`);
+      setSyncMessage(
+        `Synced (${result.pushed} pushed, ${result.pulled} pulled)`,
+      );
     } else if (result.kind === "signed_out") {
       setSyncMessage("Signed out");
     } else {
@@ -76,40 +104,33 @@ export default function SettingsScreen() {
     <Screen edges={["top", "left", "right"]} className="pt-2">
       <View className="flex-row items-center justify-between pb-4">
         <Text variant="title">Settings</Text>
-        <View
-          style={{
-            borderRadius: radii.pill,
-            backgroundColor:
-              pendingOutbox > 0 ? colors.accentBg : colors.surfaceMuted,
-          }}
+        <Badge
+          label={pendingOutbox > 0 ? `${pendingOutbox} Pending` : "All Synced"}
+          variant={pendingOutbox > 0 ? "accent" : "muted"}
+          pill
           className="px-3 py-1"
-        >
-          <Text
-            className="text-xs font-bold"
-            style={{
-              color: pendingOutbox > 0 ? colors.accentText : colors.primary,
-            }}
-          >
-            {pendingOutbox > 0 ? `${pendingOutbox} Pending` : "All Synced"}
-          </Text>
-        </View>
+          textClassName="text-xs font-bold"
+        />
       </View>
 
       <ScrollView
+        ref={scrollRef}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 104 }}
       >
-        <HeroProfileCard
-          avatarState={avatarState}
-          questProgress={questProgress}
-          avatarClass={avatarClass}
-          reduceMotion={motionPrefs.reduceMotion}
-          accountEmail={accountEmail}
-          syncMessage={syncMessage}
-          onSelectAvatarClass={setAvatarClass}
-          onSyncNow={() => void handleSyncNow()}
-          onSignOut={() => void handleSignOut()}
-        />
+        <TourTarget id="settings_hero">
+          <HeroProfileCard
+            avatarState={avatarState}
+            questProgress={questProgress}
+            avatarClass={heroProfile.avatarClass}
+            reduceMotion={motionPrefs.reduceMotion}
+            accountEmail={accountEmail}
+            syncMessage={syncMessage}
+            onSelectAvatarClass={(cls) => void selectAvatarClass(cls)}
+            onSyncNow={() => void handleSyncNow()}
+            onSignOut={() => void handleSignOut()}
+          />
+        </TourTarget>
 
         <ExperienceSettingsSection
           settings={settings}

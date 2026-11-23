@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { AccessibilityInfo } from "react-native";
 import * as Device from "expo-device";
 import type { QualityTierMode, Settings } from "@habit/shared";
-import type { QualityTier } from "./mappers";
+
+export type QualityTier = "high" | "medium" | "low";
 
 const GB = 1024 * 1024 * 1024;
 
@@ -22,7 +23,6 @@ export function resolveQualityTier(mode: QualityTierMode): QualityTier {
 export function useMotionPreferences(settings: Settings): {
   readonly tier: QualityTier;
   readonly reduceMotion: boolean;
-  readonly particleBudget: number;
 } {
   const [osReduceMotion, setOsReduceMotion] = useState(false);
 
@@ -49,8 +49,6 @@ export function useMotionPreferences(settings: Settings): {
         : osReduceMotion;
 
   const tier = resolveQualityTier(settings.qualityTier);
-  const particleBudget =
-    reduceMotion ? 0 : tier === "high" ? 160 : tier === "medium" ? 80 : 24;
 
-  return { tier, reduceMotion, particleBudget };
+  return { tier, reduceMotion };
 }

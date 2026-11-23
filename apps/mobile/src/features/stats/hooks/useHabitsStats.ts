@@ -1,5 +1,11 @@
 import { useMemo } from "react";
-import { computeStreak, isDayCompleted, type LocalDate } from "@habit/shared";
+import {
+  computeStreak,
+  groupLogsByHabit,
+  isDayCompleted,
+  toHabitSchedule,
+  type LocalDate,
+} from "@habit/shared";
 import { computeQuestProgress, type HabitRecord } from "@/features/habits";
 import type { HabitLogRecord } from "@/features/logs";
 import { mapAggregateLogsToHeatmapCells } from "../mappers";
@@ -20,29 +26,15 @@ export function useHabitsStats(
   );
 
   const habitStats = useMemo(() => {
-    const logsByHabit = new Map<
-      string,
-      { logDate: LocalDate; value: number }[]
-    >();
-    const todayValueByHabit = new Map<string, number>();
-
-    for (const log of logs) {
-      const list = logsByHabit.get(log.habitId) ?? [];
-      list.push({ logDate: log.logDate, value: log.value });
-      logsByHabit.set(log.habitId, list);
-      if (log.logDate === effectiveToday) {
-        todayValueByHabit.set(log.habitId, log.value);
-      }
-    }
+    const {
+      logsByHabitId: logsByHabit,
+      valueOnTargetDateByHabitId: todayValueByHabit,
+    } = groupLogsByHabit(logs, effectiveToday);
 
     return activeHabits.map((habit) => {
       const stats = computeStreak({
         logs: logsByHabit.get(habit.id) ?? [],
-        schedule: {
-          type: habit.scheduleType,
-          daysBitmask: habit.scheduleDays,
-          timesPerWeek: habit.scheduleTimes,
-        },
+        schedule: toHabitSchedule(habit),
         habitType: habit.type,
         targetValue: habit.targetValue,
         startDate: habit.startDate,

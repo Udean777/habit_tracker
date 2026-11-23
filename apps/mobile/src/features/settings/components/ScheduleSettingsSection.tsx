@@ -3,8 +3,8 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import ChevronDown from "lucide-react-native/icons/chevron-down";
 import ChevronRight from "lucide-react-native/icons/chevron-right";
 import type { Settings } from "@habit/shared";
+import { Badge } from "@/components/Badge";
 import { Text } from "@/components/Text";
-import { radii } from "@/theme/tokens";
 import { useTheme } from "@/theme/useTheme";
 import { Section, SettingRow } from "./SettingsPrimitives";
 
@@ -56,7 +56,7 @@ export function ScheduleSettingsSection({
           className="min-h-[56px] flex-row items-center justify-between px-4 py-3"
         >
           <View className="flex-1 pr-3">
-            <Text className="text-base font-semibold text-[#2A2140]">
+            <Text variant="body" className="font-semibold">
               Day Starts At
             </Text>
             <Text variant="caption" className="mt-0.5">
@@ -64,19 +64,15 @@ export function ScheduleSettingsSection({
             </Text>
           </View>
           <View className="flex-row items-center gap-1.5">
-            <View
-              style={{
-                borderRadius: radii.badge,
-                backgroundColor: colors.surfaceMuted,
-              }}
+            <Badge
+              label={dayStartLabel}
+              variant="muted"
+              tabularNums
               className="px-2.5 py-1"
-            >
-              <Text tabularNums className="text-xs font-bold text-[#2A2140]">
-                {dayStartLabel}
-              </Text>
-            </View>
+              textClassName="text-xs font-bold"
+            />
             {expandedRow === "dayStart" ? (
-              <ChevronDown size={16} color={colors.primary} />
+              <ChevronDown size={16} color={colors.primaryTextAccent} />
             ) : (
               <ChevronRight size={16} color={colors.textSecondary} />
             )}

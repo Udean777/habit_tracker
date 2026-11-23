@@ -80,11 +80,33 @@ export const settingsSchema = z.object({
 });
 export type Settings = z.infer<typeof settingsSchema>;
 
+export const DEFAULT_SETTINGS: Settings = {
+  theme: "system",
+  hapticsEnabled: true,
+  reduceMotion: "system",
+  qualityTier: "auto",
+  dayStartOffsetMin: 0,
+  backfillWindowDays: 14,
+};
+
+export const avatarClassSchema = z.enum(["knight", "mage", "ranger"]);
+export type AvatarClass = z.infer<typeof avatarClassSchema>;
+
+export const shopItemCategorySchema = z.enum([
+  "palette",
+  "aura",
+  "frame",
+  "consumable",
+]);
+export type ShopItemCategory = z.infer<typeof shopItemCategorySchema>;
+
 export const outboxEntitySchema = z.enum([
   "habit",
   "habit_log",
   "streak_freeze",
   "settings",
+  "hero_profile",
+  "user_inventory",
 ]);
 export type OutboxEntity = z.infer<typeof outboxEntitySchema>;
 

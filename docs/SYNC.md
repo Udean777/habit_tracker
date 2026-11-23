@@ -12,7 +12,7 @@ Offline-first synchronization between the local SQLite database and the server. 
 
 ## 2. Entities
 
-Synced: `habit`, `habit_log`, `streak_freeze`, `settings`.
+Synced: `habit`, `habit_log`, `streak_freeze`, `settings`, `hero_profile`, `user_inventory`.
 Not synced: `outbox`, `sync_state`, ephemeral UI state, notification schedules (rebuilt locally).
 
 ## 3. Write Path (local)
@@ -116,6 +116,8 @@ Entity-specific notes:
 | `habit` | Whole-row LWW. Field-level merge is a possible later improvement. |
 | `streak_freeze` | Unique on `(habit_id, freeze_date)`, same merge approach as logs. |
 | `settings` | Whole-row LWW. |
+| `hero_profile` | Singleton per user, whole-row LWW. |
+| `user_inventory` | Immutable purchase rows (UUIDv7) with soft-delete LWW; total spent gold is derived from active rows so balances converge offline without conflict. |
 | deletes | A delete is an upsert with `deleted_at`; it wins or loses by the same rule. A later edit can resurrect only if its `updated_at` is newer. |
 
 ### Clock skew

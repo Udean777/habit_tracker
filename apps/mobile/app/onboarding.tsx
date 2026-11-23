@@ -1,84 +1,91 @@
 import { useState } from "react";
-import { Image, Pressable, View } from "react-native";
+import { ScrollView, View } from "react-native";
+import Animated, { Easing, FadeIn } from "react-native-reanimated";
 import { router } from "expo-router";
-import type { CreateHabitInput } from "@habit/shared";
+import type { AvatarClass } from "@habit/shared";
 import { Button } from "@/components/Button";
-import { HabitIcon } from "@/components/HabitIcon";
 import { Screen } from "@/components/Screen";
 import { Text } from "@/components/Text";
+import { updateHeroProfile } from "@/features/gamification";
 import { useHabitsData } from "@/features/habits";
-import { colors, radii } from "@/theme/tokens";
+import {
+  markOnboardingCompleted,
+  OnboardingHeroStep,
+  OnboardingQuestDemoStep,
+  OnboardingRewardsStep,
+  OnboardingStarterQuestsStep,
+  STARTER_QUEST_PRESETS,
+} from "@/features/onboarding";
+import { triggerHaptic } from "@/lib/haptics";
+import { useMotionPreferences } from "@/lib/motion";
+import { useUiStore } from "@/stores/uiStore";
+import { radii } from "@/theme/tokens";
+import { useTheme } from "@/theme/useTheme";
 
-type Preset = Omit<CreateHabitInput, "startDate">;
-
-const PRESETS: readonly Preset[] = [
-  {
-    name: "Morning Walk",
-    icon: "run",
-    color: "emerald",
-    type: "boolean",
-    targetValue: null,
-    scheduleType: "daily",
-    scheduleDays: 127,
-    scheduleTimes: null,
-    reminderTime: "08:00",
-  },
-  {
-    name: "Read 20m",
-    icon: "book",
-    color: "violet",
-    type: "duration",
-    targetValue: 20,
-    scheduleType: "daily",
-    scheduleDays: 127,
-    scheduleTimes: null,
-    reminderTime: "21:00",
-  },
-  {
-    name: "Drink Water",
-    icon: "water",
-    color: "cyan",
-    type: "count",
-    targetValue: 8,
-    scheduleType: "daily",
-    scheduleDays: 127,
-    scheduleTimes: null,
-    reminderTime: null,
-  },
-  {
-    name: "Meditate",
-    icon: "leaf",
-    color: "amber",
-    type: "boolean",
-    targetValue: null,
-    scheduleType: "daily",
-    scheduleDays: 127,
-    scheduleTimes: null,
-    reminderTime: null,
-  },
-];
+const TOTAL_STEPS = 4;
 
 export default function OnboardingScreen() {
-  const { effectiveToday, onCreateHabit } = useHabitsData();
-  const [selected, setSelected] = useState<readonly string[]>([
+  const { colors } = useTheme();
+  const { activeHabits, effectiveToday, settings, onCreateHabit } =
+    useHabitsData();
+  const motionPrefs = useMotionPreferences(settings);
+  const initialClass = useUiStore((s) => s.avatarClass);
+  const setAvatarClassUi = useUiStore((s) => s.setAvatarClass);
+  const bumpDataVersion = useUiStore((s) => s.bumpDataVersion);
+
+  const [step, setStep] = useState(0);
+  const [avatarClass, setAvatarClass] = useState<AvatarClass>(initialClass);
+  const [heroTrigger, setHeroTrigger] = useState(0);
+  const [demoDone, setDemoDone] = useState(false);
+  const [selectedQuests, setSelectedQuests] = useState<readonly string[]>([
     "Morning Walk",
+    "Read 20m",
   ]);
   const [saving, setSaving] = useState(false);
 
-  function togglePreset(name: string) {
-    setSelected((prev) =>
+  const isLastStep = step === TOTAL_STEPS - 1;
+
+  function handleSelectClass(cls: AvatarClass) {
+    triggerHaptic("selection", settings.hapticsEnabled);
+    setAvatarClass(cls);
+    setHeroTrigger((n) => n + 1);
+  }
+
+  function handleToggleDemo() {
+    triggerHaptic(demoDone ? "light" : "success", settings.hapticsEnabled);
+    setDemoDone((prev) => !prev);
+  }
+
+  function handleToggleQuest(name: string) {
+    triggerHaptic("selection", settings.hapticsEnabled);
+    setSelectedQuests((prev) =>
       prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name],
     );
   }
 
-  async function handleStart() {
+  async function finishOnboarding(createSelected: boolean) {
     setSaving(true);
     try {
-      for (const preset of PRESETS) {
-        if (selected.includes(preset.name)) {
-          await onCreateHabit({ ...preset, startDate: effectiveToday });
+      setAvatarClassUi(avatarClass);
+      await updateHeroProfile({ avatarClass });
+
+      if (createSelected && selectedQuests.length > 0) {
+        const existingNames = new Set(
+          activeHabits.map((h) => h.name.toLowerCase()),
+        );
+        for (const preset of STARTER_QUEST_PRESETS) {
+          if (
+            selectedQuests.includes(preset.name) &&
+            !existingNames.has(preset.name.toLowerCase())
+          ) {
+            await onCreateHabit({ ...preset, startDate: effectiveToday });
+          }
         }
       }
+
+      await markOnboardingCompleted();
+      bumpDataVersion();
+      triggerHaptic("success", settings.hapticsEnabled);
       router.replace("/(tabs)");
     } finally {
       setSaving(false);
@@ -86,66 +93,124 @@ export default function OnboardingScreen() {
   }
 
   return (
-    <Screen className="justify-between py-6">
-      <View>
-        <View className="mb-4 items-center">
-          <Image
-            source={require("../assets/images/splash-icon.png")}
-            style={{ width: 68, height: 68 }}
-            resizeMode="contain"
-            accessibilityLabel="Glimkin logo"
-          />
-        </View>
-        <Text variant="title">Welcome to Glimkin</Text>
-        <Text variant="caption" className="mt-1 mb-6">
-          Pick a few starter quests. Every completion earns XP and levels up your hero.
-        </Text>
-
-        <View className="gap-3">
-          {PRESETS.map((preset) => {
-            const active = selected.includes(preset.name);
+    <Screen className="pt-3 pb-4">
+      <View className="mb-4 flex-row items-center justify-between gap-3">
+        <View className="flex-1 flex-row gap-1.5">
+          {Array.from({ length: TOTAL_STEPS }, (_, idx) => {
+            const active = idx <= step;
             return (
-              <Pressable
-                key={preset.name}
-                accessibilityRole="button"
-                accessibilityLabel={`Select ${preset.name}`}
-                onPress={() => togglePreset(preset.name)}
+              <View
+                key={idx}
                 style={{
-                  borderRadius: radii.card,
-                  borderWidth: active ? 2 : 1,
-                  borderColor: active ? colors.primary : colors.borderStrong,
+                  height: 6,
+                  borderRadius: radii.pill,
                   backgroundColor: active
-                    ? colors.surfaceMuted
-                    : colors.surface,
+                    ? colors.primary
+                    : colors.surfaceMuted,
+                  borderWidth: active ? 0 : 1,
+                  borderColor: colors.border,
                 }}
-                className="min-h-[56px] flex-row items-center gap-3 p-4"
-              >
-                <HabitIcon
-                  icon={preset.icon}
-                  size={20}
-                  color={active ? colors.primary : colors.textSecondary}
-                />
-                <Text variant="heading" className="flex-1">
-                  {preset.name}
-                </Text>
-                <Text variant="caption">{active ? "Selected" : "Add"}</Text>
-              </Pressable>
+                className="flex-1"
+              />
             );
           })}
         </View>
+
+        <Text variant="caption" tabularNums className="font-bold">
+          {step + 1} / {TOTAL_STEPS}
+        </Text>
+
+        {!isLastStep ? (
+          <Button
+            label="Skip"
+            variant="secondary"
+            disabled={saving}
+            onPress={() => void finishOnboarding(false)}
+          />
+        ) : null}
       </View>
 
-      <View className="gap-2">
-        <Button
-          label={saving ? "Creating..." : "Start Tracking"}
-          disabled={saving}
-          onPress={() => void handleStart()}
-        />
-        <Button
-          label="Skip for now"
-          variant="secondary"
-          onPress={() => router.replace("/(tabs)")}
-        />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
+      >
+        <Animated.View
+          key={step}
+          entering={
+            motionPrefs.reduceMotion
+              ? undefined
+              : FadeIn.duration(180).easing(Easing.out(Easing.cubic))
+          }
+          className="flex-1"
+        >
+          {step === 0 ? (
+            <OnboardingHeroStep
+              avatarClass={avatarClass}
+              triggerKey={heroTrigger}
+              reduceMotion={motionPrefs.reduceMotion}
+              onSelectClass={handleSelectClass}
+            />
+          ) : step === 1 ? (
+            <OnboardingQuestDemoStep
+              avatarClass={avatarClass}
+              demoDone={demoDone}
+              reduceMotion={motionPrefs.reduceMotion}
+              onToggleDemo={handleToggleDemo}
+            />
+          ) : step === 2 ? (
+            <OnboardingRewardsStep
+              avatarClass={avatarClass}
+              reduceMotion={motionPrefs.reduceMotion}
+              onInteractionHaptic={() =>
+                triggerHaptic("selection", settings.hapticsEnabled)
+              }
+            />
+          ) : (
+            <OnboardingStarterQuestsStep
+              selectedNames={selectedQuests}
+              onTogglePreset={handleToggleQuest}
+            />
+          )}
+        </Animated.View>
+      </ScrollView>
+
+      <View className="flex-row gap-2.5 pt-2">
+        {step > 0 ? (
+          <Button
+            label="Back"
+            variant="secondary"
+            className="w-28"
+            disabled={saving}
+            onPress={() => {
+              triggerHaptic("light", settings.hapticsEnabled);
+              setStep((s) => Math.max(0, s - 1));
+            }}
+          />
+        ) : null}
+
+        {isLastStep ? (
+          <Button
+            label={
+              saving
+                ? "Starting..."
+                : selectedQuests.length > 0
+                  ? `Start (${selectedQuests.length} Quests)`
+                  : "Start Empty"
+            }
+            className="flex-1"
+            disabled={saving}
+            onPress={() => void finishOnboarding(true)}
+          />
+        ) : (
+          <Button
+            label="Next"
+            className="flex-1"
+            onPress={() => {
+              triggerHaptic("light", settings.hapticsEnabled);
+              setStep((s) => Math.min(TOTAL_STEPS - 1, s + 1));
+            }}
+          />
+        )}
       </View>
     </Screen>
   );

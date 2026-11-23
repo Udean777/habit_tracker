@@ -1,18 +1,26 @@
+import { useEffect, useRef } from "react";
 import { ScrollView, View } from "react-native";
 import Animated, { Easing, FadeIn } from "react-native-reanimated";
+import { router } from "expo-router";
 import { Button } from "@/components/Button";
+import { Card } from "@/components/Card";
 import { Screen } from "@/components/Screen";
 import { Text } from "@/components/Text";
+import { TrophyCaseSection, useGamification } from "@/features/gamification";
 import { QuestHud, useHabitsData } from "@/features/habits";
-import { FluidHeatmap } from "@/features/stats";
-import { StatsOverviewCards } from "@/features/stats/components/StatsOverviewCards";
-import { useHabitsStats } from "@/features/stats/hooks/useHabitsStats";
-import { useMotionPreferences } from "@/features/world/qualityTier";
-import { elevation, radii } from "@/theme/tokens";
-import { useTheme } from "@/theme/useTheme";
+import {
+  FEATURE_TOUR_STEPS,
+  TourTarget,
+  useTourStore,
+} from "@/features/tour";
+import {
+  FluidHeatmap,
+  StatsOverviewCards,
+  useHabitsStats,
+} from "@/features/stats";
+import { useMotionPreferences } from "@/lib/motion";
 
 export default function StatsScreen() {
-  const { colors } = useTheme();
   const {
     loading,
     error,
@@ -25,6 +33,25 @@ export default function StatsScreen() {
   } = useHabitsData();
 
   const motionPrefs = useMotionPreferences(settings);
+  const scrollRef = useRef<ScrollView | null>(null);
+  const tourOpen = useTourStore((s) => s.isOpen);
+  const tourStepIndex = useTourStore((s) => s.stepIndex);
+
+  useEffect(() => {
+    if (
+      tourOpen &&
+      FEATURE_TOUR_STEPS[tourStepIndex]?.id === "stats_heatmap"
+    ) {
+      scrollRef.current?.scrollTo({ y: 0, animated: false });
+    }
+  }, [tourOpen, tourStepIndex]);
+  const { heroProfile, goldEconomy, shieldStats, achievements } =
+    useGamification(
+      activeHabits,
+      logs,
+      effectiveToday,
+      settings.hapticsEnabled,
+    );
   const {
     questProgress,
     aggregateCells,
@@ -44,7 +71,7 @@ export default function StatsScreen() {
   if (error) {
     return (
       <Screen className="items-center justify-center gap-4 p-6">
-        <Text variant="body" className="text-red-600">
+        <Text variant="body" tone="danger">
           {error}
         </Text>
         <Button label="Retry" onPress={refresh} />
@@ -68,6 +95,10 @@ export default function StatsScreen() {
         <QuestHud
           progress={questProgress}
           reduceMotion={motionPrefs.reduceMotion}
+          loadout={heroProfile}
+          goldBalance={goldEconomy.availableGold}
+          availableShields={shieldStats.availableShields}
+          onPressShop={() => router.push("/shop")}
         />
       </Animated.View>
 
@@ -85,17 +116,21 @@ export default function StatsScreen() {
         </View>
       ) : (
         <ScrollView
+          ref={scrollRef}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 104 }}
         >
           <Text variant="heading" className="mb-2">
             This Month Consistency
           </Text>
-          <FluidHeatmap
-            cells={aggregateCells}
-            tier={motionPrefs.tier}
-            hapticsEnabled={settings.hapticsEnabled}
-          />
+          <TourTarget id="stats_heatmap">
+            <FluidHeatmap
+              cells={aggregateCells}
+              tier={motionPrefs.tier}
+              hapticsEnabled={settings.hapticsEnabled}
+            />
+          </TourTarget>
+          <TrophyCaseSection achievements={achievements} />
           {habitStats.map(({ habit, stats }, idx) => (
             <Animated.View
               key={habit.id}
@@ -106,28 +141,19 @@ export default function StatsScreen() {
                       .duration(180)
                       .easing(Easing.out(Easing.cubic))
               }
-              style={[
-                {
-                  borderRadius: radii.card,
-                  borderWidth: 2,
-                  borderBottomWidth: 4,
-                  borderColor: colors.border,
-                  backgroundColor: colors.surface,
-                },
-                elevation.card,
-              ]}
-              className="mb-3 p-4"
             >
-              <Text variant="heading">{habit.name}</Text>
-              <Text variant="caption" tabularNums className="mt-1">
-                Current streak: {stats.currentStreak}d | Best:{" "}
-                {stats.bestStreak}d
-              </Text>
-              <Text variant="caption" tabularNums className="mt-1">
-                7d: {Math.round(stats.rate7d * 100)}% | 30d:{" "}
-                {Math.round(stats.rate30d * 100)}% | 90d:{" "}
-                {Math.round(stats.rate90d * 100)}%
-              </Text>
+              <Card elevated className="mb-3 p-4">
+                <Text variant="heading">{habit.name}</Text>
+                <Text variant="caption" tabularNums className="mt-1">
+                  Current streak: {stats.currentStreak}d | Best:{" "}
+                  {stats.bestStreak}d
+                </Text>
+                <Text variant="caption" tabularNums className="mt-1">
+                  7d: {Math.round(stats.rate7d * 100)}% | 30d:{" "}
+                  {Math.round(stats.rate30d * 100)}% | 90d:{" "}
+                  {Math.round(stats.rate90d * 100)}%
+                </Text>
+              </Card>
             </Animated.View>
           ))}
           <View className="h-6" />

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ScrollView, View } from "react-native";
 import Animated, { Easing, FadeIn } from "react-native-reanimated";
 import { router } from "expo-router";
@@ -7,18 +7,30 @@ import { Button } from "@/components/Button";
 import { Screen } from "@/components/Screen";
 import { Text } from "@/components/Text";
 import {
+  LevelUpModal,
+  StreakShieldBanner,
+  useGamification,
+} from "@/features/gamification";
+import {
+  FEATURE_TOUR_STEPS,
+  hasCompletedTour,
+  TourTarget,
+  useTourStore,
+} from "@/features/tour";
+import {
   DateStrip,
   DraggableQuestList,
   HabitQuestRow,
+  OffDayQuestsSection,
   QuestHud,
   computeQuestProgress,
+  mapQuestProgressToAvatar,
   useHabitsData,
+  useTodayQuests,
   type HabitRecord,
 } from "@/features/habits";
-import { parseLocalDateParts } from "@/features/habits/components/DateStrip";
-import { OffDayQuestsSection } from "@/features/habits/components/OffDayQuestsSection";
-import { useTodayQuests } from "@/features/habits/hooks/useTodayQuests";
-import { useMotionPreferences } from "@/features/world/qualityTier";
+import { formatReadableDate } from "@/lib/dateFormat";
+import { useMotionPreferences } from "@/lib/motion";
 import { useUiStore } from "@/stores/uiStore";
 
 const EMPTY_HABIT_LOGS: readonly { logDate: LocalDate; value: number }[] = [];
@@ -40,10 +52,70 @@ export default function TodayScreen() {
   } = useHabitsData();
 
   const motionPrefs = useMotionPreferences(settings);
+  const {
+    heroProfile,
+    freezesByHabitId,
+    goldEconomy,
+    shieldStats,
+    shieldableMisses,
+    activateShieldOnMiss,
+  } = useGamification(
+    activeHabits,
+    logs,
+    effectiveToday,
+    settings.hapticsEnabled,
+  );
   const questProgress = useMemo(
     () => computeQuestProgress(activeHabits, logs, selectedDate),
     [activeHabits, logs, selectedDate],
   );
+  const avatarState = useMemo(
+    () =>
+      mapQuestProgressToAvatar(
+        questProgress,
+        heroProfile.avatarClass,
+        heroProfile,
+      ),
+    [questProgress, heroProfile],
+  );
+
+  const prevLevelRef = useRef<number | null>(null);
+  const scrollRef = useRef<ScrollView | null>(null);
+  const [levelUpVisible, setLevelUpVisible] = useState(false);
+  const tourOpen = useTourStore((s) => s.isOpen);
+  const tourStepIndex = useTourStore((s) => s.stepIndex);
+
+  useEffect(() => {
+    if (tourOpen && FEATURE_TOUR_STEPS[tourStepIndex]?.route === "/(tabs)") {
+      scrollRef.current?.scrollTo({ y: 0, animated: false });
+    }
+  }, [tourOpen, tourStepIndex]);
+
+  useEffect(() => {
+    if (loading) return;
+    if (
+      prevLevelRef.current !== null &&
+      questProgress.level > prevLevelRef.current
+    ) {
+      setLevelUpVisible(true);
+    }
+    prevLevelRef.current = questProgress.level;
+  }, [loading, questProgress.level]);
+
+  useEffect(() => {
+    if (loading || activeHabits.length === 0) return;
+    let cancelled = false;
+    void hasCompletedTour().then((done) => {
+      if (!cancelled && !done) {
+        setTimeout(() => {
+          if (!cancelled) useTourStore.getState().startTour(0);
+        }, 450);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [loading, activeHabits.length]);
 
   const {
     dateStrip,
@@ -71,7 +143,7 @@ export default function TodayScreen() {
   if (error) {
     return (
       <Screen className="items-center justify-center gap-4 p-6">
-        <Text variant="body" className="text-red-600">
+        <Text variant="body" tone="danger">
           {error}
         </Text>
         <Button label="Retry" onPress={refresh} />
@@ -85,6 +157,7 @@ export default function TodayScreen() {
         habit={habit}
         currentValue={logsByHabitId.get(habit.id) ?? 0}
         habitLogs={allLogsByHabitId.get(habit.id) ?? EMPTY_HABIT_LOGS}
+        freezeDates={freezesByHabitId.get(habit.id)}
         selectedDate={selectedDate}
         effectiveToday={effectiveToday}
         hapticsEnabled={settings.hapticsEnabled}
@@ -94,7 +167,11 @@ export default function TodayScreen() {
     );
   }
 
-  const { weekday, dayNum, month } = parseLocalDateParts(selectedDate);
+  const topMiss = shieldableMisses[0];
+  const topMissHabit = topMiss
+    ? activeHabits.find((h) => h.id === topMiss.habitId)
+    : undefined;
+
   const datePrefix = selectedDate === effectiveToday ? "Today" : "Past day";
 
   return (
@@ -103,28 +180,36 @@ export default function TodayScreen() {
         <View>
           <Text variant="title">Today</Text>
           <Text variant="caption" tabularNums>
-            {`${datePrefix} · ${weekday}, ${dayNum} ${month}`}
+            {`${datePrefix} · ${formatReadableDate(selectedDate)}`}
           </Text>
         </View>
-        <Button
-          label="+ New Habit"
-          onPress={() => router.push("/habit/new")}
-        />
+        <TourTarget id="new_habit_btn">
+          <Button
+            label="+ New Habit"
+            onPress={() => router.push("/habit/new")}
+          />
+        </TourTarget>
       </View>
 
-      <DateStrip
-        dates={dateStrip}
-        selectedDate={selectedDate}
-        effectiveToday={effectiveToday}
-        isDateFullyCompleted={isDateFullyCompleted}
-        onSelectDate={setSelectedDate}
-      />
+      <TourTarget id="date_strip">
+        <DateStrip
+          dates={dateStrip}
+          selectedDate={selectedDate}
+          effectiveToday={effectiveToday}
+          isDateFullyCompleted={isDateFullyCompleted}
+          onSelectDate={setSelectedDate}
+        />
+      </TourTarget>
 
       {activeHabits.length === 0 ? (
         <View className="flex-1">
           <QuestHud
             progress={questProgress}
             reduceMotion={motionPrefs.reduceMotion}
+            loadout={heroProfile}
+            goldBalance={goldEconomy.availableGold}
+            availableShields={shieldStats.availableShields}
+            onPressShop={() => router.push("/shop")}
           />
           <View className="flex-1 items-center justify-center gap-3 px-6">
             <Text variant="heading">No habits yet</Text>
@@ -139,6 +224,7 @@ export default function TodayScreen() {
         </View>
       ) : (
         <ScrollView
+          ref={scrollRef}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 104 }}
         >
@@ -149,16 +235,34 @@ export default function TodayScreen() {
                 : FadeIn.duration(180).easing(Easing.out(Easing.cubic))
             }
           >
-            <QuestHud
-              progress={questProgress}
-              reduceMotion={motionPrefs.reduceMotion}
-            />
+            <TourTarget id="quest_hud">
+              <QuestHud
+                progress={questProgress}
+                reduceMotion={motionPrefs.reduceMotion}
+                loadout={heroProfile}
+                goldBalance={goldEconomy.availableGold}
+                availableShields={shieldStats.availableShields}
+                onPressShop={() => router.push("/shop")}
+              />
+            </TourTarget>
+            {topMiss && topMissHabit ? (
+              <StreakShieldBanner
+                miss={topMiss}
+                habitName={topMissHabit.name}
+                availableShields={shieldStats.availableShields}
+                onApplyShield={(habitId, missedDate) =>
+                  void activateShieldOnMiss(habitId, missedDate)
+                }
+              />
+            ) : null}
           </Animated.View>
           <Animated.View
             entering={
               motionPrefs.reduceMotion
                 ? undefined
-                : FadeIn.delay(40).duration(180).easing(Easing.out(Easing.cubic))
+                : FadeIn.delay(40)
+                    .duration(180)
+                    .easing(Easing.out(Easing.cubic))
             }
           >
             <DraggableQuestList
@@ -174,7 +278,13 @@ export default function TodayScreen() {
                   void onReorderHabit(id, targetIdx);
                 }
               }}
-              renderItem={(item) => renderHabitRow(item)}
+              renderItem={(item) =>
+                item.id === scheduledHabits[0]?.id ? (
+                  <TourTarget id="first_quest">{renderHabitRow(item)}</TourTarget>
+                ) : (
+                  renderHabitRow(item)
+                )
+              }
             />
           </Animated.View>
           <OffDayQuestsSection
@@ -184,6 +294,14 @@ export default function TodayScreen() {
           />
         </ScrollView>
       )}
+
+      <LevelUpModal
+        visible={levelUpVisible}
+        level={questProgress.level}
+        avatarState={avatarState}
+        reduceMotion={motionPrefs.reduceMotion}
+        onClose={() => setLevelUpVisible(false)}
+      />
     </Screen>
   );
 }

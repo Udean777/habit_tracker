@@ -1,8 +1,6 @@
-import { View } from "react-native";
 import Animated, { Easing, FadeIn } from "react-native-reanimated";
+import { Card } from "@/components/Card";
 import { Text } from "@/components/Text";
-import { elevation, radii } from "@/theme/tokens";
-import { useTheme } from "@/theme/useTheme";
 
 type StatsOverviewCardsProps = {
   readonly completedTodayCount: number;
@@ -19,8 +17,6 @@ export function StatsOverviewCards({
   pendingOutbox,
   reduceMotion,
 }: StatsOverviewCardsProps) {
-  const { colors } = useTheme();
-
   return (
     <>
       <Animated.View
@@ -31,57 +27,35 @@ export function StatsOverviewCards({
         }
         className="mb-4 flex-row gap-3"
       >
-        <View
-          style={[
-            {
-              borderRadius: radii.card,
-              borderWidth: 1,
-              borderColor: colors.primaryPressed,
-              backgroundColor: colors.primary,
-            },
-            elevation.card,
-          ]}
-          className="flex-1 p-4"
-        >
-          <Text className="text-sm text-white/90">Completed Today</Text>
-          <Text className="mt-1 text-2xl font-bold text-white" tabularNums>
+        <Card variant="primary" tactile={false} elevated className="flex-1 p-4">
+          <Text tone="onPrimary" className="text-sm font-medium">
+            Completed Today
+          </Text>
+          <Text
+            tone="onPrimary"
+            className="mt-1 text-2xl font-bold"
+            tabularNums
+          >
             {completedTodayCount} / {totalHabitsCount}
           </Text>
-        </View>
-        <View
-          style={[
-            {
-              borderRadius: radii.card,
-              borderWidth: 1,
-              borderColor: colors.accent,
-              backgroundColor: colors.accentBg,
-            },
-            elevation.card,
-          ]}
-          className="flex-1 p-4"
-        >
-          <Text className="text-sm font-medium text-[#2A2140]">30d Avg Rate</Text>
-          <Text className="mt-1 text-2xl font-bold text-[#2A2140]" tabularNums>
+        </Card>
+        <Card variant="accent" tactile={false} elevated className="flex-1 p-4">
+          <Text tone="onAccent" className="text-sm font-medium">
+            30d Avg Rate
+          </Text>
+          <Text tone="onAccent" className="mt-1 text-2xl font-bold" tabularNums>
             {avg30d}%
           </Text>
-        </View>
+        </Card>
       </Animated.View>
 
-      <View
-        style={{
-          borderRadius: radii.card,
-          borderWidth: 1,
-          borderColor: colors.border,
-          backgroundColor: colors.surfaceMuted,
-        }}
-        className="mb-4 p-3"
-      >
+      <Card variant="muted" tactile={false} className="mb-4 p-3">
         <Text variant="caption" tabularNums>
           {pendingOutbox > 0
             ? `Sync status: ${pendingOutbox} updates waiting to upload`
             : "Sync status: All updates saved"}
         </Text>
-      </View>
+      </Card>
     </>
   );
 }

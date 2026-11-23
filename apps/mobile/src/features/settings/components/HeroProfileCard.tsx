@@ -1,6 +1,8 @@
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import { router } from "expo-router";
+import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
+import { SelectableChip } from "@/components/SelectableChip";
 import { Text } from "@/components/Text";
 import {
   PixelAvatar,
@@ -8,8 +10,6 @@ import {
   type AvatarVisualState,
   type QuestProgress,
 } from "@/features/habits";
-import { radii } from "@/theme/tokens";
-import { useTheme } from "@/theme/useTheme";
 import { Section } from "./SettingsPrimitives";
 
 const AVATAR_CLASSES: readonly {
@@ -44,8 +44,6 @@ export function HeroProfileCard({
   onSyncNow,
   onSignOut,
 }: HeroProfileCardProps) {
-  const { colors } = useTheme();
-
   return (
     <Section title="Hero Profile & Account">
       <View className="p-4">
@@ -57,21 +55,16 @@ export function HeroProfileCard({
           />
           <View className="flex-1">
             <View className="flex-row items-center gap-2">
-              <View
-                style={{
-                  borderRadius: radii.badge,
-                  backgroundColor: colors.accentBg,
-                }}
-                className="px-2 py-0.5"
+              <Badge
+                label={`LVL ${questProgress.level}`}
+                variant="accent"
+                tabularNums
+              />
+              <Text
+                tabularNums
+                tone="primaryAccent"
+                className="text-xs font-bold"
               >
-                <Text
-                  tabularNums
-                  className="text-xs font-extrabold text-[#2A2140]"
-                >
-                  LVL {questProgress.level}
-                </Text>
-              </View>
-              <Text tabularNums className="text-xs font-bold text-[#6B4DF5]">
                 {questProgress.totalXp} Total XP
               </Text>
             </View>
@@ -85,40 +78,20 @@ export function HeroProfileCard({
         </View>
 
         <View className="mt-4">
-          <Text className="mb-1.5 text-xs font-bold uppercase tracking-wider text-[#6B6285]">
+          <Text variant="label" className="mb-1.5">
             Character Class
           </Text>
           <View className="flex-row gap-2">
-            {AVATAR_CLASSES.map((cls) => {
-              const active = avatarClass === cls.value;
-              return (
-                <Pressable
-                  key={cls.value}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: active }}
-                  accessibilityLabel={`Select ${cls.label} class`}
-                  onPress={() => onSelectAvatarClass(cls.value)}
-                  style={{
-                    borderRadius: radii.button,
-                    borderWidth: 1,
-                    borderBottomWidth: active ? 3 : 1,
-                    borderColor: active
-                      ? colors.primaryPressed
-                      : colors.borderStrong,
-                    backgroundColor: active ? colors.primary : colors.surface,
-                  }}
-                  className="min-h-[40px] flex-1 items-center justify-center"
-                >
-                  <Text
-                    className={`text-xs font-bold ${
-                      active ? "text-white" : "text-[#2A2140]"
-                    }`}
-                  >
-                    {cls.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
+            {AVATAR_CLASSES.map((cls) => (
+              <SelectableChip
+                key={cls.value}
+                label={cls.label}
+                selected={avatarClass === cls.value}
+                accessibilityLabel={`Select ${cls.label} class`}
+                onPress={() => onSelectAvatarClass(cls.value)}
+                textClassName="text-xs font-bold"
+              />
+            ))}
           </View>
         </View>
 

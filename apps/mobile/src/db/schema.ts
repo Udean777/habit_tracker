@@ -77,6 +77,30 @@ export const settings = sqliteTable("settings", {
   updatedAt: text("updated_at").notNull(),
 });
 
+export const heroProfile = sqliteTable("hero_profile", {
+  id: text("id").primaryKey(),
+  avatarClass: text("avatar_class").notNull().default("knight"),
+  equippedPaletteId: text("equipped_palette_id"),
+  equippedAuraId: text("equipped_aura_id"),
+  equippedFrameId: text("equipped_frame_id"),
+  updatedAt: text("updated_at").notNull(),
+});
+
+export const userInventory = sqliteTable(
+  "user_inventory",
+  {
+    id: text("id").primaryKey(),
+    itemId: text("item_id").notNull(),
+    category: text("category").notNull(),
+    costGold: integer("cost_gold").notNull(),
+    purchasedAt: text("purchased_at").notNull(),
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+    deletedAt: text("deleted_at"),
+  },
+  (table) => [index("user_inventory_item_idx").on(table.itemId)],
+);
+
 export const outbox = sqliteTable("outbox", {
   opId: text("op_id").primaryKey(),
   entity: text("entity").notNull(),

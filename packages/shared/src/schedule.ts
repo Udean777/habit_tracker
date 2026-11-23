@@ -1,5 +1,17 @@
 import { getDayOfWeekIso } from "./dates";
-import type { HabitType, LocalDate, Schedule } from "./schemas";
+import type { HabitType, LocalDate, Schedule, ScheduleType } from "./schemas";
+
+export function toHabitSchedule(habit: {
+  readonly scheduleType: ScheduleType;
+  readonly scheduleDays: number | null;
+  readonly scheduleTimes: number | null;
+}): Schedule {
+  return {
+    type: habit.scheduleType,
+    daysBitmask: habit.scheduleDays,
+    timesPerWeek: habit.scheduleTimes,
+  };
+}
 
 export function isScheduledOnDay(
   schedule: Schedule,

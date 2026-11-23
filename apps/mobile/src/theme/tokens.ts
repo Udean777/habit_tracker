@@ -5,18 +5,23 @@ export const lightColors = {
   surface: "#FFFFFF",
   surfaceMuted: "#D9EEFF",
   textPrimary: "#2A2140",
-  textSecondary: "#6B6285",
-  primary: "#6B4DF5",
-  primaryPressed: "#5438D6",
+  textSecondary: "#5C5375",
+  primary: "#5B3DF0",
+  primaryPressed: "#4628D1",
   primaryText: "#FFFFFF",
+  primaryTextAccent: "#4B2ED6",
   accent: "#FFD23F",
   accentBg: "#FFD23F",
+  accentBorder: "#B45309",
   accentText: "#2A2140",
   sky: "#4FB3FF",
   success: "#15803D",
-  danger: "#DC2626",
-  border: "#A9D8FF",
-  borderStrong: "#6B6285",
+  danger: "#C81E1E",
+  dangerPressed: "#991B1B",
+  dangerText: "#B91C1C",
+  dangerSurface: "#FEF2F2",
+  border: "#6B8EAE",
+  borderStrong: "#5C5375",
 } as const;
 
 export const darkColors = {
@@ -24,18 +29,23 @@ export const darkColors = {
   surface: "#1E1830",
   surfaceMuted: "#2A2242",
   textPrimary: "#F8FAFC",
-  textSecondary: "#B8B0CC",
+  textSecondary: "#C4BCD8",
   primary: "#6B4DF5",
   primaryPressed: "#5438D6",
   primaryText: "#FFFFFF",
+  primaryTextAccent: "#C4B5FD",
   accent: "#FFD23F",
   accentBg: "#FFD23F",
+  accentBorder: "#EAB308",
   accentText: "#2A2140",
   sky: "#4FB3FF",
-  success: "#22C55E",
-  danger: "#EF4444",
-  border: "#3B3159",
-  borderStrong: "#6B6285",
+  success: "#4ADE80",
+  danger: "#DC2626",
+  dangerPressed: "#991B1B",
+  dangerText: "#FCA5A5",
+  dangerSurface: "#3B1822",
+  border: "#6C618E",
+  borderStrong: "#9489B8",
 } as const;
 
 export type ThemeColors = {
@@ -46,22 +56,11 @@ export const colors = lightColors;
 
 export const habitAccents: Record<HabitColorKey, string> = {
   primary: "#2D6A4F",
-  emerald: "#059669",
-  violet: "#7C3AED",
-  amber: "#D97706",
-  cyan: "#0891B2",
+  emerald: "#047857",
+  violet: "#6D28D9",
+  amber: "#B45309",
+  cyan: "#0E7490",
 };
-
-export const worldColors = {
-  nightBg: "#070B14",
-  nightSurface: "#111827",
-  glowCyan: "#22D3EE",
-  glowEmerald: "#34D399",
-  glowViolet: "#A78BFA",
-  glowAmber: "#FBBF24",
-  dimmed: "#475569",
-  particle: "#BAE6FD",
-} as const;
 
 export const spacing = {
   xs: 4,

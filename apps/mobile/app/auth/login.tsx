@@ -4,7 +4,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  TextInput,
   View,
 } from "react-native";
 import Animated, {
@@ -16,6 +15,7 @@ import { router } from "expo-router";
 import { Button } from "@/components/Button";
 import { Screen } from "@/components/Screen";
 import { Text } from "@/components/Text";
+import { TextField } from "@/components/TextField";
 import { useAuthActions } from "@/features/auth";
 import { radii } from "@/theme/tokens";
 import { useTheme } from "@/theme/useTheme";
@@ -48,14 +48,6 @@ export default function LoginScreen() {
     }
   }
 
-  const inputStyle = {
-    borderRadius: radii.button,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    backgroundColor: colors.surface,
-    color: colors.textPrimary,
-  };
-
   return (
     <Screen className="pt-4">
       <KeyboardAvoidingView
@@ -69,7 +61,9 @@ export default function LoginScreen() {
         >
           <Animated.View
             entering={FadeIn.duration(180).easing(Easing.out(Easing.cubic))}
-            layout={LinearTransition.duration(180).easing(Easing.out(Easing.cubic))}
+            layout={LinearTransition.duration(180).easing(
+              Easing.out(Easing.cubic),
+            )}
           >
             <View className="flex-row items-center justify-between pb-6">
               <View className="flex-row items-center gap-3">
@@ -90,31 +84,21 @@ export default function LoginScreen() {
               />
             </View>
 
-            <Text variant="heading" className="mb-1">
-              Email
-            </Text>
-            <TextInput
+            <TextField
+              label="Email"
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
               keyboardType="email-address"
               placeholder="you@example.com"
-              placeholderTextColor={colors.textSecondary}
-              style={inputStyle}
-              className="mb-4 min-h-[44px] px-3 text-base"
             />
 
-            <Text variant="heading" className="mb-1">
-              Password
-            </Text>
-            <TextInput
+            <TextField
+              label="Password"
               value={password}
               onChangeText={setPassword}
               secureTextEntry
               placeholder="Minimum 8 characters"
-              placeholderTextColor={colors.textSecondary}
-              style={inputStyle}
-              className="mb-4 min-h-[44px] px-3 text-base"
             />
 
             {error ? (
@@ -125,11 +109,11 @@ export default function LoginScreen() {
                   borderRadius: radii.badge,
                   borderWidth: 1,
                   borderColor: colors.danger,
-                  backgroundColor: "#FEF2F2",
+                  backgroundColor: colors.dangerSurface,
                 }}
                 className="mb-4 p-3"
               >
-                <Text variant="caption" style={{ color: colors.danger }}>
+                <Text variant="caption" tone="danger">
                   Error: {error}
                 </Text>
               </Animated.View>

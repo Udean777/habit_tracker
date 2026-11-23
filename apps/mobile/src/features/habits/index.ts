@@ -11,6 +11,7 @@ export {
   type HabitRecord,
 } from "./repository";
 export { useHabitsData } from "./hooks/useHabitsData";
+export { useTodayQuests } from "./hooks/useTodayQuests";
 export { computeQuestProgress, type QuestProgress } from "./questStats";
 export {
   mapQuestProgressToAvatar,
@@ -25,3 +26,9 @@ export { QuestHud } from "./components/QuestHud";
 export { DraggableQuestList } from "./components/DraggableQuestList";
 export { DateStrip } from "./components/DateStrip";
 export { HabitQuestRow } from "./components/HabitQuestRow";
+export { OffDayQuestsSection } from "./components/OffDayQuestsSection";
+export { HabitForm } from "./components/HabitForm";
+export { HabitBackfillList } from "./components/HabitBackfillList";
+export { HabitDetailHeader } from "./components/HabitDetailHeader";
+export { HabitManageCard } from "./components/HabitManageCard";
+export { HabitStreakCards } from "./components/HabitStreakCards";

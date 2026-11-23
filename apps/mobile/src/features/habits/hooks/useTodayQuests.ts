@@ -1,8 +1,10 @@
 import { useCallback, useMemo } from "react";
 import {
   addDays,
+  groupLogsByHabit,
   isDayCompleted,
   isScheduledOnDay,
+  toHabitSchedule,
   type LocalDate,
 } from "@habit/shared";
 import type { HabitLogRecord } from "@/features/logs";
@@ -23,40 +25,20 @@ export function useTodayQuests(
     );
   }, [effectiveToday, backfillWindowDays]);
 
-  const logsByHabitId = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const log of logs) {
-      if (log.logDate === selectedDate) {
-        map.set(log.habitId, log.value);
-      }
-    }
-    return map;
-  }, [logs, selectedDate]);
-
-  const allLogsByHabitId = useMemo(() => {
-    const map = new Map<string, { logDate: LocalDate; value: number }[]>();
-    for (const log of logs) {
-      const list = map.get(log.habitId) ?? [];
-      list.push({ logDate: log.logDate, value: log.value });
-      map.set(log.habitId, list);
-    }
-    return map;
-  }, [logs]);
+  const {
+    logsByHabitId: allLogsByHabitId,
+    valueOnTargetDateByHabitId: logsByHabitId,
+  } = useMemo(() => groupLogsByHabit(logs, selectedDate), [logs, selectedDate]);
 
   const { scheduledHabits, offDayHabits } = useMemo(() => {
     const scheduled: HabitRecord[] = [];
     const offDay: HabitRecord[] = [];
     for (const h of activeHabits) {
-      const isSched = isScheduledOnDay(
-        {
-          type: h.scheduleType,
-          daysBitmask: h.scheduleDays,
-          timesPerWeek: h.scheduleTimes,
-        },
-        selectedDate,
-      );
-      if (isSched) scheduled.push(h);
-      else offDay.push(h);
+      if (isScheduledOnDay(toHabitSchedule(h), selectedDate)) {
+        scheduled.push(h);
+      } else {
+        offDay.push(h);
+      }
     }
     return { scheduledHabits: scheduled, offDayHabits: offDay };
   }, [activeHabits, selectedDate]);
@@ -74,15 +56,7 @@ export function useTodayQuests(
       if (activeHabits.length === 0) return false;
       let scheduledCount = 0;
       for (const h of activeHabits) {
-        const scheduled = isScheduledOnDay(
-          {
-            type: h.scheduleType,
-            daysBitmask: h.scheduleDays,
-            timesPerWeek: h.scheduleTimes,
-          },
-          date,
-        );
-        if (!scheduled) continue;
+        if (!isScheduledOnDay(toHabitSchedule(h), date)) continue;
         scheduledCount += 1;
         const val = logValueByDateHabit.get(`${date}:${h.id}`) ?? 0;
         if (!isDayCompleted(val, h.type, h.targetValue)) return false;

@@ -1,7 +1,7 @@
 import * as SecureStore from "expo-secure-store";
 import { create } from "zustand";
 import { getDeviceLocalDate, type LocalDate, type ThemeMode } from "@habit/shared";
-import type { AvatarClass } from "@/features/habits/avatarMapper";
+import type { AvatarClass } from "@/features/habits";
 
 const AVATAR_CLASS_STORAGE_KEY = "habit_avatar_class";
 

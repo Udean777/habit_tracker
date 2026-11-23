@@ -197,5 +197,5 @@ Add an entry whenever a decision is made or reversed.
 | 2026-11-22 | Zustand for UI state only | Avoid dual sources of truth |
 | 2026-11-22 | Setup Option A: Expo SDK 57 + NativeWind v5 RC0 | Verified combo per NativeWind v5 docs; SDK 58 upgrade deferred |
 | 2026-11-22 | React Compiler not enabled yet | Use manual memoization only for measured hot paths (lists, Skia inputs) |
-| 2026-11-23 | Visual direction: Arcade Quest HUD & 16x16 Pixel RPG Avatar | Replaced initial Living World / Bioluminescent Garden concept with Knight, Mage, and Ranger pixel classes + XP/combo HUD |
+| 2026-11-23 | Visual direction: Arcade Quest HUD & 32x32 Pixel RPG Avatar | Replaced initial Living World / Bioluminescent Garden concept with 32x32 Knight, Mage, and Ranger human pixel classes, 5 gear tiers, Gold economy, Hero Shop cosmetics, Streak Shields, interactive onboarding, and cross-tab spotlight tour |
 | 2026-11-23 | Visual MVP vs stretch scope | MVP uses Skia circles with BlurMask glow, Reanimated shared-value particles, and cached-blob fluid heatmap; custom SkSL shaders and gyroscope parallax are stretch |

@@ -6,17 +6,24 @@ import Animated, {
   LinearTransition,
 } from "react-native-reanimated";
 import { router, useLocalSearchParams } from "expo-router";
-import { addDays, computeStreak, type LocalDate } from "@habit/shared";
+import {
+  addDays,
+  computeStreak,
+  toHabitSchedule,
+  type LocalDate,
+} from "@habit/shared";
 import { Button } from "@/components/Button";
 import { Screen } from "@/components/Screen";
 import { Text } from "@/components/Text";
-import { useHabitsData } from "@/features/habits";
-import { HabitBackfillList } from "@/features/habits/components/HabitBackfillList";
-import { HabitDetailHeader } from "@/features/habits/components/HabitDetailHeader";
-import { HabitManageCard } from "@/features/habits/components/HabitManageCard";
-import { HabitStreakCards } from "@/features/habits/components/HabitStreakCards";
+import {
+  HabitBackfillList,
+  HabitDetailHeader,
+  HabitManageCard,
+  HabitStreakCards,
+  useHabitsData,
+} from "@/features/habits";
 import { FluidHeatmap, mapLogsToHeatmapCells } from "@/features/stats";
-import { useMotionPreferences } from "@/features/world/qualityTier";
+import { useMotionPreferences } from "@/lib/motion";
 
 export default function HabitDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -60,7 +67,9 @@ export default function HabitDetailScreen() {
 
   const backfillDays = useMemo(() => {
     const count = Math.min(settings.backfillWindowDays + 1, 30);
-    return Array.from({ length: count }, (_, idx) => addDays(effectiveToday, -idx));
+    return Array.from({ length: count }, (_, idx) =>
+      addDays(effectiveToday, -idx),
+    );
   }, [effectiveToday, settings.backfillWindowDays]);
 
   if (!habit) {
@@ -74,11 +83,7 @@ export default function HabitDetailScreen() {
 
   const stats = computeStreak({
     logs: habitLogs,
-    schedule: {
-      type: habit.scheduleType,
-      daysBitmask: habit.scheduleDays,
-      timesPerWeek: habit.scheduleTimes,
-    },
+    schedule: toHabitSchedule(habit),
     habitType: habit.type,
     targetValue: habit.targetValue,
     startDate: habit.startDate,

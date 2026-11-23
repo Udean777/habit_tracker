@@ -1,18 +1,24 @@
-import { Switch, View } from "react-native";
-import type {
-  QualityTierMode,
-  ReduceMotionMode,
-  Settings,
-  ThemeMode,
+import { Pressable, Switch, View } from "react-native";
+import { router } from "expo-router";
+import ChevronRight from "lucide-react-native/icons/chevron-right";
+import {
+  qualityTierModeSchema,
+  reduceMotionModeSchema,
+  themeModeSchema,
+  type QualityTierMode,
+  type ReduceMotionMode,
+  type Settings,
+  type ThemeMode,
 } from "@habit/shared";
 import { Text } from "@/components/Text";
+import { useTourStore } from "@/features/tour";
 import { useUiStore } from "@/stores/uiStore";
 import { useTheme } from "@/theme/useTheme";
 import { Section, SettingRow } from "./SettingsPrimitives";
 
-const THEME_MODES: readonly ThemeMode[] = ["system", "light", "dark"];
-const MOTION_MODES: readonly ReduceMotionMode[] = ["system", "on", "off"];
-const QUALITY_MODES: readonly QualityTierMode[] = ["auto", "high", "medium", "low"];
+const THEME_MODES = themeModeSchema.options;
+const MOTION_MODES = reduceMotionModeSchema.options;
+const QUALITY_MODES = qualityTierModeSchema.options;
 
 type ExperienceSettingsSectionProps = {
   readonly settings: Settings;
@@ -52,7 +58,7 @@ export function ExperienceSettingsSection({
         className="min-h-[56px] flex-row items-center justify-between px-4 py-3"
       >
         <View className="flex-1 pr-3">
-          <Text className="text-base font-semibold text-[#2A2140]">
+          <Text variant="body" className="font-semibold">
             Haptic Feedback
           </Text>
           <Text variant="caption" className="mt-0.5">
@@ -86,9 +92,44 @@ export function ExperienceSettingsSection({
         options={QUALITY_MODES.map((m) => ({ label: m, value: m }))}
         expanded={expandedRow === "quality"}
         onToggleExpand={() => onToggleRow("quality")}
-        isLast
         onSelect={(qualityTier) => void onUpdateSettings({ qualityTier })}
       />
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Start feature spotlight tour"
+        onPress={() => useTourStore.getState().startTour(0)}
+        style={{
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        }}
+        className="min-h-[56px] flex-row items-center justify-between px-4 py-3"
+      >
+        <View className="flex-1 pr-3">
+          <Text variant="body" className="font-semibold">
+            Feature Spotlight Tour
+          </Text>
+          <Text variant="caption" className="mt-0.5">
+            Guided spotlight walkthrough across Today, Stats & Settings
+          </Text>
+        </View>
+        <ChevronRight size={16} color={colors.textSecondary} />
+      </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Replay app onboarding tour"
+        onPress={() => router.push("/onboarding")}
+        className="min-h-[56px] flex-row items-center justify-between px-4 py-3"
+      >
+        <View className="flex-1 pr-3">
+          <Text variant="body" className="font-semibold">
+            App Onboarding Tour
+          </Text>
+          <Text variant="caption" className="mt-0.5">
+            Replay hero setup & gamification walkthrough
+          </Text>
+        </View>
+        <ChevronRight size={16} color={colors.textSecondary} />
+      </Pressable>
     </Section>
   );
 }

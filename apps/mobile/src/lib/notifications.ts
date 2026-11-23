@@ -1,6 +1,6 @@
 import * as Notifications from "expo-notifications";
 import { getDeviceLocalDate } from "@habit/shared";
-import type { HabitRecord } from "@/features/habits/repository";
+import type { HabitRecord } from "@/features/habits";
 import { upsertHabitLog } from "@/features/logs";
 import { getSettings } from "@/features/settings";
 

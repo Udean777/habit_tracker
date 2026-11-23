@@ -70,12 +70,35 @@ Constraint: `UNIQUE(habit_id, freeze_date)`.
 | backfill_window_days | integer | default 14 |
 | updated_at | text | |
 
+### `hero_profile` (single row, synced)
+| Column | Type | Notes |
+|---|---|---|
+| id | text PK | fixed `"singleton"` |
+| avatar_class | text not null | `knight` \| `mage` \| `ranger` |
+| equipped_palette_id | text | nullable shop item ID |
+| equipped_aura_id | text | nullable shop item ID |
+| equipped_frame_id | text | nullable shop item ID |
+| updated_at | text not null | |
+
+### `user_inventory` (synced)
+| Column | Type | Notes |
+|---|---|---|
+| id | text PK | UUIDv7 |
+| item_id | text not null | catalog item key |
+| category | text not null | `palette` \| `aura` \| `frame` \| `consumable` |
+| cost_gold | integer not null | gold spent at purchase time |
+| purchased_at | text not null | UTC ISO timestamp |
+| created_at, updated_at | text not null | |
+| deleted_at | text | nullable |
+
+Index: `(item_id)`.
+
 ### `outbox`
 Pending operations to push. See `docs/SYNC.md`.
 | Column | Type | Notes |
 |---|---|---|
 | op_id | text PK | UUIDv7; the idempotency key |
-| entity | text not null | `habit` \| `habit_log` \| `streak_freeze` \| `settings` |
+| entity | text not null | `habit` \| `habit_log` \| `streak_freeze` \| `settings` \| `hero_profile` \| `user_inventory` |
 | entity_id | text not null | |
 | op | text not null | `upsert` \| `delete` |
 | payload | text not null | JSON snapshot of the row |
@@ -115,7 +138,7 @@ Pending operations to push. See `docs/SYNC.md`.
 | revoked_at | timestamptz | |
 | created_at | timestamptz | |
 
-### `habits`, `habit_logs`, `streak_freezes`, `user_settings`
+### `habits`, `habit_logs`, `streak_freezes`, `user_settings`, `hero_profiles`, `user_inventory`
 Same columns as local, plus:
 
 | Extra column | Type | Notes |

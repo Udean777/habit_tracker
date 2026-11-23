@@ -1,7 +1,14 @@
 import { and, eq } from "drizzle-orm";
 import type { SyncOp } from "@habit/shared";
 import type { db } from "../db/client";
-import { habitLogs, habits, userSettings } from "../db/schema";
+import {
+  habitLogs,
+  habits,
+  heroProfiles,
+  streakFreezes,
+  userInventory,
+  userSettings,
+} from "../db/schema";
 
 export type DbTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
@@ -207,5 +214,186 @@ export async function applySettingsPushOp(
       .where(eq(userSettings.id, existing.id));
   } else {
     await tx.insert(userSettings).values(row);
+  }
+}
+
+export async function applyStreakFreezePushOp(
+  tx: DbTx,
+  userId: string,
+  deviceId: string,
+  op: SyncOp,
+  seq: number,
+): Promise<void> {
+  const existingRows = await tx
+    .select()
+    .from(streakFreezes)
+    .where(
+      and(eq(streakFreezes.id, op.entityId), eq(streakFreezes.userId, userId)),
+    );
+  const existing = existingRows[0];
+
+  if (
+    existing &&
+    !shouldApplyLww(
+      op.updatedAt,
+      deviceId,
+      existing.updatedAt,
+      existing.lastDeviceId,
+    )
+  ) {
+    return;
+  }
+
+  const data = op.data;
+  const row = {
+    id: op.entityId,
+    userId,
+    habitId: String(data.habitId ?? existing?.habitId ?? ""),
+    freezeDate: String(data.freezeDate ?? existing?.freezeDate ?? ""),
+    source: String(data.source ?? existing?.source ?? "manual"),
+    createdAt: String(data.createdAt ?? existing?.createdAt ?? op.updatedAt),
+    updatedAt: op.updatedAt,
+    deletedAt:
+      op.op === "delete"
+        ? String(data.deletedAt ?? op.updatedAt)
+        : typeof data.deletedAt === "string"
+          ? data.deletedAt
+          : null,
+    serverSeq: seq,
+    lastDeviceId: deviceId,
+  };
+
+  if (existing) {
+    await tx
+      .update(streakFreezes)
+      .set(row)
+      .where(eq(streakFreezes.id, row.id));
+  } else {
+    await tx.insert(streakFreezes).values(row);
+  }
+}
+
+export async function applyHeroProfilePushOp(
+  tx: DbTx,
+  userId: string,
+  deviceId: string,
+  op: SyncOp,
+  seq: number,
+): Promise<void> {
+  const existingRows = await tx
+    .select()
+    .from(heroProfiles)
+    .where(eq(heroProfiles.userId, userId));
+  const existing = existingRows[0];
+
+  if (
+    existing &&
+    !shouldApplyLww(
+      op.updatedAt,
+      deviceId,
+      existing.updatedAt,
+      existing.lastDeviceId,
+    )
+  ) {
+    return;
+  }
+
+  const data = op.data;
+  const row = {
+    id: existing?.id ?? `${userId}:hero_profile`,
+    userId,
+    avatarClass: String(data.avatarClass ?? existing?.avatarClass ?? "knight"),
+    equippedPaletteId:
+      data.equippedPaletteId === null
+        ? null
+        : typeof data.equippedPaletteId === "string"
+          ? data.equippedPaletteId
+          : (existing?.equippedPaletteId ?? null),
+    equippedAuraId:
+      data.equippedAuraId === null
+        ? null
+        : typeof data.equippedAuraId === "string"
+          ? data.equippedAuraId
+          : (existing?.equippedAuraId ?? null),
+    equippedFrameId:
+      data.equippedFrameId === null
+        ? null
+        : typeof data.equippedFrameId === "string"
+          ? data.equippedFrameId
+          : (existing?.equippedFrameId ?? null),
+    updatedAt: op.updatedAt,
+    serverSeq: seq,
+    lastDeviceId: deviceId,
+  };
+
+  if (existing) {
+    await tx
+      .update(heroProfiles)
+      .set(row)
+      .where(eq(heroProfiles.id, existing.id));
+  } else {
+    await tx.insert(heroProfiles).values(row);
+  }
+}
+
+export async function applyUserInventoryPushOp(
+  tx: DbTx,
+  userId: string,
+  deviceId: string,
+  op: SyncOp,
+  seq: number,
+): Promise<void> {
+  const existingRows = await tx
+    .select()
+    .from(userInventory)
+    .where(
+      and(eq(userInventory.id, op.entityId), eq(userInventory.userId, userId)),
+    );
+  const existing = existingRows[0];
+
+  if (
+    existing &&
+    !shouldApplyLww(
+      op.updatedAt,
+      deviceId,
+      existing.updatedAt,
+      existing.lastDeviceId,
+    )
+  ) {
+    return;
+  }
+
+  const data = op.data;
+  const row = {
+    id: op.entityId,
+    userId,
+    itemId: String(data.itemId ?? existing?.itemId ?? ""),
+    category: String(data.category ?? existing?.category ?? "palette"),
+    costGold:
+      typeof data.costGold === "number"
+        ? data.costGold
+        : (existing?.costGold ?? 0),
+    purchasedAt: String(
+      data.purchasedAt ?? existing?.purchasedAt ?? op.updatedAt,
+    ),
+    createdAt: String(data.createdAt ?? existing?.createdAt ?? op.updatedAt),
+    updatedAt: op.updatedAt,
+    deletedAt:
+      op.op === "delete"
+        ? String(data.deletedAt ?? op.updatedAt)
+        : typeof data.deletedAt === "string"
+          ? data.deletedAt
+          : null,
+    serverSeq: seq,
+    lastDeviceId: deviceId,
+  };
+
+  if (existing) {
+    await tx
+      .update(userInventory)
+      .set(row)
+      .where(eq(userInventory.id, row.id));
+  } else {
+    await tx.insert(userInventory).values(row);
   }
 }

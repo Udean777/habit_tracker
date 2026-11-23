@@ -43,6 +43,8 @@ export function OffDayQuestsSection({
         onPress={() => setShowOffDays((prev) => !prev)}
         style={{
           borderRadius: radii.button,
+          borderWidth: 1,
+          borderColor: colors.border,
           backgroundColor: colors.surfaceMuted,
         }}
         className="mb-2 min-h-[44px] flex-row items-center justify-between px-3"
@@ -54,20 +56,20 @@ export function OffDayQuestsSection({
           {showOffDays ? "Hide" : "Show"}
         </Text>
       </Pressable>
-      {showOffDays
-        ? habits.map((habit) => (
-            <Animated.View
-              key={habit.id}
-              entering={
-                reduceMotion
-                  ? undefined
-                  : FadeIn.duration(160).easing(Easing.out(Easing.cubic))
-              }
-            >
-              {renderRow(habit)}
-            </Animated.View>
-          ))
-        : null}
+      {showOffDays ? (
+        <Animated.View
+          entering={
+            reduceMotion
+              ? undefined
+              : FadeIn.duration(160).easing(Easing.out(Easing.cubic))
+          }
+          className="gap-3"
+        >
+          {habits.map((habit) => (
+            <Animated.View key={habit.id}>{renderRow(habit)}</Animated.View>
+          ))}
+        </Animated.View>
+      ) : null}
     </Animated.View>
   );
 }

@@ -1,7 +1,14 @@
 import { eq } from "drizzle-orm";
 import type { SyncPullChange } from "@habit/shared";
 import type { AppDb } from "@/db/client";
-import { habitLogs, habits, syncState } from "@/db/schema";
+import {
+  habitLogs,
+  habits,
+  heroProfile,
+  streakFreezes,
+  syncState,
+  userInventory,
+} from "@/db/schema";
 
 type DbTx = Parameters<Parameters<AppDb["transaction"]>[0]>[0];
 
@@ -41,6 +48,48 @@ function mapHabitLogChange(entityId: string, d: Record<string, unknown>) {
   };
 }
 
+function mapStreakFreezeChange(entityId: string, d: Record<string, unknown>) {
+  const nowIso = new Date().toISOString();
+  return {
+    id: entityId,
+    habitId: String(d.habitId ?? ""),
+    freezeDate: String(d.freezeDate ?? ""),
+    source: String(d.source ?? "manual"),
+    createdAt: String(d.createdAt ?? nowIso),
+    updatedAt: String(d.updatedAt ?? nowIso),
+    deletedAt: typeof d.deletedAt === "string" ? d.deletedAt : null,
+  };
+}
+
+function mapHeroProfileChange(d: Record<string, unknown>) {
+  const nowIso = new Date().toISOString();
+  return {
+    id: "singleton",
+    avatarClass: String(d.avatarClass ?? "knight"),
+    equippedPaletteId:
+      typeof d.equippedPaletteId === "string" ? d.equippedPaletteId : null,
+    equippedAuraId:
+      typeof d.equippedAuraId === "string" ? d.equippedAuraId : null,
+    equippedFrameId:
+      typeof d.equippedFrameId === "string" ? d.equippedFrameId : null,
+    updatedAt: String(d.updatedAt ?? nowIso),
+  };
+}
+
+function mapUserInventoryChange(entityId: string, d: Record<string, unknown>) {
+  const nowIso = new Date().toISOString();
+  return {
+    id: entityId,
+    itemId: String(d.itemId ?? ""),
+    category: String(d.category ?? "palette"),
+    costGold: typeof d.costGold === "number" ? d.costGold : 0,
+    purchasedAt: String(d.purchasedAt ?? nowIso),
+    createdAt: String(d.createdAt ?? nowIso),
+    updatedAt: String(d.updatedAt ?? nowIso),
+    deletedAt: typeof d.deletedAt === "string" ? d.deletedAt : null,
+  };
+}
+
 export async function applyPulledChanges(
   tx: DbTx,
   changes: readonly SyncPullChange[],
@@ -59,6 +108,24 @@ export async function applyPulledChanges(
         .insert(habitLogs)
         .values(row)
         .onConflictDoUpdate({ target: habitLogs.id, set: row });
+    } else if (change.entity === "streak_freeze") {
+      const row = mapStreakFreezeChange(change.entityId, change.data);
+      await tx
+        .insert(streakFreezes)
+        .values(row)
+        .onConflictDoUpdate({ target: streakFreezes.id, set: row });
+    } else if (change.entity === "hero_profile") {
+      const row = mapHeroProfileChange(change.data);
+      await tx
+        .insert(heroProfile)
+        .values(row)
+        .onConflictDoUpdate({ target: heroProfile.id, set: row });
+    } else if (change.entity === "user_inventory") {
+      const row = mapUserInventoryChange(change.entityId, change.data);
+      await tx
+        .insert(userInventory)
+        .values(row)
+        .onConflictDoUpdate({ target: userInventory.id, set: row });
     }
   }
 
