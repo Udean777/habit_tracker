@@ -193,7 +193,7 @@ export default function TodayScreen() {
                 <Text variant="heading" numberOfLines={1}>
                   {habit.name}
                 </Text>
-                <View className="mt-0.5 flex-row flex-wrap items-center gap-1.5">
+                <View className="mt-0.5 flex-row items-center gap-1.5">
                   <View
                     style={{
                       borderRadius: radii.badge,
@@ -208,17 +208,17 @@ export default function TodayScreen() {
                         isDone ? "text-white" : "text-[#2A2140]"
                       }`}
                     >
-                      {isDone ? "CLAIMED +25 XP" : "+25 XP"}
+                      {isDone ? "CLAIMED" : "+25 XP"}
                     </Text>
                   </View>
-                  <Text variant="caption" tabularNums>
+                  <Text variant="caption" tabularNums numberOfLines={1} className="shrink">
                     {progressLabel}
                   </Text>
                   <StreakTicker
                     streak={streak.currentStreak}
                     reduceMotion={motionPrefs.reduceMotion}
                   />
-                  {!scheduled ? <Text variant="caption">(off day)</Text> : null}
+                  {!scheduled ? <Text variant="caption">(off)</Text> : null}
                 </View>
               </View>
             </View>

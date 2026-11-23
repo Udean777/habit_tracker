@@ -10,6 +10,8 @@ export type AvatarVisualState = {
   readonly classTitle: string;
   readonly mood: AvatarMood;
   readonly sparkleCount: number;
+  readonly frames: readonly (readonly string[])[];
+  readonly actionFrames: readonly (readonly string[])[];
   readonly primaryFrame: readonly string[];
   readonly altFrame: readonly string[];
   readonly palette: Readonly<Record<string, string>>;
@@ -33,188 +35,465 @@ const CLASS_TITLES: Record<AvatarClass, Record<AvatarGearTier, string>> = {
   },
 };
 
-// Legend for 16x16 pixel grids:
+// Slim 16-bit RPG Hero Proportions (16x16 grid):
+// Rows 0-1: headroom so jumps/weapons never clip at the top
+// Cols 5-10 (6px): slim head & face
+// Cols 5-9 (5px): slim torso & legs
+// Cols 3-4: flowing cape
+// Cols 11-14: weapon & slash/spell effects
+//
+// Legend:
 // . = transparent
-// O = dark outline (#2A2140)
+// O = outline (#2A2140)
 // S = skin (#FDBA74)
-// E = eye/detail (#2A2140)
-// W = eye shine / blade highlight (#FFFFFF)
-// H = headgear / helmet / hat primary
-// C = crown / accent trim (#FFD23F)
+// P = cheek blush (#FB7185)
+// E = eye (#2A2140)
+// W = white shine / highlight (#FFFFFF)
+// H = headgear primary
+// C = gold crown / trim / spark (#FFD23F)
 // A = armor / robe primary
-// B = secondary / cape / belt
-// M = weapon shaft / hilt (#A16207)
-// G = weapon blade / magic crystal
+// B = cape / boots / secondary
+// M = wood / hilt / bow (#92400E)
+// G = blade / magic crystal / arrow
+
+// ==================== KNIGHT (Slim & Proportional) ====================
+const KNIGHT_IDLE_0: readonly string[] = [
+  "................",
+  "......OOOO......",
+  ".....OHCCCHO....",
+  "....OHHHHHHHO...",
+  "....OSSSSSSSO...",
+  "....OSWSSSWSSO..",
+  "....OPESSSEPO.G.",
+  ".....OSSSSSO.GW.",
+  "....OOAAACAOO.G.",
+  "...OBOAAAAAOSMM.",
+  "...OBOAAACAAO.M.",
+  "....O.OOOOOO....",
+  ".....OAA.AAO....",
+  ".....OBB.BBO....",
+  ".....OOO.OOO....",
+  "................",
+];
 
 const KNIGHT_IDLE_1: readonly string[] = [
-  ".....OOOOOO.....",
-  "....OHHHHHHO....",
-  "...OHCCCCCCCHO..",
-  "...OHHHHHHHHHO..",
-  "...OSSSSSSSSSO..",
-  "...OSEWSSSWESO..",
-  "...OSSSSSSSSSO..",
-  "....OOOOOOOOO...",
-  "..OOAAAAAAAAAOO.",
-  ".OBBAAACCCAAABBO",
-  ".OBBAAAAAAAAABBO",
-  ".OBB.OOOOOOO.GGO",
-  "..O..OAAAAAO.GWO",
-  ".....OAA.AAO.GGO",
-  ".....OBB.BBO.MMO",
-  ".....OOO.OOO..O.",
+  "................",
+  "......OOOO......",
+  ".....OHCCCHO....",
+  "....OHHHHHHHO...",
+  "....OSSSSSSSO...",
+  "....OSWSSSWSSO.W",
+  "....OPESSSEPO.GG",
+  ".....OSSSSSO..G.",
+  "...OBOAAACAOO.M.",
+  "..OBBOAAAAAOSMM.",
+  "..OB.OAAACAAO...",
+  "......OOOOOO....",
+  ".....OAA.AAO....",
+  ".....OBB.BBO....",
+  ".....OOO.OOO....",
+  "................",
 ];
 
 const KNIGHT_IDLE_2: readonly string[] = [
   "................",
-  ".....OOOOOO.....",
-  "....OHHHHHHO....",
-  "...OHCCCCCCCHO..",
-  "...OHHHHHHHHHO..",
-  "...OSSSSSSSSSO..",
-  "...OSEWSSSWESO..",
-  "....OOOOOOOOO...",
-  "..OOAAAAAAAAAOO.",
-  ".OBBAAACCCAAABBO",
-  ".OBBAAAAAAAAABBO",
-  ".OBB.OOOOOOO.GWO",
-  "..O..OAAAAAO.GGO",
-  ".....OAA.AAO.MMO",
-  ".....OBB.BBO..O.",
+  "................",
+  "......OOOO......",
+  ".....OHCCCHO....",
+  "....OHHHHHHHO...",
+  "....OSSSSSSSO...",
+  "....OSWSSSWSSO.G",
+  "....OPESSSEPO.GW",
+  ".....OSSSSSO..G.",
+  "...OBOAAACAOOMM.",
+  "..OBBOAAAAAOSM..",
+  "...O.OAAACAAO...",
+  ".....OOOOOOO....",
+  ".....OBB.BBO....",
   ".....OOO.OOO....",
+  "................",
 ];
 
-const KNIGHT_VICTORY: readonly string[] = [
-  ".............GG.",
-  ".....OOOOOO..GW.",
-  "....OHHHHHHO.GG.",
-  "...OHCCCCCCCHMM.",
-  "...OHHHHHHHHHO..",
-  "...OSSSSSSSSSO..",
-  "...OSEWSSSWESO..",
-  "....OOOOOOOOO...",
-  ".OBBAAAAAAAAAOO.",
-  "OBBBAAACCCAAABBO",
-  "OBBBAAAAAAAAABBO",
-  ".OO..OOOOOOO..O.",
-  ".....OAAAAAO....",
+const KNIGHT_IDLE_3: readonly string[] = [
+  "................",
+  "......OOOO......",
+  ".....OHCCCHO....",
+  "....OHHHHHHHO...",
+  "....OSSSSSSSO...",
+  "....OSSSSSSSO...",
+  "....OPEESEEPO.G.",
+  ".....OSSSSSO.GW.",
+  "....OOAAACAOO.G.",
+  "...OBOAAAAAOSMM.",
+  "...OBOAAACAAO.M.",
+  "....O.OOOOOO....",
+  ".....OAA.AAO....",
+  ".....OBB.BBO....",
+  ".....OOO.OOO....",
+  "................",
+];
+
+const KNIGHT_IDLE_4: readonly string[] = [
+  "................",
+  "......OOOO......",
+  ".....OHCCCHO....",
+  "....OHHHHHHHO...",
+  "....OSSSSSSSO..C",
+  "....OSWSSSWSSOGW",
+  "....OPESSSEPO.GG",
+  ".....OSSSSSO..G.",
+  "....OOAAACAOO.M.",
+  "...OBOAAAAAOSMM.",
+  "...OBOAAACAAO...",
+  "....O.OOOOOO....",
+  ".....OAA.AAO....",
+  ".....OBB.BBO....",
+  ".....OOO.OOO....",
+  "................",
+];
+
+const KNIGHT_ACTION_0: readonly string[] = [
+  "................",
+  "................",
+  "......OOOO......",
+  ".....OHCCCHO....",
+  "....OHHHHHHHO...",
+  "....OSSSSSSSO...",
+  "....OSWSSSWSSO..",
+  "....OPESSSEPO.G.",
+  "...OBOAAACAOO.GW",
+  "..OBBOAAAAAOSMM.",
+  "..OB.OAAACAAO.M.",
+  "......OOOOOO....",
   "....OOAA.AAOO...",
   "....OBB...BBO...",
   "....OOO...OOO...",
+  "................",
+];
+
+const KNIGHT_ACTION_1: readonly string[] = [
+  "...........GGW..",
+  "......OOOO..GGW.",
+  ".....OHCCCHO.GG.",
+  "....OHHHHHHHOMO.",
+  "....OSSSSSSSMO..",
+  "....OSWSSSWSSO..",
+  "....OPESSSEPO...",
+  "...OBOAAACAOO...",
+  "..OBBOAAAAAABO..",
+  "..OB.OAAACAAO...",
+  "......OOOOOO....",
+  "....OOAA.AAOO...",
+  "....OBB...BBO...",
+  "....OOO...OOO...",
+  "................",
+  "................",
+];
+
+const KNIGHT_ACTION_2: readonly string[] = [
+  ".........C.GGWC.",
+  "......OOOO..GGWW",
+  ".....OHCCCHO.GGW",
+  "....OHHHHHHHOMO.",
+  "....OSSSSSSSMO..",
+  "...COSWSSSWSSO.C",
+  "....OPESSSEPO...",
+  "..OBBOAAACAOO...",
+  ".OBBBOAAAAAABO..",
+  "..OO.OAAACAAO...",
+  "......OOOOOO....",
+  "....OOAA.AAOO...",
+  "....OBB...BBO...",
+  "................",
+  "................",
+  "................",
+];
+
+const KNIGHT_ACTION_3: readonly string[] = [
+  "................",
+  "......OOOO..C...",
+  ".....OHCCCHO....",
+  "....OHHHHHHHO...",
+  "....OSSSSSSSO...",
+  "....OSWSSSWSSO..",
+  "....OPESSSEPO...",
+  ".....OSSSSSO....",
+  "...OBOAAACAOO...",
+  "..OBBOAAAAAASMM.",
+  "...O.OAAACAAOGGW",
+  "......OOOOOO..GG",
+  ".....OAA.AAO....",
+  ".....OBB.BBO....",
+  ".....OOO.OOO....",
+  "................",
+];
+
+// ==================== MAGE (Slim & Proportional) ====================
+const MAGE_IDLE_0: readonly string[] = [
+  "................",
+  "......OOOO......",
+  ".....OHHHHO.....",
+  "...OOHCCCCHOO...",
+  "..OHHHHHHHHHHO..",
+  "....OSSSSSSSO...",
+  "....OSWSSSWSSO..",
+  "....OPESSSEPO.GW",
+  ".....OSSSSSO..GG",
+  "....OOAAACAOO.M.",
+  "...OBOAAAAAOSMM.",
+  "...OBOAAACAAO.M.",
+  "....OOAAAAAOO.M.",
+  ".....OAA.AAO..M.",
+  ".....OBB.BBO....",
+  ".....OOO.OOO....",
 ];
 
 const MAGE_IDLE_1: readonly string[] = [
-  "......OOOO......",
+  "................",
+  ".......OO.......",
   ".....OHHHHO.....",
-  "....OHHHHHHO....",
-  "..OOHCCCCCCCHOO.",
-  ".OHHHHHHHHHHHHHO",
-  "...OSSSSSSSSSO..",
-  "...OSEWSSSWESO..",
-  "....OOOOOOOOO...",
-  "..OOAAAAAAAAAOO.",
-  ".OBBAAACCCAAABBO",
-  ".OBBAAAAAAAAA.GO",
-  "..O.OAAAAAAAO.WO",
-  "....OAAAAAAAO.MO",
-  "....OAAACAAAO.MO",
-  "....OBBB.BBBO.MO",
-  "....OOOO.OOOO.O.",
+  "...OOHCCCCHOO...",
+  "..OHHHHHHHHHHO..",
+  "....OSSSSSSSO.C.",
+  "....OSWSSSWSSOGW",
+  "....OPESSSEPO.GG",
+  ".....OSSSSSO..M.",
+  "...OBOAAACAOO.M.",
+  "..OBBOAAAAAOSMM.",
+  "...O.OAAACAAO.M.",
+  ".....OAAAAAOO.M.",
+  ".....OAA.AAO....",
+  ".....OBB.BBO....",
+  ".....OOO.OOO....",
 ];
 
 const MAGE_IDLE_2: readonly string[] = [
-  ".......OO.......",
-  "......OHHO......",
+  "................",
+  "................",
+  "......OOOO......",
   ".....OHHHHO.....",
-  "..OOHCCCCCCCHOO.",
-  ".OHHHHHHHHHHHHHO",
-  "...OSSSSSSSSSO..",
-  "...OSEWSSSWESO..",
-  "....OOOOOOOOO...",
-  "..OOAAAAAAAAAOO.",
-  ".OBBAAACCCAAABBO",
-  ".OBBAAAAAAAAA.WO",
-  "..O.OAAAAAAAO.GO",
-  "....OAAAAAAAO.MO",
-  "....OAAACAAAO.MO",
-  "....OBBB.BBBO.MO",
-  "....OOOO.OOOO.O.",
+  "...OOHCCCCHOO...",
+  "..OHHHHHHHHHHO..",
+  "....OSSSSSSSO.GW",
+  "....OSWSSSWSSOGG",
+  "....OPESSSEPO.M.",
+  "...OBOAAACAOO.M.",
+  "..OBBOAAAAAOSMM.",
+  "...O.OAAACAAO.M.",
+  ".....OAAAAAOO.M.",
+  ".....OAA.AAO....",
+  ".....OBB.BBO....",
+  ".....OOO.OOO....",
 ];
 
-const MAGE_VICTORY: readonly string[] = [
-  "......OOOO...GGG",
-  ".....OHHHHO..GWG",
-  "....OHHHHHHO.GGG",
-  "..OOHCCCCCCCH.M.",
-  ".OHHHHHHHHHHH.M.",
-  "...OSSSSSSSSS.M.",
-  "...OSEWSSSWES.M.",
-  "....OOOOOOOOO.M.",
-  "..OOAAAAAAAAAOO.",
-  ".OBBAAACCCAAABBO",
-  ".OBBAAAAAAAAABBO",
-  "....OAAAAAAAO...",
-  "....OAAACAAAO...",
-  "...OOAAAAAAAOO..",
-  "...OBBB...BBBO..",
-  "...OOOO...OOOO..",
+const MAGE_IDLE_3: readonly string[] = [
+  "................",
+  "......OOOO......",
+  ".....OHHHHO.....",
+  "...OOHCCCCHOO...",
+  "..OHHHHHHHHHHO..",
+  "....OSSSSSSSO...",
+  "....OSSSSSSSO...",
+  "....OPEESEEPO.GW",
+  ".....OSSSSSO..GG",
+  "....OOAAACAOO.M.",
+  "...OBOAAAAAOSMM.",
+  "...OBOAAACAAO.M.",
+  "....OOAAAAAOO.M.",
+  ".....OAA.AAO..M.",
+  ".....OBB.BBO....",
+  ".....OOO.OOO....",
+];
+
+const MAGE_IDLE_4: readonly string[] = [
+  "................",
+  "......OOOO......",
+  ".....OHHHHO..C..",
+  "...OOHCCCCHOO...",
+  "..OHHHHHHHHHHO..",
+  "....OSSSSSSSO.WG",
+  "....OSWSSSWSSOGW",
+  "....OPESSSEPO.M.",
+  ".....OSSSSSO..M.",
+  "....OOAAACAOO.M.",
+  "...OBOAAAAAOSMM.",
+  "...OBOAAACAAO.M.",
+  "....OOAAAAAOO.M.",
+  ".....OAA.AAO....",
+  ".....OBB.BBO....",
+  ".....OOO.OOO....",
+];
+
+const MAGE_ACTION_1: readonly string[] = [
+  "............CWC.",
+  "......OOOO..GWG.",
+  ".....OHHHHO.GGG.",
+  "...OOHCCCCHOO.M.",
+  "..OHHHHHHHHHHSMO",
+  "....OSSSSSSSO.M.",
+  "....OSWSSSWSSO.M",
+  "....OPESSSEPO..M",
+  "...OBOAAACAOO..M",
+  "..OBBOAAAAAABO..",
+  "...O.OAAACAAO...",
+  ".....OAAAAAOO...",
+  "....OOAA.AAOO...",
+  "....OBB...BBO...",
+  "................",
+  "................",
+];
+
+const MAGE_ACTION_2: readonly string[] = [
+  "....C.......WGW.",
+  "......OOOO..CWC.",
+  ".....OHHHHO.GWG.",
+  "...OOHCCCCHOO.M.",
+  "..OHHHHHHHHHHSMO",
+  "...COSSSSSSSO.M.",
+  "....OSWSSSWSSO.M",
+  "....OPESSSEPO..M",
+  "..OBBOAAACAOO...",
+  ".OBBBOAAAAAABO..",
+  "..OO.OAAAAAOO...",
+  "....OOAA.AAOO...",
+  "....OBB...BBO...",
+  "................",
+  "................",
+  "................",
+];
+
+// ==================== RANGER (Slim & Proportional) ====================
+const RANGER_IDLE_0: readonly string[] = [
+  "................",
+  "......OOOO......",
+  ".....OHHHHCCO...",
+  "....OHHHHHHHO...",
+  "....OSSSSSSSO...",
+  "....OSWSSSWSSO..",
+  "....OPESSSEPO.MO",
+  ".....OSSSSSO..MW",
+  "....OOAAACAOO.MW",
+  "...OBOAAAAAOSMMW",
+  "...OBOAAACAAO.MO",
+  "....O.OOOOOO....",
+  ".....OAA.AAO....",
+  ".....OBB.BBO....",
+  ".....OOO.OOO....",
+  "................",
 ];
 
 const RANGER_IDLE_1: readonly string[] = [
-  ".....OOOOOO.....",
-  "....OHHHHHHCCO..",
-  "...OHHHHHHHHHO..",
-  "...OHHHCCCHHHO..",
-  "...OSSSSSSSSSO..",
-  "...OSEWSSSWESO..",
-  "...OSSSSSSSSSO..",
-  "....OOOOOOOOO...",
-  "..OOAAAAAAAAAOO.",
-  ".OBBAAACCCAAABBO",
-  ".OBBAAAAAAAAA.MO",
-  "..O..OOOOOOO.MWO",
-  ".....OAAAAAO.M.O",
-  ".....OAA.AAO.MWO",
-  ".....OBB.BBO..MO",
+  "................",
+  "......OOOO......",
+  ".....OHHHHCCO...",
+  "....OHHHHHHHO...",
+  "....OSSSSSSSO...",
+  "....OSWSSSWSSOMO",
+  "....OPESSSEPO.MW",
+  ".....OSSSSSO..MW",
+  "...OBOAAACAOO.MW",
+  "..OBBOAAAAAOSMMO",
+  "..OB.OAAACAAO...",
+  "......OOOOOO....",
+  ".....OAA.AAO....",
+  ".....OBB.BBO....",
   ".....OOO.OOO....",
+  "................",
 ];
 
 const RANGER_IDLE_2: readonly string[] = [
   "................",
-  ".....OOOOOO.....",
-  "....OHHHHHHCCO..",
-  "...OHHHHHHHHHO..",
-  "...OHHHCCCHHHO..",
-  "...OSSSSSSSSSO..",
-  "...OSEWSSSWESO..",
-  "....OOOOOOOOO...",
-  "..OOAAAAAAAAAOO.",
-  ".OBBAAACCCAAABBO",
-  ".OBBAAAAAAAAA.MO",
-  "..O..OOOOOOO.MWO",
-  ".....OAAAAAO.M.O",
-  ".....OAA.AAO.MWO",
-  ".....OBB.BBO..MO",
+  "................",
+  "......OOOO......",
+  ".....OHHHHCCO...",
+  "....OHHHHHHHO...",
+  "....OSSSSSSSO...",
+  "....OSWSSSWSSOMO",
+  "....OPESSSEPO.MW",
+  ".....OSSSSSO..MW",
+  "...OBOAAACAOOMMW",
+  "..OBBOAAAAAOSMO.",
+  "...O.OAAACAAO...",
+  ".....OAA.AAO....",
+  ".....OBB.BBO....",
   ".....OOO.OOO....",
+  "................",
 ];
 
-const RANGER_VICTORY: readonly string[] = [
-  ".............MO.",
-  ".....OOOOOO.MWO.",
-  "....OHHHHHHCM.O.",
-  "...OHHHHHHHHMWO.",
-  "...OHHHCCCHH.MO.",
-  "...OSSSSSSSSSO..",
-  "...OSEWSSSWESO..",
-  "....OOOOOOOOO...",
-  "..OOAAAAAAAAAOO.",
-  ".OBBAAACCCAAABBO",
-  ".OBBAAAAAAAAABBO",
-  ".....OOOOOOO....",
-  ".....OAAAAAO....",
+const RANGER_IDLE_3: readonly string[] = [
+  "................",
+  "......OOOO......",
+  ".....OHHHHCCO...",
+  "....OHHHHHHHO...",
+  "....OSSSSSSSO...",
+  "....OSSSSSSSO...",
+  "....OPEESEEPO.MO",
+  ".....OSSSSSO..MW",
+  "....OOAAACAOO.MW",
+  "...OBOAAAAAOSMMW",
+  "...OBOAAACAAO.MO",
+  "....O.OOOOOO....",
+  ".....OAA.AAO....",
+  ".....OBB.BBO....",
+  ".....OOO.OOO....",
+  "................",
+];
+
+const RANGER_IDLE_4: readonly string[] = [
+  "................",
+  "......OOOO......",
+  ".....OHHHHCCO...",
+  "....OHHHHHHHO...",
+  "....OSSSSSSSO..C",
+  "....OSWSSSWSSOMO",
+  "....OPESSSEPO.MW",
+  ".....OSSSSSO.GMW",
+  "....OOAAACAOOGMW",
+  "...OBOAAAAAOSMMO",
+  "...OBOAAACAAO...",
+  "....O.OOOOOO....",
+  ".....OAA.AAO....",
+  ".....OBB.BBO....",
+  ".....OOO.OOO....",
+  "................",
+];
+
+const RANGER_ACTION_1: readonly string[] = [
+  "................",
+  "......OOOO..MO..",
+  ".....OHHHHCCMW..",
+  "....OHHHHHHHMWC.",
+  "....OSSSSSSSMWW.",
+  "....OSWSSSWSSMO.",
+  "....OPESSSEPO...",
+  "...OBOAAACAOO...",
+  "..OBBOAAAAAABO..",
+  "...O.OAAACAAO...",
+  "......OOOOOO....",
   "....OOAA.AAOO...",
   "....OBB...BBO...",
   "....OOO...OOO...",
+  "................",
+  "................",
+];
+
+const RANGER_ACTION_2: readonly string[] = [
+  "....C.......MO..",
+  "......OOOO..MWC.",
+  ".....OHHHHCCMWWC",
+  "....OHHHHHHHSMO.",
+  "....OSSSSSSSO...",
+  "...COSWSSSWSSO.C",
+  "....OPESSSEPO...",
+  "..OBBOAAACAOO...",
+  ".OBBBOAAAAAABO..",
+  "..OO.OAAACAAO...",
+  "......OOOOOO....",
+  "....OOAA.AAOO...",
+  "....OBB...BBO...",
+  "................",
+  "................",
+  "................",
 ];
 
 function buildPalette(
@@ -224,6 +503,7 @@ function buildPalette(
   const base = {
     O: "#2A2140",
     S: "#FDBA74",
+    P: "#FB7185",
     E: "#2A2140",
     W: "#FFFFFF",
     M: "#92400E",
@@ -291,7 +571,6 @@ function buildPalette(
     };
   }
 
-  // Ranger
   if (gearTier === "novice") {
     return {
       ...base,
@@ -346,30 +625,65 @@ export function mapQuestProgressToAvatar(
         ? "active"
         : "idle";
 
-  const sparkleCount =
-    mood === "victory" ? 4 : mood === "active" ? 2 : 0;
+  const sparkleCount = mood === "victory" ? 4 : mood === "active" ? 2 : 0;
 
-  const frames =
+  const classSet =
     avatarClass === "mage"
       ? {
-          idle1: MAGE_IDLE_1,
-          idle2: MAGE_IDLE_2,
-          victory: MAGE_VICTORY,
+          idle: [
+            MAGE_IDLE_0,
+            MAGE_IDLE_1,
+            MAGE_IDLE_2,
+            MAGE_IDLE_0,
+            MAGE_IDLE_3,
+            MAGE_IDLE_4,
+          ],
+          action: [
+            MAGE_IDLE_2,
+            MAGE_ACTION_1,
+            MAGE_ACTION_2,
+            MAGE_ACTION_1,
+            MAGE_IDLE_4,
+          ],
         }
       : avatarClass === "ranger"
         ? {
-            idle1: RANGER_IDLE_1,
-            idle2: RANGER_IDLE_2,
-            victory: RANGER_VICTORY,
+            idle: [
+              RANGER_IDLE_0,
+              RANGER_IDLE_1,
+              RANGER_IDLE_2,
+              RANGER_IDLE_0,
+              RANGER_IDLE_3,
+              RANGER_IDLE_4,
+            ],
+            action: [
+              RANGER_IDLE_2,
+              RANGER_ACTION_1,
+              RANGER_ACTION_2,
+              RANGER_ACTION_1,
+              RANGER_IDLE_4,
+            ],
           }
         : {
-            idle1: KNIGHT_IDLE_1,
-            idle2: KNIGHT_IDLE_2,
-            victory: KNIGHT_VICTORY,
+            idle: [
+              KNIGHT_IDLE_0,
+              KNIGHT_IDLE_1,
+              KNIGHT_IDLE_2,
+              KNIGHT_IDLE_0,
+              KNIGHT_IDLE_3,
+              KNIGHT_IDLE_4,
+            ],
+            action: [
+              KNIGHT_ACTION_0,
+              KNIGHT_ACTION_1,
+              KNIGHT_ACTION_2,
+              KNIGHT_ACTION_3,
+              KNIGHT_IDLE_4,
+            ],
           };
 
-  const primaryFrame = mood === "victory" ? frames.victory : frames.idle1;
-  const altFrame = mood === "victory" ? frames.idle1 : frames.idle2;
+  const frames = classSet.idle;
+  const actionFrames = classSet.idle;
 
   return {
     avatarClass,
@@ -377,8 +691,10 @@ export function mapQuestProgressToAvatar(
     classTitle,
     mood,
     sparkleCount,
-    primaryFrame,
-    altFrame,
+    frames,
+    actionFrames,
+    primaryFrame: frames[0] ?? KNIGHT_IDLE_0,
+    altFrame: frames[1] ?? KNIGHT_IDLE_1,
     palette: buildPalette(avatarClass, gearTier),
   };
 }

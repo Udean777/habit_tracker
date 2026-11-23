@@ -1,14 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import * as Haptics from "expo-haptics";
 import { Pressable, View } from "react-native";
-import { Canvas, Group, Rect } from "@shopify/react-native-skia";
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withSequence,
-  withTiming,
-} from "react-native-reanimated";
+import { Canvas, Group, Rect, RoundedRect } from "@shopify/react-native-skia";
 import { colors, radii } from "@/theme/tokens";
 import type { AvatarVisualState } from "../avatarMapper";
 
@@ -25,6 +18,8 @@ function parseFrameToRects(
   frame: readonly string[],
   palette: Readonly<Record<string, string>>,
   pixelSize: number,
+  offsetX: number,
+  offsetY: number,
 ): readonly PixelRect[] {
   const rects: PixelRect[] = [];
   for (let row = 0; row < frame.length; row++) {
@@ -36,8 +31,8 @@ function parseFrameToRects(
       if (!color) continue;
       rects.push({
         key: `${row}-${col}`,
-        x: col * pixelSize,
-        y: row * pixelSize,
+        x: offsetX + col * pixelSize,
+        y: offsetY + row * pixelSize,
         color,
       });
     }
@@ -46,10 +41,10 @@ function parseFrameToRects(
 }
 
 const SPARKLE_OFFSETS = [
-  { x: 1, y: 2 },
-  { x: 14, y: 1 },
-  { x: 1, y: 12 },
-  { x: 14, y: 11 },
+  { x: 2, y: 3 },
+  { x: 13, y: 2 },
+  { x: 2, y: 11 },
+  { x: 13, y: 10 },
 ] as const;
 
 type PixelAvatarProps = {
@@ -62,66 +57,46 @@ type PixelAvatarProps = {
 export function PixelAvatar({
   state,
   reduceMotion,
-  triggerKey = 0,
   size = 64,
 }: PixelAvatarProps) {
-  const [useAlt, setUseAlt] = useState(false);
-  const jumpY = useSharedValue(0);
+  const [frameIdx, setFrameIdx] = useState(0);
 
-  const pixelSize = size / GRID_SIZE;
+  const inset = 5;
+  const spriteArea = size - inset * 2;
+  const pixelSize = spriteArea / GRID_SIZE;
 
-  const primaryRects = useMemo(
-    () => parseFrameToRects(state.primaryFrame, state.palette, pixelSize),
-    [state.primaryFrame, state.palette, pixelSize],
-  );
-
-  const altRects = useMemo(
-    () => parseFrameToRects(state.altFrame, state.palette, pixelSize),
-    [state.altFrame, state.palette, pixelSize],
+  const idleFrameRects = useMemo(
+    () =>
+      state.frames.map((f) =>
+        parseFrameToRects(f, state.palette, pixelSize, inset, inset),
+      ),
+    [state.frames, state.palette, pixelSize],
   );
 
   useEffect(() => {
     if (reduceMotion) return;
     const timer = setInterval(() => {
-      setUseAlt((prev) => !prev);
-    }, 550);
+      setFrameIdx((prev) => (prev + 1) % state.frames.length);
+    }, 420);
     return () => clearInterval(timer);
-  }, [reduceMotion]);
-
-  useEffect(() => {
-    if (reduceMotion || triggerKey === 0) return;
-    jumpY.set(
-      withSequence(
-        withTiming(-6, { duration: 110, easing: Easing.out(Easing.cubic) }),
-        withTiming(0, { duration: 140, easing: Easing.inOut(Easing.cubic) }),
-      ),
-    );
-  }, [triggerKey, reduceMotion, jumpY]);
-
-  const containerAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: jumpY.value }],
-  }));
+  }, [reduceMotion, state.frames.length]);
 
   function handlePress() {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    if (!reduceMotion) {
-      jumpY.set(
-        withSequence(
-          withTiming(-6, { duration: 110, easing: Easing.out(Easing.cubic) }),
-          withTiming(0, { duration: 140, easing: Easing.inOut(Easing.cubic) }),
-        ),
-      );
-    }
-    setUseAlt((prev) => !prev);
+    setFrameIdx((prev) => (prev + 1) % state.frames.length);
   }
 
-  const showAlt = !reduceMotion && useAlt;
-  const activeRects = showAlt ? altRects : primaryRects;
+  const effectiveIdx = reduceMotion ? 0 : frameIdx % idleFrameRects.length;
+  const activeRects = idleFrameRects[effectiveIdx] ?? idleFrameRects[0] ?? [];
+
+  const shadowWidth = pixelSize * 7;
+  const shadowX = (size - shadowWidth) / 2;
+  const shadowY = size - inset - pixelSize * 0.7;
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${state.classTitle} pixel avatar. Tap to animate`}
+      accessibilityLabel={`${state.classTitle} pixel avatar`}
       onPress={handlePress}
     >
       <View
@@ -136,38 +111,46 @@ export function PixelAvatar({
           backgroundColor: colors.background,
           alignItems: "center",
           justifyContent: "center",
-          overflow: "hidden",
         }}
       >
-        <Animated.View style={containerAnimatedStyle}>
-          <Canvas style={{ width: size, height: size }}>
-            <Group>
-              {activeRects.map((r) => (
+        <Canvas style={{ width: size, height: size }}>
+          <Group>
+            <RoundedRect
+              x={shadowX}
+              y={shadowY}
+              width={shadowWidth}
+              height={pixelSize * 0.9}
+              r={pixelSize * 0.45}
+              color="rgba(42, 33, 64, 0.16)"
+            />
+
+            {activeRects.map((r) => (
+              <Rect
+                key={r.key}
+                x={r.x}
+                y={r.y}
+                width={pixelSize + 0.35}
+                height={pixelSize + 0.35}
+                color={r.color}
+              />
+            ))}
+
+            {SPARKLE_OFFSETS.slice(0, state.sparkleCount).map((sp, idx) => {
+              const shift =
+                !reduceMotion && (effectiveIdx + idx) % 2 === 0 ? -0.5 : 0;
+              return (
                 <Rect
-                  key={r.key}
-                  x={r.x}
-                  y={r.y}
-                  width={pixelSize + 0.3}
-                  height={pixelSize + 0.3}
-                  color={r.color}
+                  key={`sp-${idx}`}
+                  x={inset + sp.x * pixelSize}
+                  y={inset + (sp.y + shift) * pixelSize}
+                  width={pixelSize * 0.85}
+                  height={pixelSize * 0.85}
+                  color={colors.accent}
                 />
-              ))}
-              {SPARKLE_OFFSETS.slice(0, state.sparkleCount).map((sp, idx) => {
-                const shift = showAlt && idx % 2 === 0 ? -1 : 0;
-                return (
-                  <Rect
-                    key={`sp-${idx}`}
-                    x={sp.x * pixelSize}
-                    y={(sp.y + shift) * pixelSize}
-                    width={pixelSize}
-                    height={pixelSize}
-                    color={colors.accent}
-                  />
-                );
-              })}
-            </Group>
-          </Canvas>
-        </Animated.View>
+              );
+            })}
+          </Group>
+        </Canvas>
       </View>
     </Pressable>
   );

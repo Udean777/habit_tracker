@@ -22,7 +22,11 @@ import {
   useHabitsData,
   type AvatarClass,
 } from "@/features/habits";
-import { exportAllLocalData } from "@/features/settings";
+import {
+  exportAllLocalData,
+  seedTier2DemoData,
+  seedTier3DemoData,
+} from "@/features/settings";
 import { useMotionPreferences } from "@/features/world/qualityTier";
 import { clearAuthTokens, getAuthTokens } from "@/lib/apiClient";
 import { useUiStore } from "@/stores/uiStore";
@@ -242,6 +246,16 @@ export default function SettingsScreen() {
   async function handleExport() {
     const json = await exportAllLocalData();
     setExportedJson(json);
+  }
+
+  async function handleSeedTier2() {
+    await seedTier2DemoData();
+    refresh();
+  }
+
+  async function handleSeedTier3() {
+    await seedTier3DemoData();
+    refresh();
   }
 
   async function handleSyncNow() {
@@ -590,6 +604,16 @@ export default function SettingsScreen() {
             <Text variant="caption">
               Export your local habits and logs as JSON.
             </Text>
+            <Button
+              label="Seed Tier 2 Demo (Level 3)"
+              variant="secondary"
+              onPress={() => void handleSeedTier2()}
+            />
+            <Button
+              label="Seed Tier 3 Demo (Level 5)"
+              variant="secondary"
+              onPress={() => void handleSeedTier3()}
+            />
             <Button
               label="Export Local Data (JSON)"
               variant="secondary"
