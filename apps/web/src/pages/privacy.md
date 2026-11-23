@@ -12,17 +12,20 @@ Glimkin is an offline-first application. In guest mode, all habits, completion l
 
 ## 2. Information We Collect When You Sign In
 
-If you choose to sign in using Google OAuth or GitHub OAuth for cloud backup and sync, we collect:
+If you choose to sign in using Google OAuth or GitHub OAuth for cloud backup and sync, Glimkin requests only basic identity scopes (`openid`, `email`, `profile` for Google; `read:user`, `user:email` for GitHub) and collects:
 
 - **Account identifiers:** Your verified email address and the unique provider account ID from Google or GitHub.
 - **Synced app data:** Habits, daily completion logs, streak freezes, app settings, hero profile loadouts, and shop inventory items you create in Glimkin.
 - **Device identifier:** A randomly generated app-installation device ID used solely for conflict resolution and refresh-token rotation.
 
-## 3. How We Use Your Data
+Glimkin does **not** request access to Gmail, Google Drive, Calendar, Contacts, Photos, or any sensitive or restricted Google APIs.
 
-- To authenticate your session and keep your access and refresh tokens secure.
-- To synchronize your habit progress across your devices without losing offline edits.
-- We do **not** sell your personal data, run third-party ad trackers, or use your Google or GitHub data for advertising.
+## 3. How We Use, Store, and Protect Your Data
+
+- **Authentication & Sync:** To identify your account, issue encrypted session tokens (stored in device `SecureStore`), and synchronize your habit progress across devices without losing offline edits.
+- **Transport & Storage Security:** All network traffic uses HTTPS/TLS. Cloud records are stored in encrypted PostgreSQL storage via Neon and routed through Cloudflare Workers and Hyperdrive.
+- **No Ads or Data Selling:** We do **not** sell, rent, or trade your personal data, run third-party ad trackers, or use Google or GitHub user data for advertising or AI model training.
+- **Google API Services User Data Policy:** Glimkin's use and transfer to any other app of information received from Google APIs adheres to the [Google API Services User Data Policy](https://developers.google.com/terms/api-data-user-data-policy), including the Limited Use requirements.
 
 ## 4. Infrastructure & Third-Party Services
 
@@ -34,4 +37,4 @@ When cloud sync is enabled, data is processed using the following providers:
 
 ## 5. Data Export, Retention & Deletion
 
-You retain full ownership of your habit data. Inside the Glimkin app, you can export your data or delete your cloud account at any time. Deleting your account permanently removes your user record, linked OAuth identifiers, refresh tokens, and synced habit rows from our database. You may also request data deletion by emailing [sajudinmaruf@gmail.com](mailto:sajudinmaruf@gmail.com).
+You retain full ownership of your habit data. We retain your synced account data only while your account remains active. Inside the Glimkin app, you can export your data or delete your cloud account at any time. Deleting your account permanently removes your user record, linked OAuth identifiers, refresh tokens, and all synced habit rows from our database immediately. You may also request data deletion or ask privacy questions by emailing [sajudinmaruf@gmail.com](mailto:sajudinmaruf@gmail.com).
