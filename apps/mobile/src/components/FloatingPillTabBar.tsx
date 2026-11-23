@@ -53,7 +53,7 @@ function TabItem({ routeName, label, focused, onPress }: TabItemProps) {
     transform: [{ translateX: (1 - progress.value) * -6 }],
   }));
 
-  const iconColor = focused ? "#FFFFFF" : colors.textSecondary;
+  const iconColor = focused ? colors.primaryText : colors.textSecondary;
   const strokeWidth = focused ? 2.5 : 2;
 
   return (
@@ -103,7 +103,8 @@ function TabItem({ routeName, label, focused, onPress }: TabItemProps) {
         >
           <Text
             numberOfLines={1}
-            className="text-xs font-extrabold tracking-wide text-white"
+            tone="onPrimary"
+            className="text-xs font-extrabold tracking-wide"
           >
             {label}
           </Text>

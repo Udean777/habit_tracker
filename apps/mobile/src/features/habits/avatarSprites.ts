@@ -1,20 +1,27 @@
-import type { AvatarClass, AvatarGearTier } from "./avatarMapper";
+import type { AvatarClass } from "@habit/shared";
+import type { AvatarGearTier } from "./avatarMapper";
 
 export const CLASS_TITLES: Record<AvatarClass, Record<AvatarGearTier, string>> = {
   knight: {
     novice: "Squire",
     adept: "Arcane Knight",
     champion: "Royal Paladin",
+    hero: "Astral Templar",
+    legend: "Eternal Sovereign",
   },
   mage: {
     novice: "Apprentice Mage",
     adept: "Battle Mage",
     champion: "Grand Archmage",
+    hero: "Starweaver",
+    legend: "Celestial Oracle",
   },
   ranger: {
     novice: "Forest Scout",
     adept: "Shadow Ranger",
     champion: "Grand Warden",
+    hero: "Windrunner",
+    legend: "Mythic Pathfinder",
   },
 };
 
@@ -539,25 +546,80 @@ const TIER_PALETTES: Record<AvatarClass, Record<AvatarGearTier, TierPalette>> = 
     novice: { H: "#4FB3FF", C: "#FFD23F", A: "#38BDF8", B: "#0284C7", G: "#E2E8F0" },
     adept: { H: "#6B4DF5", C: "#FFD23F", A: "#7C3AED", B: "#4C1D95", G: "#38BDF8" },
     champion: { H: "#6B4DF5", C: "#FFD23F", A: "#FFD23F", B: "#6B4DF5", G: "#22D3EE" },
+    hero: { H: "#4338CA", C: "#FDE047", A: "#818CF8", B: "#312E81", G: "#67E8F9" },
+    legend: { H: "#F59E0B", C: "#FEF08A", A: "#FBBF24", B: "#7C3AED", G: "#FFFFFF" },
   },
   mage: {
     novice: { H: "#0EA5E9", C: "#FFD23F", A: "#38BDF8", B: "#0369A1", G: "#34D399" },
     adept: { H: "#6B4DF5", C: "#FFD23F", A: "#8B5CF6", B: "#4C1D95", G: "#22D3EE" },
     champion: { H: "#4C1D95", C: "#FFD23F", A: "#6B4DF5", B: "#FFD23F", G: "#F43F5E" },
+    hero: { H: "#7E22CE", C: "#FDE047", A: "#A855F7", B: "#3B0764", G: "#38BDF8" },
+    legend: { H: "#312E81", C: "#FEF08A", A: "#6366F1", B: "#F59E0B", G: "#F472B6" },
   },
   ranger: {
     novice: { H: "#10B981", C: "#FFD23F", A: "#059669", B: "#065F46", G: "#A7F3D0" },
     adept: { H: "#059669", C: "#34D399", A: "#047857", B: "#2A2140", G: "#22D3EE" },
     champion: { H: "#047857", C: "#FFD23F", A: "#10B981", B: "#FFD23F", G: "#FFD23F" },
+    hero: { H: "#0F766E", C: "#67E8F9", A: "#14B8A6", B: "#134E4A", G: "#FDE047" },
+    legend: { H: "#065F46", C: "#FEF08A", A: "#34D399", B: "#F59E0B", G: "#A5F3FC" },
   },
+};
+
+const COSMETIC_PALETTE_OVERRIDES: Readonly<Record<string, TierPalette>> = {
+  palette_crimson: {
+    H: "#BE123C",
+    C: "#FDE047",
+    A: "#E11D48",
+    B: "#881337",
+    G: "#FDA4AF",
+  },
+  palette_frost: {
+    H: "#0284C7",
+    C: "#E0F2FE",
+    A: "#38BDF8",
+    B: "#075985",
+    G: "#67E8F9",
+  },
+  palette_solar: {
+    H: "#D97706",
+    C: "#FEF08A",
+    A: "#F59E0B",
+    B: "#92400E",
+    G: "#FDE047",
+  },
+  palette_void: {
+    H: "#3B0764",
+    C: "#E879F9",
+    A: "#581C87",
+    B: "#1E1B4B",
+    G: "#C084FC",
+  },
+};
+
+export const COSMETIC_AURA_COLORS: Readonly<
+  Record<string, { readonly ring: string; readonly spark: string }>
+> = {
+  aura_ember: { ring: "rgba(249, 115, 22, 0.28)", spark: "#F97316" },
+  aura_arcane: { ring: "rgba(99, 102, 241, 0.30)", spark: "#38BDF8" },
+  aura_crown: { ring: "rgba(234, 179, 8, 0.32)", spark: "#FACC15" },
+};
+
+export const COSMETIC_FRAME_COLORS: Readonly<Record<string, string>> = {
+  frame_emerald: "#10B981",
+  frame_gold: "#F59E0B",
+  frame_nebula: "#8B5CF6",
 };
 
 export function buildPalette(
   avatarClass: AvatarClass,
   gearTier: AvatarGearTier,
+  equippedPaletteId?: string | null,
 ): Readonly<Record<string, string>> {
+  const override = equippedPaletteId
+    ? COSMETIC_PALETTE_OVERRIDES[equippedPaletteId]
+    : undefined;
   return {
     ...BASE_PALETTE,
-    ...TIER_PALETTES[avatarClass][gearTier],
+    ...(override ?? TIER_PALETTES[avatarClass][gearTier]),
   };
 }

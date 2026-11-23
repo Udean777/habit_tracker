@@ -62,7 +62,7 @@ export function FluidHeatmap({
             : completion >= 1
               ? colors.primaryPressed
               : completion > 0
-                ? colors.accent
+                ? colors.accentBorder
                 : colors.border;
 
           return (

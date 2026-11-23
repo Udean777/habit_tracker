@@ -127,7 +127,9 @@ export default function OnboardingScreen() {
                 <HabitIcon
                   icon={preset.icon}
                   size={20}
-                  color={active ? colors.primary : colors.textSecondary}
+                  color={
+                    active ? colors.primaryTextAccent : colors.textSecondary
+                  }
                 />
                 <Text variant="heading" className="flex-1">
                   {preset.name}

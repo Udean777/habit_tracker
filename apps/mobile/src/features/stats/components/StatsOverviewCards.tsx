@@ -28,7 +28,7 @@ export function StatsOverviewCards({
         className="mb-4 flex-row gap-3"
       >
         <Card variant="primary" tactile={false} elevated className="flex-1 p-4">
-          <Text tone="onPrimary" className="text-sm opacity-90">
+          <Text tone="onPrimary" className="text-sm font-medium">
             Completed Today
           </Text>
           <Text

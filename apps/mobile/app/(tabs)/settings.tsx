@@ -4,6 +4,7 @@ import { Badge } from "@/components/Badge";
 import { Screen } from "@/components/Screen";
 import { Text } from "@/components/Text";
 import { useAuthActions } from "@/features/auth";
+import { useGamification } from "@/features/gamification";
 import {
   computeQuestProgress,
   mapQuestProgressToAvatar,
@@ -17,7 +18,6 @@ import {
   ScheduleSettingsSection,
 } from "@/features/settings";
 import { useMotionPreferences } from "@/lib/motion";
-import { useUiStore } from "@/stores/uiStore";
 
 export default function SettingsScreen() {
   const {
@@ -32,8 +32,12 @@ export default function SettingsScreen() {
     refresh,
   } = useHabitsData();
   const { accountEmail, loadAccountEmail, signOut, syncNow } = useAuthActions();
-  const avatarClass = useUiStore((s) => s.avatarClass);
-  const setAvatarClass = useUiStore((s) => s.setAvatarClass);
+  const { heroProfile, selectAvatarClass } = useGamification(
+    activeHabits,
+    logs,
+    effectiveToday,
+    settings.hapticsEnabled,
+  );
   const motionPrefs = useMotionPreferences(settings);
 
   const questProgress = useMemo(
@@ -41,8 +45,13 @@ export default function SettingsScreen() {
     [activeHabits, logs, effectiveToday],
   );
   const avatarState = useMemo(
-    () => mapQuestProgressToAvatar(questProgress, avatarClass),
-    [questProgress, avatarClass],
+    () =>
+      mapQuestProgressToAvatar(
+        questProgress,
+        heroProfile.avatarClass,
+        heroProfile,
+      ),
+    [questProgress, heroProfile],
   );
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
@@ -94,11 +103,11 @@ export default function SettingsScreen() {
         <HeroProfileCard
           avatarState={avatarState}
           questProgress={questProgress}
-          avatarClass={avatarClass}
+          avatarClass={heroProfile.avatarClass}
           reduceMotion={motionPrefs.reduceMotion}
           accountEmail={accountEmail}
           syncMessage={syncMessage}
-          onSelectAvatarClass={setAvatarClass}
+          onSelectAvatarClass={(cls) => void selectAvatarClass(cls)}
           onSyncNow={() => void handleSyncNow()}
           onSignOut={() => void handleSignOut()}
         />

@@ -43,17 +43,15 @@ export function Text({
     secondary: colors.textSecondary,
     onPrimary: colors.primaryText,
     onAccent: colors.accentText,
-    primaryAccent: colors.primary,
-    danger: colors.danger,
+    primaryAccent: colors.primaryTextAccent,
+    danger: colors.dangerText,
   };
-
-  const hasExplicitColor = /\btext-(white|black|\[)/.test(className);
 
   return (
     <RNText
       className={`${variantClasses[variant]} ${className}`}
       style={[
-        hasExplicitColor ? undefined : { color: toneColor[resolvedTone] },
+        { color: toneColor[resolvedTone] },
         tabularNums ? { fontVariant: ["tabular-nums"] } : undefined,
         style,
       ]}

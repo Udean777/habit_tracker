@@ -134,6 +134,13 @@ export default function RootLayout() {
               animation: "slide_from_bottom",
             }}
           />
+          <Stack.Screen
+            name="shop"
+            options={{
+              presentation: "modal",
+              animation: "slide_from_bottom",
+            }}
+          />
         </Stack>
       </GestureHandlerRootView>
     </ErrorBoundary>

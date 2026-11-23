@@ -1,6 +1,12 @@
 import { useEffect, useMemo } from "react";
 import { Pressable, View } from "react-native";
-import { Canvas, Group, Rect, RoundedRect } from "@shopify/react-native-skia";
+import {
+  Canvas,
+  Circle,
+  Group,
+  Rect,
+  RoundedRect,
+} from "@shopify/react-native-skia";
 import {
   cancelAnimation,
   Easing,
@@ -212,7 +218,8 @@ export function PixelAvatar({
           borderWidth: 2,
           borderBottomWidth: 4,
           borderColor:
-            state.mood === "victory" ? colors.accent : colors.border,
+            state.frameBorderColor ??
+            (state.mood === "victory" ? colors.accentBorder : colors.border),
           backgroundColor: colors.background,
           alignItems: "center",
           justifyContent: "center",
@@ -220,6 +227,15 @@ export function PixelAvatar({
       >
         <Canvas style={{ width: size, height: size }}>
           <Group>
+            {state.auraRingColor ? (
+              <Circle
+                cx={size / 2}
+                cy={size / 2}
+                r={size * 0.42}
+                color={state.auraRingColor}
+              />
+            ) : null}
+
             <RoundedRect
               x={shadowX}
               y={shadowY}
@@ -238,7 +254,7 @@ export function PixelAvatar({
                 pixelSize={pixelSize}
                 inset={inset}
                 sparkleCount={state.sparkleCount}
-                accentColor={colors.accent}
+                accentColor={state.auraSparkColor ?? colors.accent}
                 reduceMotion={reduceMotion}
                 phase={phase}
               />

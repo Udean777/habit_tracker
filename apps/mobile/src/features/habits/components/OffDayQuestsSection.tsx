@@ -43,6 +43,8 @@ export function OffDayQuestsSection({
         onPress={() => setShowOffDays((prev) => !prev)}
         style={{
           borderRadius: radii.button,
+          borderWidth: 1,
+          borderColor: colors.border,
           backgroundColor: colors.surfaceMuted,
         }}
         className="mb-2 min-h-[44px] flex-row items-center justify-between px-3"

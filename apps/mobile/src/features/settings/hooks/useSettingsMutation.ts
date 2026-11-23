@@ -9,6 +9,9 @@ export function useSettingsMutation(hapticsEnabled: boolean) {
 
   async function onUpdateSettings(patch: Partial<Settings>) {
     const updated = await updateSettings(patch);
+    if (patch.theme !== undefined) {
+      useUiStore.getState().setThemeMode(updated.theme);
+    }
     if (patch.dayStartOffsetMin !== undefined) {
       setSelectedDate(
         getDeviceLocalDate(new Date(), updated.dayStartOffsetMin),

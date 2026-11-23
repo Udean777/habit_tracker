@@ -15,6 +15,13 @@
       "when": 1795370016974,
       "tag": "0001_flimsy_thunderbolts",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1795433786667,
+      "tag": "0002_familiar_franklin_storm",
+      "breakpoints": true
     }
   ]
 }

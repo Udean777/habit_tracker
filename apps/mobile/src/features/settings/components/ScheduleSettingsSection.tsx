@@ -72,7 +72,7 @@ export function ScheduleSettingsSection({
               textClassName="text-xs font-bold"
             />
             {expandedRow === "dayStart" ? (
-              <ChevronDown size={16} color={colors.primary} />
+              <ChevronDown size={16} color={colors.primaryTextAccent} />
             ) : (
               <ChevronRight size={16} color={colors.textSecondary} />
             )}

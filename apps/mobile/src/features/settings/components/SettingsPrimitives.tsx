@@ -102,7 +102,7 @@ export function SettingRow<T extends string | number>({
             textClassName="text-xs font-bold capitalize"
           />
           {expanded ? (
-            <ChevronDown size={16} color={colors.primary} />
+            <ChevronDown size={16} color={colors.primaryTextAccent} />
           ) : (
             <ChevronRight size={16} color={colors.textSecondary} />
           )}
@@ -146,7 +146,11 @@ export function SettingRow<T extends string | number>({
                   {opt.label}
                 </Text>
                 {isSelected ? (
-                  <Check size={16} color={colors.primary} strokeWidth={2.5} />
+                  <Check
+                    size={16}
+                    color={colors.primaryTextAccent}
+                    strokeWidth={2.5}
+                  />
                 ) : null}
               </Pressable>
             );

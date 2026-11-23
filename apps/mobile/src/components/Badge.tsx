@@ -41,11 +41,20 @@ export function Badge({
         ? "primary"
         : "onAccent";
 
+  const borderColor =
+    variant === "primary"
+      ? colors.primaryPressed
+      : variant === "muted"
+        ? colors.border
+        : colors.accentBorder;
+
   return (
     <View
       style={{
         borderRadius: pill ? radii.pill : radii.badge,
         backgroundColor,
+        borderWidth: 1,
+        borderColor,
       }}
       className={`flex-row items-center gap-1 ${className}`}
     >

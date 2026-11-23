@@ -52,9 +52,7 @@ export function DateStrip({
           >
             <Text
               tone={isSelected ? "onPrimary" : "secondary"}
-              className={`text-[10px] font-semibold uppercase ${
-                isSelected ? "opacity-80" : ""
-              }`}
+              className="text-[10px] font-semibold uppercase"
             >
               {weekday}
             </Text>

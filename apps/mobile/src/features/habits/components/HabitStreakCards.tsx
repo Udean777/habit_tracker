@@ -8,7 +8,7 @@ export function HabitStreakCards({ stats }: { readonly stats: StreakStats }) {
     <>
       <View className="mb-4 flex-row gap-3">
         <Card variant="primary" elevated className="flex-1 p-4">
-          <Text tone="onPrimary" className="text-xs font-semibold opacity-90">
+          <Text tone="onPrimary" className="text-xs font-semibold">
             Current Streak
           </Text>
           <Text

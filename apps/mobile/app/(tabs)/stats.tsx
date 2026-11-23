@@ -1,9 +1,11 @@
 import { ScrollView, View } from "react-native";
 import Animated, { Easing, FadeIn } from "react-native-reanimated";
+import { router } from "expo-router";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { Screen } from "@/components/Screen";
 import { Text } from "@/components/Text";
+import { TrophyCaseSection, useGamification } from "@/features/gamification";
 import { QuestHud, useHabitsData } from "@/features/habits";
 import {
   FluidHeatmap,
@@ -25,6 +27,13 @@ export default function StatsScreen() {
   } = useHabitsData();
 
   const motionPrefs = useMotionPreferences(settings);
+  const { heroProfile, goldEconomy, shieldStats, achievements } =
+    useGamification(
+      activeHabits,
+      logs,
+      effectiveToday,
+      settings.hapticsEnabled,
+    );
   const {
     questProgress,
     aggregateCells,
@@ -68,6 +77,10 @@ export default function StatsScreen() {
         <QuestHud
           progress={questProgress}
           reduceMotion={motionPrefs.reduceMotion}
+          loadout={heroProfile}
+          goldBalance={goldEconomy.availableGold}
+          availableShields={shieldStats.availableShields}
+          onPressShop={() => router.push("/shop")}
         />
       </Animated.View>
 
@@ -96,6 +109,7 @@ export default function StatsScreen() {
             tier={motionPrefs.tier}
             hapticsEnabled={settings.hapticsEnabled}
           />
+          <TrophyCaseSection achievements={achievements} />
           {habitStats.map(({ habit, stats }, idx) => (
             <Animated.View
               key={habit.id}

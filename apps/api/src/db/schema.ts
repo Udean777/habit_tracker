@@ -140,6 +140,49 @@ export const userSettings = pgTable(
   ],
 );
 
+export const heroProfiles = pgTable(
+  "hero_profiles",
+  {
+    id: text("id").primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    avatarClass: text("avatar_class").notNull().default("knight"),
+    equippedPaletteId: text("equipped_palette_id"),
+    equippedAuraId: text("equipped_aura_id"),
+    equippedFrameId: text("equipped_frame_id"),
+    updatedAt: text("updated_at").notNull(),
+    serverSeq: bigint("server_seq", { mode: "number" }).notNull(),
+    lastDeviceId: text("last_device_id"),
+  },
+  (table) => [
+    uniqueIndex("hero_profiles_user_uq").on(table.userId),
+    index("hero_profiles_user_seq_idx").on(table.userId, table.serverSeq),
+  ],
+);
+
+export const userInventory = pgTable(
+  "user_inventory",
+  {
+    id: text("id").primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    itemId: text("item_id").notNull(),
+    category: text("category").notNull(),
+    costGold: integer("cost_gold").notNull(),
+    purchasedAt: text("purchased_at").notNull(),
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+    deletedAt: text("deleted_at"),
+    serverSeq: bigint("server_seq", { mode: "number" }).notNull(),
+    lastDeviceId: text("last_device_id"),
+  },
+  (table) => [
+    index("user_inventory_user_seq_idx").on(table.userId, table.serverSeq),
+  ],
+);
+
 export const processedOps = pgTable(
   "processed_ops",
   {

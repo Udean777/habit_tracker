@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ScrollView, View } from "react-native";
 import Animated, { Easing, FadeIn } from "react-native-reanimated";
 import { router } from "expo-router";
@@ -7,12 +7,18 @@ import { Button } from "@/components/Button";
 import { Screen } from "@/components/Screen";
 import { Text } from "@/components/Text";
 import {
+  LevelUpModal,
+  StreakShieldBanner,
+  useGamification,
+} from "@/features/gamification";
+import {
   DateStrip,
   DraggableQuestList,
   HabitQuestRow,
   OffDayQuestsSection,
   QuestHud,
   computeQuestProgress,
+  mapQuestProgressToAvatar,
   useHabitsData,
   useTodayQuests,
   type HabitRecord,
@@ -40,10 +46,46 @@ export default function TodayScreen() {
   } = useHabitsData();
 
   const motionPrefs = useMotionPreferences(settings);
+  const {
+    heroProfile,
+    freezesByHabitId,
+    goldEconomy,
+    shieldStats,
+    shieldableMisses,
+    activateShieldOnMiss,
+  } = useGamification(
+    activeHabits,
+    logs,
+    effectiveToday,
+    settings.hapticsEnabled,
+  );
   const questProgress = useMemo(
     () => computeQuestProgress(activeHabits, logs, selectedDate),
     [activeHabits, logs, selectedDate],
   );
+  const avatarState = useMemo(
+    () =>
+      mapQuestProgressToAvatar(
+        questProgress,
+        heroProfile.avatarClass,
+        heroProfile,
+      ),
+    [questProgress, heroProfile],
+  );
+
+  const prevLevelRef = useRef<number | null>(null);
+  const [levelUpVisible, setLevelUpVisible] = useState(false);
+
+  useEffect(() => {
+    if (loading) return;
+    if (
+      prevLevelRef.current !== null &&
+      questProgress.level > prevLevelRef.current
+    ) {
+      setLevelUpVisible(true);
+    }
+    prevLevelRef.current = questProgress.level;
+  }, [loading, questProgress.level]);
 
   const {
     dateStrip,
@@ -85,6 +127,7 @@ export default function TodayScreen() {
         habit={habit}
         currentValue={logsByHabitId.get(habit.id) ?? 0}
         habitLogs={allLogsByHabitId.get(habit.id) ?? EMPTY_HABIT_LOGS}
+        freezeDates={freezesByHabitId.get(habit.id)}
         selectedDate={selectedDate}
         effectiveToday={effectiveToday}
         hapticsEnabled={settings.hapticsEnabled}
@@ -93,6 +136,11 @@ export default function TodayScreen() {
       />
     );
   }
+
+  const topMiss = shieldableMisses[0];
+  const topMissHabit = topMiss
+    ? activeHabits.find((h) => h.id === topMiss.habitId)
+    : undefined;
 
   const datePrefix = selectedDate === effectiveToday ? "Today" : "Past day";
 
@@ -124,6 +172,10 @@ export default function TodayScreen() {
           <QuestHud
             progress={questProgress}
             reduceMotion={motionPrefs.reduceMotion}
+            loadout={heroProfile}
+            goldBalance={goldEconomy.availableGold}
+            availableShields={shieldStats.availableShields}
+            onPressShop={() => router.push("/shop")}
           />
           <View className="flex-1 items-center justify-center gap-3 px-6">
             <Text variant="heading">No habits yet</Text>
@@ -151,7 +203,21 @@ export default function TodayScreen() {
             <QuestHud
               progress={questProgress}
               reduceMotion={motionPrefs.reduceMotion}
+              loadout={heroProfile}
+              goldBalance={goldEconomy.availableGold}
+              availableShields={shieldStats.availableShields}
+              onPressShop={() => router.push("/shop")}
             />
+            {topMiss && topMissHabit ? (
+              <StreakShieldBanner
+                miss={topMiss}
+                habitName={topMissHabit.name}
+                availableShields={shieldStats.availableShields}
+                onApplyShield={(habitId, missedDate) =>
+                  void activateShieldOnMiss(habitId, missedDate)
+                }
+              />
+            ) : null}
           </Animated.View>
           <Animated.View
             entering={
@@ -185,6 +251,14 @@ export default function TodayScreen() {
           />
         </ScrollView>
       )}
+
+      <LevelUpModal
+        visible={levelUpVisible}
+        level={questProgress.level}
+        avatarState={avatarState}
+        reduceMotion={motionPrefs.reduceMotion}
+        onClose={() => setLevelUpVisible(false)}
+      />
     </Screen>
   );
 }

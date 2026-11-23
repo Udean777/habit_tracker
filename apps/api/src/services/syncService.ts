@@ -8,14 +8,19 @@ import { db } from "../db/client";
 import {
   habitLogs,
   habits,
+  heroProfiles,
   processedOps,
   streakFreezes,
+  userInventory,
   userSettings,
 } from "../db/schema";
 import {
   applyHabitLogPushOp,
   applyHabitPushOp,
+  applyHeroProfilePushOp,
   applySettingsPushOp,
+  applyStreakFreezePushOp,
+  applyUserInventoryPushOp,
 } from "./syncEntityAppliers";
 
 let lastSeq = Date.now();
@@ -56,8 +61,14 @@ export async function processSyncPush(
           await applyHabitPushOp(tx, userId, deviceId, op, seq);
         } else if (op.entity === "habit_log") {
           await applyHabitLogPushOp(tx, userId, deviceId, op, seq);
+        } else if (op.entity === "streak_freeze") {
+          await applyStreakFreezePushOp(tx, userId, deviceId, op, seq);
         } else if (op.entity === "settings") {
           await applySettingsPushOp(tx, userId, deviceId, op, seq);
+        } else if (op.entity === "hero_profile") {
+          await applyHeroProfilePushOp(tx, userId, deviceId, op, seq);
+        } else if (op.entity === "user_inventory") {
+          await applyUserInventoryPushOp(tx, userId, deviceId, op, seq);
         }
 
         await tx.insert(processedOps).values({
@@ -85,7 +96,14 @@ export async function pullUserChanges(
   limit: number,
   database = db,
 ) {
-  const [habitRows, logRows, freezeRows, settingRows] = await Promise.all([
+  const [
+    habitRows,
+    logRows,
+    freezeRows,
+    settingRows,
+    heroRows,
+    inventoryRows,
+  ] = await Promise.all([
     database
       .select()
       .from(habits)
@@ -122,6 +140,28 @@ export async function pullUserChanges(
       )
       .orderBy(asc(userSettings.serverSeq))
       .limit(limit),
+    database
+      .select()
+      .from(heroProfiles)
+      .where(
+        and(
+          eq(heroProfiles.userId, userId),
+          gt(heroProfiles.serverSeq, cursor),
+        ),
+      )
+      .orderBy(asc(heroProfiles.serverSeq))
+      .limit(limit),
+    database
+      .select()
+      .from(userInventory)
+      .where(
+        and(
+          eq(userInventory.userId, userId),
+          gt(userInventory.serverSeq, cursor),
+        ),
+      )
+      .orderBy(asc(userInventory.serverSeq))
+      .limit(limit),
   ]);
 
   const changes: SyncPullChange[] = [
@@ -150,6 +190,20 @@ export async function pullUserChanges(
       entity: "settings" as const,
       entityId: "singleton",
       op: "upsert" as const,
+      data: r,
+      serverSeq: r.serverSeq,
+    })),
+    ...heroRows.map((r) => ({
+      entity: "hero_profile" as const,
+      entityId: "singleton",
+      op: "upsert" as const,
+      data: r,
+      serverSeq: r.serverSeq,
+    })),
+    ...inventoryRows.map((r) => ({
+      entity: "user_inventory" as const,
+      entityId: r.id,
+      op: (r.deletedAt ? "delete" : "upsert") as "upsert" | "delete",
       data: r,
       serverSeq: r.serverSeq,
     })),

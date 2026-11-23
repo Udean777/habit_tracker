@@ -34,7 +34,10 @@ export function Button({
       ? { backgroundColor: colors.primary, borderColor: colors.primaryPressed }
       : variant === "danger"
         ? { backgroundColor: colors.danger, borderColor: colors.dangerPressed }
-        : { backgroundColor: colors.surfaceMuted, borderColor: colors.border };
+        : {
+            backgroundColor: colors.surfaceMuted,
+            borderColor: colors.borderStrong,
+          };
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: pressProgress.value * 2 }],
@@ -60,7 +63,7 @@ export function Button({
         onPressOut={handlePressOut}
         style={[
           variantStyle,
-          { borderRadius: radii.button, borderBottomWidth: 3 },
+          { borderRadius: radii.button, borderWidth: 1, borderBottomWidth: 3 },
         ]}
         className={`min-h-[44px] items-center justify-center px-4 py-2 ${disabled ? "opacity-50" : ""}`}
       >

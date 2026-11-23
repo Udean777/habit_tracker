@@ -3,13 +3,22 @@ import { db } from "../db/client";
 import {
   habitLogs,
   habits,
+  heroProfiles,
   streakFreezes,
+  userInventory,
   userSettings,
   users,
 } from "../db/schema";
 
 export async function exportAccountData(userId: string, database = db) {
-  const [habitRows, logRows, freezeRows, settingRows] = await Promise.all([
+  const [
+    habitRows,
+    logRows,
+    freezeRows,
+    settingRows,
+    heroRows,
+    inventoryRows,
+  ] = await Promise.all([
     database.select().from(habits).where(eq(habits.userId, userId)),
     database.select().from(habitLogs).where(eq(habitLogs.userId, userId)),
     database
@@ -20,6 +29,14 @@ export async function exportAccountData(userId: string, database = db) {
       .select()
       .from(userSettings)
       .where(eq(userSettings.userId, userId)),
+    database
+      .select()
+      .from(heroProfiles)
+      .where(eq(heroProfiles.userId, userId)),
+    database
+      .select()
+      .from(userInventory)
+      .where(eq(userInventory.userId, userId)),
   ]);
 
   return {
@@ -28,6 +45,8 @@ export async function exportAccountData(userId: string, database = db) {
     habitLogs: logRows,
     streakFreezes: freezeRows,
     settings: settingRows,
+    heroProfile: heroRows,
+    userInventory: inventoryRows,
   };
 }
 

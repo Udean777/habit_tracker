@@ -28,7 +28,7 @@ export function Card({
     variant === "primary"
       ? { backgroundColor: colors.primary, borderColor: colors.primaryPressed }
       : variant === "accent"
-        ? { backgroundColor: colors.accentBg, borderColor: colors.accent }
+        ? { backgroundColor: colors.accentBg, borderColor: colors.accentBorder }
         : variant === "muted"
           ? { backgroundColor: colors.surfaceMuted, borderColor: colors.border }
           : { backgroundColor: colors.surface, borderColor: colors.border };

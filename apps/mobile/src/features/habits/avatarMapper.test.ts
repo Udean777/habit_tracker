@@ -36,5 +36,30 @@ describe("avatarMapper", () => {
     expect(championMage.classTitle).toBe("Grand Archmage");
     expect(championMage.mood).toBe("victory");
     expect(championMage.sparkleCount).toBeGreaterThan(0);
+
+    const legendWithCosmetics = mapQuestProgressToAvatar(
+      {
+        level: 20,
+        totalXp: 25000,
+        xpIntoLevel: 0,
+        xpForNextLevel: 2000,
+        completedToday: 0,
+        scheduledToday: 2,
+        comboMultiplier: 1,
+      },
+      "knight",
+      {
+        avatarClass: "ranger",
+        equippedPaletteId: "palette_crimson",
+        equippedAuraId: "aura_crown",
+        equippedFrameId: "frame_gold",
+      },
+    );
+    expect(legendWithCosmetics.gearTier).toBe("legend");
+    expect(legendWithCosmetics.classTitle).toBe("Mythic Pathfinder");
+    expect(legendWithCosmetics.palette.A).toBe("#E11D48");
+    expect(legendWithCosmetics.auraRingColor).not.toBeNull();
+    expect(legendWithCosmetics.frameBorderColor).toBe("#F59E0B");
+    expect(legendWithCosmetics.sparkleCount).toBe(4);
   });
 });
