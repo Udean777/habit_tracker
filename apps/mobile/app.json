@@ -1,13 +1,14 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "Glimkin",
+    "slug": "glimkin",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mobile",
+    "scheme": "glimkin",
     "userInterfaceStyle": "automatic",
     "ios": {
+      "bundleIdentifier": "com.udeans.glimkin",
       "icon": "./assets/expo.icon"
     },
     "android": {
@@ -18,7 +19,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.udeans.mobile"
+      "package": "com.udeans.glimkin"
     },
     "web": {
       "output": "static",

@@ -19,3 +19,7 @@ yarn-error.*
 
 # OS
 .DS_Store
+
+# Keystores
+*.keystore
+*.jks

@@ -1,10 +1,10 @@
-# PRD: Habit Tracker (working title)
+# PRD: Glimkin
 
 Status: Draft v0.1 · Owner: Mike · Last updated: 2026-11-22
 
 ## 1. Overview
 
-An offline-first mobile habit tracker whose core experience is a **living, animated visual world** that reflects the user's consistency, instead of lists, checkboxes, and flat charts. It is built with Expo React Native and a self-hosted Hono API.
+An offline-first mobile habit tracker whose core experience is an **Arcade Quest HUD & procedural 16x16 pixel RPG avatar** that levels up with your consistency, instead of dry lists, checkboxes, and flat charts. It is built with Expo React Native and a self-hosted Hono API.
 
 ### 1.1 Goals
 
@@ -37,7 +37,7 @@ Primary v1 user: the author, then a small group of testers.
   - Schedules: every day, specific weekdays, or N times per week.
 - **Log:** a record of a habit's completion value on a given local calendar day.
 - **Streak:** consecutive scheduled days completed, computed by shared logic. Supports **freezes** (a limited number of forgiven misses) to reduce all-or-nothing pressure.
-- **World:** the signature visual scene where each habit is represented by a living element whose state reflects consistency (see section 5).
+- **Hero & Quest HUD:** the signature visual scene where a procedural 16x16 Skia pixel avatar (Knight, Mage, or Ranger) earns XP, builds daily combos, and levels up as habits are completed (see section 5).
 
 ## 4. Functional Requirements
 
@@ -94,16 +94,14 @@ Primary v1 user: the author, then a small group of testers.
 
 Detailed specs and performance budgets in `docs/ANIMATION.md`.
 
-### 5.1 The Living World (home screen)
+### 5.1 Arcade Quest HUD & Pixel Avatar (home screen)
 
-A full-screen Skia scene. Working metaphor: a **bioluminescent garden** (alternatives to evaluate in a spike: aurora, tide pool, constellation). Each habit maps to a living element:
+A Skia-rendered pixel RPG companion and quest board. Each user chooses a class (**Knight**, **Mage**, or **Ranger**) rendered as a procedural 16x16 Skia pixel avatar:
 
-- Grows and glows with consistent completion
-- Dims and droops gently after misses (never punishing or dramatic)
-- Recovers visibly when the user returns
-- Reacts to touch, to device tilt (optional), and to time of day (palette shifts)
-
-The world is the primary navigation surface: tap an element to open that habit's detail.
+- Earns XP and levels up with consistent completion
+- Builds daily combos when multiple habits are completed
+- Never punishes misses with harsh penalties or guilt
+- Supports time-of-day/theme palette shifts and responsive feedback on completion
 
 ### 5.2 Hold-to-complete gesture
 
@@ -170,9 +168,9 @@ For a personal/learning project, measured via a local dev dashboard or manual te
 
 ## 11. Open Questions
 
-1. Final world metaphor (garden / aurora / tide pool / constellation): decide after the Phase 1 visual spike.
+1. RPG visual direction: **Arcade Quest HUD & Pixel Avatar** (Knight / Mage / Ranger) — decided.
 2. Streak freezes: automatic or manual? Earn rate?
-3. App name and brand.
+3. App name and brand: **Glimkin** (`com.udeans.glimkin`) — decided.
 4. Auth: custom JWT (default in docs) or Better Auth?
 5. Hosting target for the API and Postgres (VPS, Fly.io, Railway, etc.).
 6. Crash reporting choice that fits the privacy stance.

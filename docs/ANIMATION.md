@@ -24,33 +24,33 @@ Skia is driven by Reanimated shared values directly so no JS-thread round trip h
 
 ## 3. Signature Interactions
 
-### 3.1 Living World (home)
+### 3.1 Arcade Quest HUD & Pixel Avatar (home)
 
-**Concept (working):** bioluminescent garden. Each habit = one organism. Alternatives to evaluate in the Phase 1 spike: aurora ribbons, tide pool, constellation. Pick one based on performance and feel, then record the decision in `docs/ARCHITECTURE.md`.
+**Concept:** Arcade Quest HUD with a procedural 16x16 Skia pixel avatar across three classes (**Knight**, **Mage**, **Ranger**).
 
-State mapping (per habit):
+State mapping:
 
 | Input | Visual |
 |---|---|
-| Streak length / 30-day completion rate | Size, branching complexity, glow intensity |
-| Completed today | Bloom/pulse state, brighter emission |
-| Missed recently | Gently dimmed, slightly drooped, desaturated |
-| Return after break | Slow regrowth animation |
-| Time of day | Palette and light direction shift (dawn → night) |
+| Streak length / XP / Level | Avatar rank/level badge, XP bar fill, combo glow |
+| Completed today | Quest completion burst, XP pop, combo increment |
+| Missed recently | Calm resting state, no harsh red alarms |
+| Return after break | Smooth resume of quest progress |
+| Theme / time of day | Palette and accent contrast shift |
 
-Ambient layer: slow drifting particles/spores, soft noise-driven glow. Optional gyroscope parallax, off by default on low tier.
+Ambient layer: subtle pixel/particle accents and smooth spring transitions.
 
-Interaction: tap an organism → shared-element transition into habit detail.
+Interaction: tap a habit quest card → navigate into habit detail.
 
 ### 3.2 Hold-to-complete
 
 Sequence:
 
 1. **Press-in** (0 ms): ring appears under the finger, soft haptic.
-2. **Charge** (about 600–900 ms hold): radial fill with easing, haptic ticks that increase in intensity at thresholds (for example 25/50/75%), particles gather toward the organism.
+2. **Charge** (about 600–900 ms hold): radial fill with easing, haptic ticks that increase in intensity at thresholds (for example 25/50/75%), particles gather toward the quest target.
 3. **Release early:** spring back, particles disperse, no completion.
-4. **Complete:** success haptic, particle burst, organism bloom, brief world-wide ripple, streak counter rolls up.
-5. **Undo:** a short press-and-hold on a completed organism reverses with a reversed softer animation.
+4. **Complete:** success haptic, particle burst, XP/combo pop, streak counter rolls up.
+5. **Undo:** a short press-and-hold on a completed habit reverses with a softer animation.
 
 Accessibility alternative: single tap toggle (setting or screen-reader detection). Duration and count habits open a compact value picker after the charge.
 
@@ -66,7 +66,7 @@ Implement first as a Skia canvas with a cached blob set. A runtime shader (SkSL)
 
 ### 3.4 Continuous Transitions
 
-- World → habit detail: the organism scales and moves to the header position; background crossfades.
+- Today Board → habit detail: shared transition into the habit header; background crossfades.
 - Detail → stats: shared chart elements morph.
 - Keep transition durations in 250–450 ms with spring physics; interruptible by gesture.
 
@@ -134,7 +134,7 @@ Measurement: React Native perf monitor for JS/UI fps, Android Studio profiler / 
 
 Time-box: about 3–5 days.
 
-1. Build a minimal Skia scene with 10 animated organisms + ambient particles.
+1. Build a minimal Skia scene with the procedural 16x16 pixel avatar + ambient particles.
 2. Prototype hold-to-complete with the burst effect and haptics.
 3. Test on the reference mid-range Android device and record fps with the budgets above.
 4. Prototype the heatmap blob field with 90 days of fake data.

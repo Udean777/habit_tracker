@@ -1,4 +1,4 @@
-# Habit Tracker
+# Glimkin
 
 An offline-first mobile habit tracker built with Expo React Native, backed by a self-hosted Hono API. Local SQLite is the source of truth for the UI, so every habit check-off, reorder, and edit works without a network connection and syncs in the background when you sign in.
 
