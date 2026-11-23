@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -15,20 +15,27 @@ type StreakTickerProps = {
 export function StreakTicker({ streak, reduceMotion }: StreakTickerProps) {
   const translateY = useSharedValue(0);
   const opacity = useSharedValue(1);
+  const prevStreakRef = useRef(streak);
 
   useEffect(() => {
+    if (prevStreakRef.current === streak) return;
+    prevStreakRef.current = streak;
     if (reduceMotion) {
-      translateY.value = 0;
-      opacity.value = 1;
+      translateY.set(0);
+      opacity.set(1);
       return;
     }
-    translateY.value = withSequence(
-      withTiming(-6, { duration: 90 }),
-      withTiming(0, { duration: 160 }),
+    translateY.set(
+      withSequence(
+        withTiming(-6, { duration: 90 }),
+        withTiming(0, { duration: 160 }),
+      ),
     );
-    opacity.value = withSequence(
-      withTiming(0.4, { duration: 90 }),
-      withTiming(1, { duration: 160 }),
+    opacity.set(
+      withSequence(
+        withTiming(0.4, { duration: 90 }),
+        withTiming(1, { duration: 160 }),
+      ),
     );
   }, [streak, reduceMotion, translateY, opacity]);
 

@@ -61,6 +61,14 @@ export function useTodayQuests(
     return { scheduledHabits: scheduled, offDayHabits: offDay };
   }, [activeHabits, selectedDate]);
 
+  const logValueByDateHabit = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const log of logs) {
+      map.set(`${log.logDate}:${log.habitId}`, log.value);
+    }
+    return map;
+  }, [logs]);
+
   const isDateFullyCompleted = useCallback(
     (date: LocalDate): boolean => {
       if (activeHabits.length === 0) return false;
@@ -76,13 +84,12 @@ export function useTodayQuests(
         );
         if (!scheduled) continue;
         scheduledCount += 1;
-        const val =
-          logs.find((l) => l.habitId === h.id && l.logDate === date)?.value ?? 0;
+        const val = logValueByDateHabit.get(`${date}:${h.id}`) ?? 0;
         if (!isDayCompleted(val, h.type, h.targetValue)) return false;
       }
       return scheduledCount > 0;
     },
-    [activeHabits, logs],
+    [activeHabits, logValueByDateHabit],
   );
 
   return {

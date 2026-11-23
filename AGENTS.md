@@ -11,12 +11,10 @@ Docs index:
 
 | File | Purpose |
 |---|---|
-| `docs/PRD.md` | Product requirements, scope, user stories |
 | `docs/ARCHITECTURE.md` | System design, folder structure, tech decisions |
 | `docs/DATABASE.md` | Local (SQLite) and server (Postgres) schemas |
 | `docs/SYNC.md` | Offline-first sync protocol |
 | `docs/ANIMATION.md` | Signature visuals, performance budgets |
-| `docs/ROADMAP.md` | Phased plan and milestones |
 
 When code and docs disagree, stop and flag it. Do not silently pick one. Update the doc in the same change if the code decision is intentional.
 

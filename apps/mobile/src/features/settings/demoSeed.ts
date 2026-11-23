@@ -11,6 +11,7 @@ import { createHabit } from "@/features/habits";
 import { upsertHabitLog } from "@/features/logs";
 
 export async function seedTier2DemoData(db: AppDb = appDb): Promise<void> {
+  if (!__DEV__) return;
   const today = getDeviceLocalDate();
   const start = addDays(today, -10);
 
@@ -73,6 +74,7 @@ export async function seedTier2DemoData(db: AppDb = appDb): Promise<void> {
 }
 
 export async function seedTier3DemoData(db: AppDb = appDb): Promise<void> {
+  if (!__DEV__) return;
   const today = getDeviceLocalDate();
   const start = addDays(today, -25);
 

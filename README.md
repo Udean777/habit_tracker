@@ -52,4 +52,4 @@ bun run test        # Vitest (shared), Bun test (api), Jest (mobile)
 
 ## Docs
 
-[PRD](docs/PRD.md) · [Architecture](docs/ARCHITECTURE.md) · [Database](docs/DATABASE.md) · [Sync Protocol](docs/SYNC.md) · [Animation & Performance](docs/ANIMATION.md) · [Roadmap](docs/ROADMAP.md)
+[Architecture](docs/ARCHITECTURE.md) · [Database](docs/DATABASE.md) · [Sync Protocol](docs/SYNC.md) · [Animation & Performance](docs/ANIMATION.md)
