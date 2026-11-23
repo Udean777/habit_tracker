@@ -18,6 +18,7 @@ import { triggerHaptic } from "@/lib/haptics";
 import { habitAccents, radii } from "@/theme/tokens";
 import { useTheme } from "@/theme/useTheme";
 import type { HabitRecord } from "../repository";
+import { HabitTimerControl } from "./HabitTimerControl";
 
 type HabitQuestRowProps = {
   readonly habit: HabitRecord;
@@ -64,23 +65,16 @@ export function HabitQuestRow({
   });
 
   const accentColor = habitAccents[habit.color];
-  const unitSuffix = habit.type === "duration" ? " min" : "";
   const targetVal = habit.targetValue ?? 1;
   const progressPct =
-    habit.type === "boolean"
-      ? isDone
+    habit.type === "count"
+      ? Math.min(100, Math.round((currentValue / Math.max(1, targetVal)) * 100))
+      : isDone
         ? 100
-        : 0
-      : Math.min(100, Math.round((currentValue / Math.max(1, targetVal)) * 100));
+        : 0;
 
-  const progressLabel =
-    habit.type === "boolean"
-      ? isDone
-        ? "Completed"
-        : "Ready to complete"
-      : `${currentValue} / ${targetVal}${unitSuffix}`;
-
-  const step = habit.type === "duration" ? 5 : 1;
+  const progressLabel = `${currentValue} / ${targetVal}`;
+  const step = 1;
 
   return (
     <Card
@@ -89,7 +83,7 @@ export function HabitQuestRow({
       style={{
         borderColor: isDone ? colors.primaryTextAccent : colors.border,
       }}
-      className="mb-3 p-3.5"
+      className="p-3.5"
     >
       <View className="flex-row items-center gap-3">
         <Pressable
@@ -141,67 +135,81 @@ export function HabitQuestRow({
           </View>
         </Pressable>
 
-        <View className="items-end justify-center">
-          {habit.type === "boolean" ? (
-            <Pressable
-              accessibilityRole="checkbox"
-              accessibilityState={{ checked: isDone }}
-              accessibilityLabel={
-                isDone ? `Uncheck ${habit.name}` : `Complete ${habit.name}`
-              }
-              onPress={() => {
-                if (!isDone) {
-                  triggerHaptic("medium", hapticsEnabled);
+        {habit.type !== "duration" ? (
+          <View className="items-end justify-center">
+            {habit.type === "boolean" ? (
+              <Pressable
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: isDone }}
+                accessibilityLabel={
+                  isDone ? `Uncheck ${habit.name}` : `Complete ${habit.name}`
                 }
-                void onLogValue(habit.id, selectedDate, isDone ? 0 : 1);
-              }}
-              style={{
-                borderRadius: radii.button,
-                backgroundColor: isDone ? colors.primary : colors.background,
-                borderWidth: 2,
-                borderBottomWidth: 4,
-                borderColor: isDone
-                  ? colors.primaryPressed
-                  : colors.borderStrong,
-              }}
-              className="min-h-[46px] min-w-[46px] items-center justify-center"
-            >
-              {isDone ? (
+                onPress={() => {
+                  if (!isDone) {
+                    triggerHaptic("medium", hapticsEnabled);
+                  }
+                  void onLogValue(habit.id, selectedDate, isDone ? 0 : 1);
+                }}
+                style={{
+                  borderRadius: radii.button,
+                  backgroundColor: isDone ? colors.primary : colors.background,
+                  borderWidth: 2,
+                  borderBottomWidth: 4,
+                  borderColor: isDone
+                    ? colors.primaryPressed
+                    : colors.borderStrong,
+                }}
+                className="min-h-[46px] min-w-[46px] items-center justify-center"
+              >
+                {isDone ? (
+                  <Check size={22} color={colors.primaryText} strokeWidth={3} />
+                ) : null}
+              </Pressable>
+            ) : isDone ? (
+              <View
+                style={{
+                  borderRadius: radii.button,
+                  backgroundColor: colors.primary,
+                  borderWidth: 2,
+                  borderBottomWidth: 4,
+                  borderColor: colors.primaryPressed,
+                }}
+                className="min-h-[46px] min-w-[46px] items-center justify-center"
+              >
                 <Check size={22} color={colors.primaryText} strokeWidth={3} />
-              ) : null}
-            </Pressable>
-          ) : isDone ? (
-            <View
-              style={{
-                borderRadius: radii.button,
-                backgroundColor: colors.primary,
-                borderWidth: 2,
-                borderBottomWidth: 4,
-                borderColor: colors.primaryPressed,
-              }}
-              className="min-h-[46px] min-w-[46px] items-center justify-center"
-            >
-              <Check size={22} color={colors.primaryText} strokeWidth={3} />
-            </View>
-          ) : (
-            <ValueStepper
-              targetLabel={habit.name}
-              onDecrement={() =>
-                void onLogValue(
-                  habit.id,
-                  selectedDate,
-                  Math.max(0, currentValue - step),
-                )
-              }
-              onIncrement={() =>
-                void onLogValue(habit.id, selectedDate, currentValue + step)
-              }
-            />
-          )}
-        </View>
+              </View>
+            ) : (
+              <ValueStepper
+                targetLabel={habit.name}
+                onDecrement={() =>
+                  void onLogValue(
+                    habit.id,
+                    selectedDate,
+                    Math.max(0, currentValue - step),
+                  )
+                }
+                onIncrement={() =>
+                  void onLogValue(habit.id, selectedDate, currentValue + step)
+                }
+              />
+            )}
+          </View>
+        ) : null}
       </View>
 
-      {habit.type !== "boolean" ? (
+      {habit.type === "duration" ? (
+        <HabitTimerControl
+          habitName={habit.name}
+          targetMinutes={targetVal}
+          loggedMinutes={currentValue}
+          isDone={isDone}
+          accentColor={accentColor}
+          hapticsEnabled={hapticsEnabled}
+          onCommitMinutes={(mins) =>
+            void onLogValue(habit.id, selectedDate, mins)
+          }
+        />
+      ) : habit.type === "count" ? (
         <View className="mt-3">
           <View className="mb-1 flex-row items-center justify-between">
             <Text variant="caption" tabularNums className="text-xs font-semibold">

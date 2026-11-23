@@ -1,7 +1,7 @@
 import "../global.css";
 import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import * as Notifications from "expo-notifications";
@@ -12,6 +12,7 @@ import { Text } from "@/components/Text";
 import { appDb } from "@/db/client";
 import migrations from "@/db/migrations/migrations";
 import { listActiveHabits } from "@/features/habits";
+import { hasCompletedOnboarding } from "@/features/onboarding";
 import { ensureSettingsAndSyncState, getSettings } from "@/features/settings";
 import {
   configureNotificationHandler,
@@ -54,7 +55,13 @@ export default function RootLayout() {
         await registerNotificationCategories();
         const active = await listActiveHabits(appDb);
         await reconcileNotifications(active);
-        if (!cancelled) setSeeded(true);
+        const onboarded = await hasCompletedOnboarding();
+        if (!cancelled) {
+          setSeeded(true);
+          if (!onboarded && active.length === 0) {
+            setTimeout(() => router.replace("/onboarding"), 0);
+          }
+        }
       })
       .catch(() => {
         if (!cancelled) {
@@ -116,6 +123,7 @@ export default function RootLayout() {
           }}
         >
           <Stack.Screen name="(tabs)" options={{ animation: "fade" }} />
+          <Stack.Screen name="onboarding" options={{ animation: "fade" }} />
           <Stack.Screen
             name="habit/new"
             options={{

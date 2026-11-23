@@ -56,20 +56,20 @@ export function OffDayQuestsSection({
           {showOffDays ? "Hide" : "Show"}
         </Text>
       </Pressable>
-      {showOffDays
-        ? habits.map((habit) => (
-            <Animated.View
-              key={habit.id}
-              entering={
-                reduceMotion
-                  ? undefined
-                  : FadeIn.duration(160).easing(Easing.out(Easing.cubic))
-              }
-            >
-              {renderRow(habit)}
-            </Animated.View>
-          ))
-        : null}
+      {showOffDays ? (
+        <Animated.View
+          entering={
+            reduceMotion
+              ? undefined
+              : FadeIn.duration(160).easing(Easing.out(Easing.cubic))
+          }
+          className="gap-3"
+        >
+          {habits.map((habit) => (
+            <Animated.View key={habit.id}>{renderRow(habit)}</Animated.View>
+          ))}
+        </Animated.View>
+      ) : null}
     </Animated.View>
   );
 }

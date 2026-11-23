@@ -1,9 +1,10 @@
-import { useEffect, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
+  Easing,
+  LinearTransition,
   runOnJS,
-  useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -13,15 +14,17 @@ import GripVertical from "lucide-react-native/icons/grip-vertical";
 import { motion } from "@/theme/tokens";
 import { useTheme } from "@/theme/useTheme";
 
-const ROW_HEIGHT = 104;
+const FALLBACK_ROW_HEIGHT = 96;
+const ITEM_GAP = 12;
 
 type SortableItemProps = {
   readonly id: string;
   readonly index: number;
   readonly totalCount: number;
   readonly reduceMotion: boolean;
-  readonly positions: SharedValue<Record<string, number>>;
   readonly activeId: SharedValue<string | null>;
+  readonly avgRowHeight: SharedValue<number>;
+  readonly onMeasureHeight: (id: string, height: number) => void;
   readonly onReorder: (id: string, targetIndex: number) => void;
   readonly children: ReactNode;
 };
@@ -31,86 +34,63 @@ function SortableItem({
   index,
   totalCount,
   reduceMotion,
-  positions,
   activeId,
+  avgRowHeight,
+  onMeasureHeight,
   onReorder,
   children,
 }: SortableItemProps) {
   const { colors } = useTheme();
   const dragY = useSharedValue(0);
-  const originY = useSharedValue(0);
-  const slotY = useSharedValue(index * ROW_HEIGHT);
-
-  useAnimatedReaction(
-    () => positions.value[id] ?? 0,
-    (slot, prevSlot) => {
-      if (prevSlot === null || slot === prevSlot) return;
-      const targetTop = slot * ROW_HEIGHT;
-      slotY.set(
-        reduceMotion ? targetTop : withSpring(targetTop, motion.springs.snappy),
-      );
-    },
-  );
 
   const panGesture = Gesture.Pan()
     .onStart(() => {
       activeId.set(id);
-      const currentSlot = positions.get()[id] ?? 0;
-      const startTop = currentSlot * ROW_HEIGHT;
-      originY.set(startTop);
-      dragY.set(startTop);
+      dragY.set(0);
     })
     .onUpdate((e) => {
-      const currentMap = positions.get();
-      const currentSlot = currentMap[id] ?? 0;
-      const nextY = Math.max(
+      dragY.set(e.translationY);
+    })
+    .onEnd((e) => {
+      const stride = Math.max(48, avgRowHeight.get() + ITEM_GAP);
+      const delta = Math.round(e.translationY / stride);
+      const targetIndex = Math.max(
         0,
-        Math.min((totalCount - 1) * ROW_HEIGHT, originY.get() + e.translationY),
+        Math.min(totalCount - 1, index + delta),
       );
-      dragY.set(nextY);
-
-      const newSlot = Math.max(
-        0,
-        Math.min(totalCount - 1, Math.round(nextY / ROW_HEIGHT)),
-      );
-
-      if (newSlot !== currentSlot) {
-        const nextMap: Record<string, number> = { ...currentMap };
-        for (const key of Object.keys(nextMap)) {
-          if (nextMap[key] === newSlot) {
-            nextMap[key] = currentSlot;
-            break;
-          }
-        }
-        nextMap[id] = newSlot;
-        positions.set(nextMap);
+      dragY.set(reduceMotion ? 0 : withSpring(0, motion.springs.snappy));
+      activeId.set(null);
+      if (targetIndex !== index) {
+        runOnJS(onReorder)(id, targetIndex);
       }
     })
-    .onEnd(() => {
-      const finalSlot = positions.get()[id] ?? 0;
-      slotY.set(finalSlot * ROW_HEIGHT);
-      activeId.set(null);
-      runOnJS(onReorder)(id, finalSlot);
-    })
     .onFinalize(() => {
+      dragY.set(reduceMotion ? 0 : withSpring(0, motion.springs.snappy));
       activeId.set(null);
     });
 
   const animatedStyle = useAnimatedStyle(() => {
     const isDragging = activeId.value === id;
     return {
-      position: "absolute",
-      left: 0,
-      right: 0,
-      top: 0,
-      transform: [{ translateY: isDragging ? dragY.value : slotY.value }],
+      transform: [
+        { translateY: dragY.value },
+        { scale: isDragging ? 1.01 : 1 },
+      ],
       opacity: isDragging ? 0.96 : 1,
       zIndex: isDragging ? 100 : 1,
     };
   });
 
   return (
-    <Animated.View style={animatedStyle}>
+    <Animated.View
+      layout={
+        reduceMotion
+          ? undefined
+          : LinearTransition.duration(180).easing(Easing.out(Easing.cubic))
+      }
+      onLayout={(e) => onMeasureHeight(id, e.nativeEvent.layout.height)}
+      style={animatedStyle}
+    >
       <View className="flex-row items-center">
         <View className="flex-1">{children}</View>
         {totalCount > 1 ? (
@@ -142,29 +122,22 @@ export function DraggableQuestList<T extends { readonly id: string }>({
   onReorder,
   renderItem,
 }: DraggableQuestListProps<T>) {
-  const initialMap: Record<string, number> = {};
-  items.forEach((item, idx) => {
-    initialMap[item.id] = idx;
-  });
-
-  const positions = useSharedValue<Record<string, number>>(initialMap);
   const activeId = useSharedValue<string | null>(null);
+  const avgRowHeight = useSharedValue(FALLBACK_ROW_HEIGHT);
+  const heightsRef = useRef<Record<string, number>>({});
 
-  useEffect(() => {
-    const nextMap: Record<string, number> = {};
-    items.forEach((item, idx) => {
-      nextMap[item.id] = idx;
-    });
-    positions.set(nextMap);
-  }, [items, positions]);
+  function handleMeasureHeight(id: string, height: number) {
+    if (height <= 0) return;
+    heightsRef.current[id] = height;
+    const values = Object.values(heightsRef.current);
+    if (values.length > 0) {
+      const avg = values.reduce((acc, h) => acc + h, 0) / values.length;
+      avgRowHeight.set(avg);
+    }
+  }
 
   return (
-    <View
-      style={{
-        height: items.length * ROW_HEIGHT,
-        position: "relative",
-      }}
-    >
+    <View className="gap-3">
       {items.map((item, idx) => (
         <SortableItem
           key={item.id}
@@ -172,8 +145,9 @@ export function DraggableQuestList<T extends { readonly id: string }>({
           index={idx}
           totalCount={items.length}
           reduceMotion={reduceMotion}
-          positions={positions}
           activeId={activeId}
+          avgRowHeight={avgRowHeight}
+          onMeasureHeight={handleMeasureHeight}
           onReorder={onReorder}
         >
           {renderItem(item)}

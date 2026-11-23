@@ -1,4 +1,6 @@
-import { Switch, View } from "react-native";
+import { Pressable, Switch, View } from "react-native";
+import { router } from "expo-router";
+import ChevronRight from "lucide-react-native/icons/chevron-right";
 import {
   qualityTierModeSchema,
   reduceMotionModeSchema,
@@ -89,9 +91,24 @@ export function ExperienceSettingsSection({
         options={QUALITY_MODES.map((m) => ({ label: m, value: m }))}
         expanded={expandedRow === "quality"}
         onToggleExpand={() => onToggleRow("quality")}
-        isLast
         onSelect={(qualityTier) => void onUpdateSettings({ qualityTier })}
       />
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Replay app onboarding tour"
+        onPress={() => router.push("/onboarding")}
+        className="min-h-[56px] flex-row items-center justify-between px-4 py-3"
+      >
+        <View className="flex-1 pr-3">
+          <Text variant="body" className="font-semibold">
+            App Onboarding Tour
+          </Text>
+          <Text variant="caption" className="mt-0.5">
+            Replay hero setup & gamification walkthrough
+          </Text>
+        </View>
+        <ChevronRight size={16} color={colors.textSecondary} />
+      </Pressable>
     </Section>
   );
 }
